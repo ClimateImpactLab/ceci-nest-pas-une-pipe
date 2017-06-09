@@ -111,8 +111,6 @@ def run_job(
         pername,
         years,
         model,
-        baseline_model,
-        season,
         agglev,
         aggwt,
         weights=None):
