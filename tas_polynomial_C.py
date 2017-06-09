@@ -125,7 +125,7 @@ def run_job(
     logger.debug('{} {} - applying transform'.format(model, year))
 
     with xr.open_dataset(base) as ds:
-        ds = ds.pipe(transform)
+        ds = ds.pipe(transformation)
 
         # Reshape to regions
         # logger.debug('{} - reshaping to regions'.format(model))
