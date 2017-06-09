@@ -22,32 +22,32 @@ __contact__ = 'mdelgado@rhg.com'
 __version__ = '0.1.0'
 
 BASELINE_FILE = (
-    '/global/scratch/jiacany/nasa_bcsd/pattern/baseline/' +
-    '{baseline_model}/{variable}/' +
-    '{variable}_baseline_1986-2005_r1i1p1_{baseline_model}_{season}.nc')
+    '/global/scratch/jsimcock/gcp/climate/hierid/' +
+    '{rcp}/tas/tas-polynomials/' +
+    'tas_tas-polynomials_{baseline_model}_{year}.nc')
 
-BCSD_pattern_files = (
-    '/global/scratch/mdelgado/nasa_bcsd/pattern/SMME_surrogate/' +
-    '{rcp}/{variable}/{model}/' +
-    '{variable}_BCSD_{model}_{rcp}_r1i1p1_{season}_{{year}}.nc')
+# BCSD_pattern_files = (
+#     '/global/scratch/mdelgado/nasa_bcsd/pattern/SMME_surrogate/' +
+#     '{rcp}/{variable}/{model}/' +
+#     '{variable}_BCSD_{model}_{rcp}_r1i1p1_{season}_{{year}}.nc')
 
 WRITE_PATH = (
-    '/global/scratch/mdelgado/web/gcp/climate/{rcp}/{agglev}/{variable}/' +
-    '{variable}_{agglev}_{aggwt}_{model}_{season}_{pername}.nc')
+    '/global/scratch/jsimcock/gcp/climate/hierid/{rcp}/{variable}/tas-polynomials-C/' +
+    'tas_tas-polynomials_{model}_{year}.nc')
 
 ADDITIONAL_METADATA = dict(
     description=__file__.__doc__,
     author=__author__,
     contact=__contact__,
     version=__version__,
-    repo='https://github.com/ClimateImpactLab/pipelines',
-    file='/pipelines/climate/jobs/impactlab_website/job_pattern_bcsd_ir_slurm.py',
+    repo='https://github.com/ClimateImpactLab/ceci-nest-pas-une-pipe',
+    file='/ceci-nest-pas-une-pipe/',
     execute='job_pattern_bcsd_ir_slurm.job_pattern_bcsd_ir_slurm.run_slurm()',
     project='gcp', 
     team='climate',
     geography='hierid',
-    weighting='areawt',
-    frequency='20yr')
+    weighting='popwt',
+    frequency='daily')
 
 
 def average_seasonal_temp_pattern(ds):
