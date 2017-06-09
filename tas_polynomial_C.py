@@ -62,7 +62,7 @@ JOBS = [
     dict(variable='tas', transformation=tas_k_to_c)]
 
 PERIODS = (
-    #[dict(rcp='historical', pername='annual', year=y) for y in range(1981, 2006)]
+    [dict(rcp='historical', pername='annual', year=y) for y in range(1981, 2006)] + 
     [dict(rcp='rcp85', pername='annual', year=y) for y in range(2006, 2100)]
     )
 
