@@ -77,3 +77,6 @@ nohup.out
 
 # output logs
 *.out
+
+# output sh files
+*.sh
