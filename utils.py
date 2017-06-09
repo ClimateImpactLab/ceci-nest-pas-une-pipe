@@ -62,7 +62,7 @@ def generate_jobs(job_spec):
 def _prep_slurm(filepath, job_spec):
     with open('do_job.sh', 'w+') as f:
         f.write(SLURM_SCRIPT.format(
-            numjobs = len(list(generate_jobs(job_spec))),
+            numjobs = len(list(generate_jobs(job_spec)))-1,
             filepath = filepath))
 
 
