@@ -63,7 +63,9 @@ JOBS = [
 
 PERIODS = (
     #[dict(rcp='historical', pername='annual', year=y) for y in range(1981, 2006)]
-    [dict(rcp='rcp85', pername='annual', year=y) for y in range(2006, 2100)]
+    [dict(rcp='rcp85', pername='annual', year=y) for y in range(2006, 2050)]
+    [dict(rcp='rcp85', pername='annual', year=y) for y in range(2050, 2100)]
+
     )
 
 YEARS = []
