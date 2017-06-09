@@ -61,10 +61,10 @@ def tas_k_to_c(ds):
 JOBS = [
     dict(variable='tas', transformation=tas_k_to_c)]
 
-PERIODS = [
-    dict(rcp='historical', pername='annual', years=list(range(1981, 1990))),
-    #dict(rcp='rcp85', pername='annual', years=list(range(2006, 2100)))
-    ]
+PERIODS = (
+    [dict(rcp='historical', pername='annual', year=y) for y in range(1981, 1990)]
+    # +[dict(rcp='rcp85', pername='annual', year=y) for y in range(2006, 2100)]
+    )
 
 YEARS = []
 
@@ -104,9 +104,8 @@ def run_job(
         transformation,
         rcp,
         pername,
-        years,
+        year,
         model,
-        season,
         agglev,
         aggwt,
         weights=None):
@@ -120,33 +119,31 @@ def run_job(
 
     # Get transformed data
 
-    for year in years:
+    # Get transformed data
+    base = BASELINE_FILE.format(rcp=rcp,model=model,year=year)
+    
+    logger.debug('{} {} - applying transform'.format(model, year))
 
-        # Get transformed data
-        base = BASELINE_FILE.format(rcp=rcp,model=model,year=year)
-        
-        logger.debug('{} {} - applying transform'.format(model, year))
-
-        ds = xr.open_dataset(base)
+    with xr.open_dataset(base) as ds:
         ds = ds.pipe(transform)
 
+        # Reshape to regions
+        # logger.debug('{} - reshaping to regions'.format(model))
+        # if not agglev.startswith('grid'):
+        #     ds = weighted_aggregate_grid_to_regions(
+        #             annual, variable, aggwt, agglev, weights=weights)
 
-    # Reshape to regions
-    # logger.debug('{} - reshaping to regions'.format(model))
-    # if not agglev.startswith('grid'):
-    #     ds = weighted_aggregate_grid_to_regions(
-    #             annual, variable, aggwt, agglev, weights=weights)
+        # # Update netCDF metadata
+        # logger.debug('{} udpate metadata'.format(model))
+        # ds.attrs.update(**metadata)
 
-    # # Update netCDF metadata
-    # logger.debug('{} udpate metadata'.format(model))
-    # ds.attrs.update(**metadata)
+        # Write output
+        logger.debug('attempting to write to file: {}'.format(write_file))
+        if not os.path.isdir(os.path.dirname(write_file)):
+            os.makedirs(os.path.dirname(write_file))
 
-    # Write output
-    logger.debug('attempting to write to file: {}'.format(write_file))
-    if not os.path.isdir(os.path.dirname(write_file)):
-        os.makedirs(os.path.dirname(write_file))
+        ds.to_netcdf(write_file)
 
-    ds.to_netcdf(write_file)
 
 
 @click.command()
