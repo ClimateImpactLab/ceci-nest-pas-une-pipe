@@ -145,7 +145,6 @@ def run_job(
     ds = xr.concat(total, dim=pd.Index(years, name='year')).mean(dim='year')
 
     # load baseline
-    logger.debug('attempting to load baseline file: '.format(baseline_file))
 
 
     # Reshape to regions
