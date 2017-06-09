@@ -32,7 +32,7 @@ BASELINE_FILE = (
 #     '{variable}_BCSD_{model}_{rcp}_r1i1p1_{season}_{{year}}.nc')
 
 WRITE_PATH = (
-    '/global/scratch/jsimcock/gcp/climate/hierid/{rcp}/{variable}/tas-polynomials-C/' +
+    '/global/scratch/jsimcock/gcp/climate/hierid/{rcp}/{variable}/tas-polynomials-C/{model}/' +
     'tas_tas-polynomials_{model}_{year}.nc')
 
 ADDITIONAL_METADATA = dict(
@@ -62,7 +62,7 @@ JOBS = [
     dict(variable='tas', transformation=tas_k_to_c)]
 
 PERIODS = (
-    [dict(rcp='historical', pername='annual', year=y) for y in range(1981, 2006)] + 
+    [dict(rcp='historical', pername='annual', year=y) for y in range(1981, 2006)] +
     [dict(rcp='rcp85', pername='annual', year=y) for y in range(2006, 2100)]
     )
 
