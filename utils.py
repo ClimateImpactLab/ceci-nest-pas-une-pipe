@@ -66,7 +66,7 @@ def _prep_slurm(filepath, job_spec):
             filepath = filepath))
 
 
-def run_with_slurm(filepath, job_spec):
+def run_slurm(filepath, job_spec):
     _prep_slurm(filepath, job_spec)
     os.system('sbatch do_job.sh')
 
