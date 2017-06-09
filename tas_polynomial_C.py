@@ -23,7 +23,7 @@ __version__ = '0.1.0'
 
 BASELINE_FILE = (
     '/global/scratch/jsimcock/gcp/climate/hierid/' +
-    '{rcp}/tas/tas-polynomials/' +
+    '{rcp}/tas/tas-polynomials/{model}/' +
     'tas_tas-polynomials_{model}_{year}.nc')
 
 # BCSD_pattern_files = (
