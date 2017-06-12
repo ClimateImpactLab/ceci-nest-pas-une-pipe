@@ -118,6 +118,7 @@ def run_job(
     # Add to job metadata
     metadata.update(dict(
         time_horizon='{}-{}'.format(years[0], years[-1])))
+    metadata['transformation'] = 'tasmax_over_95F'
 
     bcsd_file = BCSD_orig_files.format(**metadata)
     write_file = WRITE_PATH.format(**metadata)
