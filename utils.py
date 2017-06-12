@@ -23,6 +23,8 @@ SLURM_SCRIPT = '''
 #
 #SBATCH  --cpus-per-task=1
 #
+#SBATCH --requeue
+#
 # Wall clock limit:
 #SBATCH --time=72:00:00
 #
