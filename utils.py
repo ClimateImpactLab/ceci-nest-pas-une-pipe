@@ -9,13 +9,13 @@ SLURM_SCRIPT = '''
 #SBATCH --job-name=resid
 #
 # Partition:
-#SBATCH --partition=savio2
+#SBATCH --partition=savio2_bigmem
 #
 # Account:
 #SBATCH --account=co_laika
 #
 # QoS:
-#SBATCH --qos=savio_lowprio
+#SBATCH --qos=laika_bigmem2_normal
 #
 #SBATCH --nodes=1
 #
