@@ -173,8 +173,8 @@ def main(prep=False, run=False, job_id=None):
     if prep:
         utils._prep_slurm(filepath=__file__, job_spec=JOB_SPEC)
 
-    # elif run:
-    #     utils.run_slurm(filepath=__file__, job_spec=JOB_SPEC)
+    elif run:
+        utils.run_slurm(filepath=__file__, job_spec=JOB_SPEC)
 
     if job_id is not None:
         job = utils.get_job_by_index(JOB_SPEC, job_id)
