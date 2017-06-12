@@ -26,7 +26,7 @@ BCSD_orig_files = os.path.join(
     '{variable}_day_BCSD_{rcp}_r1i1p1_{model}_{{year}}.nc')
 
 WRITE_PATH = os.path.join(
-    '/global/scratch/jsimcock/gcp/climate/{agglev}/{rcp}/{variable}/{transformation}',
+    '/global/scratch/jsimcock/gcp/climate/{agglev}/{rcp}/{variable}/{transformation_name}',
     '{variable}_{agglev}_{aggwt}_{model}_{pername}.nc')
 
 ADDITIONAL_METADATA = dict(
@@ -59,41 +59,41 @@ def tasmin_under_32F(ds):
 
 
 JOBS = [
-    dict(variable='tasmax', transformation=tasmax_over_95F), 
-    dict(variable='tasmax', transformation=tasmin_under_32F)
+    dict(variable='tasmax', transformatoin_name='tasmax_over_95F', transformation=tasmax_over_95F), 
+    dict(variable='tasmin', transformation_name='tasmin_under_32F', transformation=tasmin_under_32F)
     ] 
 
 
 PERIODS = [
-    dict(rcp='rcp45', pername='2020', years=list(range(2020, 2040))),
-    dict(rcp='rcp45', pername='2040', years=list(range(2040, 2060))),
-    dict(rcp='rcp45', pername='2080', years=list(range(2080, 2100)))]
+    dict(rcp='rcp45', pername='2020', years=list(range(2020, 2040)))]
+    # dict(rcp='rcp45', pername='2040', years=list(range(2040, 2060))),
+    # dict(rcp='rcp45', pername='2080', years=list(range(2080, 2100)))]
 
 
 YEARS = []
 
 MODELS = list(map(lambda x: dict(model=x), [
-    'ACCESS1-0',
-    'bcc-csm1-1',
-    'BNU-ESM',
-    'CanESM2',
-    'CCSM4',
-    'CESM1-BGC',
-    'CNRM-CM5',
-    'CSIRO-Mk3-6-0',
-    'GFDL-CM3',
-    'GFDL-ESM2G',
-    'GFDL-ESM2M',
-    'IPSL-CM5A-LR',
-    'IPSL-CM5A-MR',
-    'MIROC-ESM-CHEM',
-    'MIROC-ESM',
-    'MIROC5',
-    'MPI-ESM-LR',
-    'MPI-ESM-MR',
-    'MRI-CGCM3',
-    'inmcm4',
-    'NorESM1-M']))
+    'ACCESS1-0']))
+    # 'bcc-csm1-1',
+    # 'BNU-ESM',
+    # 'CanESM2',
+    # 'CCSM4',
+    # 'CESM1-BGC',
+    # 'CNRM-CM5',
+    # 'CSIRO-Mk3-6-0',
+    # 'GFDL-CM3',
+    # 'GFDL-ESM2G',
+    # 'GFDL-ESM2M',
+    # 'IPSL-CM5A-LR',
+    # 'IPSL-CM5A-MR',
+    # 'MIROC-ESM-CHEM',
+    # 'MIROC-ESM',
+    # 'MIROC5',
+    # 'MPI-ESM-LR',
+    # 'MPI-ESM-MR',
+    # 'MRI-CGCM3',
+    # 'inmcm4',
+    # 'NorESM1-M']))
 
 
 AGGREGATIONS = [
@@ -173,8 +173,8 @@ def main(prep=False, run=False, job_id=None):
     if prep:
         utils._prep_slurm(filepath=__file__, job_spec=JOB_SPEC)
 
-    elif run:
-        utils.run_slurm(filepath=__file__, job_spec=JOB_SPEC)
+    # elif run:
+    #     utils.run_slurm(filepath=__file__, job_spec=JOB_SPEC)
 
     if job_id is not None:
         job = utils.get_job_by_index(JOB_SPEC, job_id)
@@ -185,7 +185,7 @@ def main(prep=False, run=False, job_id=None):
 
         metadata = {k: v for k, v in ADDITIONAL_METADATA.items()}
         metadata.update(job)
-
+        print(job)
         run_job(metadata=metadata, **job)
 
 
