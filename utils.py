@@ -15,7 +15,7 @@ SLURM_SCRIPT = '''
 #SBATCH --account=co_laika
 #
 # QoS:
-#SBATCH --qos=laika_bigmem2_normal
+#SBATCH --qos=savio_lowprio
 #
 #SBATCH --nodes=1
 #
