@@ -161,7 +161,8 @@ def slurm_runner(job_spec, run, onfinish, additional_metadata=None):
         _prep_slurm(
             filepath=__file__,
             job_spec=job_spec,
-            dependencies=('afterany', list(dependency)))
+            dependencies=('afterany', list(dependency)),
+            flags=['do_job'])
 
     @slurm.command()
     @click.option('--jobname', default='slurm_job', help='name of the job')
@@ -198,7 +199,7 @@ def slurm_runner(job_spec, run, onfinish, additional_metadata=None):
 
 
     @slurm.command()
-    @click.argument('job_id', type=int)
+    @click.argument('--job_id', required=True, type=int)
     def do_job(job_id=None):
 
         job = get_job_by_index(job_spec, job_id)
