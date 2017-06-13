@@ -65,19 +65,19 @@ def generate_jobs(job_spec):
 
 
 def _prep_slurm(filepath, job_spec, dependencies=None, flags=None):
-    if dependencies is None:
-        depstr = ''
-
-    else:
+    if dependencies:
         depstr = '\n'.join([
             '#',
             '#SBATCH --dependency=afterok:{}'.format(
                 ','.join(map(str, dependencies)))])
 
-    if flags is None:
-        flagstr = ''
     else:
+        depstr = ''
+
+    if flags:
         flagstr = ' '.join(map(str, flags))
+    else:
+        flagstr = ''
 
     with open('do_job.sh', 'w+') as f:
         f.write(SLURM_SCRIPT.format(
@@ -102,13 +102,12 @@ def run_slurm(filepath, job_spec, dependencies=None, flags=None):
     matcher = re.search(r'^\s*Submitted batch job (?P<run_id>[0-9]+)\s*$', out)
 
     if matcher:
-        run_id = matcher.group('run_id')
+        run_id = int(matcher.group('run_id'))
     else:
         run_id = None
 
-    print(out)
-    print(err)
-    print(run_id)
+    if err:
+        raise OSError('Error encountered submitting job: {}'.format(err))
 
     return run_id
 

@@ -214,12 +214,15 @@ def run_job(
 @click.option('--prep', is_flag=True, default=False)
 @click.option('--run', is_flag=True, default=False)
 @click.option('--job_id', type=int, default=None)
-def main(prep=False, run=False, job_id=None):
+@click.option('--dependency', '-d', multiple=True)
+def main(prep=False, run=False, job_id=None, dependency=None):
     if prep:
-        utils._prep_slurm(filepath=__file__, job_spec=JOB_SPEC)
+        utils._prep_slurm(
+            filepath=__file__, job_spec=JOB_SPEC, dependencies=dependency)
 
     elif run:
-        utils.run_slurm(filepath=__file__, job_spec=JOB_SPEC)
+        slurm_id = utils.run_slurm(
+            filepath=__file__, job_spec=JOB_SPEC, dependencies=dependency)
 
     if job_id is not None:
         job = utils.get_job_by_index(JOB_SPEC, job_id)
