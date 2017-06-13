@@ -66,7 +66,7 @@ def generate_jobs(job_spec):
 def _prep_slurm(filepath, jobname='slurm_job', job_spec=None, dependencies=None, flags=None):
     depstr = ''
 
-    if dependencies:
+    if (dependencies is not None) and (len(dependencies) > 1):
         for status, deps in dependencies:
             if len(deps) == 0:
                 break
