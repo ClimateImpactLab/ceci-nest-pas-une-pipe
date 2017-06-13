@@ -207,4 +207,4 @@ def slurm_runner(job_spec, run, onfinish, additional_metadata=None):
 
         run_job(metadata=metadata, **job)
 
-    return main
+    return slurm
