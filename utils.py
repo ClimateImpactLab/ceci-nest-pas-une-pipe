@@ -8,7 +8,7 @@ import re
 SLURM_SCRIPT = '''
 #!/bin/bash
 # Job name:
-#SBATCH --job-name=resid
+#SBATCH --job-name={jobname}
 #
 # Partition:
 #SBATCH --partition=savio2
@@ -63,7 +63,7 @@ def generate_jobs(job_spec):
         yield _unpack_job(specs)
 
 
-def _prep_slurm(filepath, job_spec=None, dependencies=None, flags=None):
+def _prep_slurm(filepath, jobname='slurm_job', job_spec=None, dependencies=None, flags=None):
     depstr = ''
 
     if dependencies:
@@ -91,14 +91,15 @@ def _prep_slurm(filepath, job_spec=None, dependencies=None, flags=None):
 
     with open('do_job.sh', 'w+') as f:
         f.write(SLURM_SCRIPT.format(
+            jobname = jobname,
             jobs = jobstr,
             filepath = filepath,
             dependencies = depstr,
             flags = flagstr))
 
 
-def run_slurm(filepath, job_spec=None, dependencies=None, flags=None):
-    _prep_slurm(filepath, job_spec, dependencies, flags)
+def run_slurm(filepath, jobname='slurm_job', job_spec=None, dependencies=None, flags=None):
+    _prep_slurm(filepath, jobname, job_spec, dependencies, flags)
 
     job_command = ['sbatch', 'do_job.sh']
 
@@ -145,7 +146,7 @@ def get_job_by_index(job_spec, index):
         for i in range(len(job_spec))])
 
 
-def slurm_runner(job_spec, run, onfinish, onfail, additional_metadata=None):
+def slurm_runner(job_spec, run, onfinish, additional_metadata=None):
 
     @click.group()
     def slurm():
@@ -158,15 +159,18 @@ def slurm_runner(job_spec, run, onfinish, onfail, additional_metadata=None):
             filepath=__file__, job_spec=job_spec, dependencies=dependency)
 
     @slurm.command()
+    @click.option('--jobname', default='slurm_job', help='name of the job')
     @click.option('--dependency', '-d', type=int, multiple=True)
     def run(dependency=False):
         slurm_id = run_slurm(
             filepath=__file__,
+            jobname=jobname,
             job_spec=job_spec,
             dependencies=dependency)
 
         finish_id = run_slurm(
             filepath=__file__,
+            jobname=jobname+'_finish',
             dependencies=('afterany', [slurm_id]),
             flags=['cleanup', slurm_id])
 
@@ -184,6 +188,7 @@ def slurm_runner(job_spec, run, onfinish, onfail, additional_metadata=None):
         out, err = proc.communicate()
 
         print(out)
+        onfinish()
 
 
     @slurm.command()

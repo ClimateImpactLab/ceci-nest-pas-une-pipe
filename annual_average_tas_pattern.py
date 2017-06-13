@@ -251,15 +251,10 @@ def onfinish():
     print('all done!')
 
 
-def onfail():
-    print('oops')
-
-
 main = utils.slurm_runner(
     job_spec=JOB_SPEC,
     run=run_job,
     onfinish=onfinish,
-    onfail=onfail,
     additional_metadata=ADDITIONAL_METADATA)
 
 
