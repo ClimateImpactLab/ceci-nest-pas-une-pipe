@@ -171,7 +171,8 @@ def slurm_runner(job_spec, run, onfinish, additional_metadata=None):
             filepath=__file__,
             jobname=jobname,
             job_spec=job_spec,
-            dependencies=('afterany', list(dependency)))
+            dependencies=('afterany', list(dependency)),
+            flags=['do_job'])
 
         finish_id = run_slurm(
             filepath=__file__,
