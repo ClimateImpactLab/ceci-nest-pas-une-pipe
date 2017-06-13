@@ -67,9 +67,9 @@ def _prep_slurm(filepath, jobname='slurm_job', job_spec=None, dependencies=None,
     depstr = ''
 
     if (dependencies is not None) and (len(dependencies) > 1):
-        for status, deps in dependencies:
-            if len(deps) == 0:
-                break
+        status, deps = dependencies
+
+        if len(deps) > 0:
 
             depstr += '\n'.join([
                 '#',
