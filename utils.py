@@ -161,7 +161,7 @@ def slurm_runner(job_spec, run, onfinish, additional_metadata=None):
     @slurm.command()
     @click.option('--jobname', default='slurm_job', help='name of the job')
     @click.option('--dependency', '-d', type=int, multiple=True)
-    def run(jobname='slurm_job', dependency=False):
+    def run(jobname='slurm_job', dependency=None):
         slurm_id = run_slurm(
             filepath=__file__,
             jobname=jobname,
@@ -171,7 +171,7 @@ def slurm_runner(job_spec, run, onfinish, additional_metadata=None):
         finish_id = run_slurm(
             filepath=__file__,
             jobname=jobname+'_finish',
-            dependencies=('afterany', [slurm_id]),
+            dependencies=('afterany', ('afterany', [slurm_id])),
             flags=['cleanup', slurm_id])
 
         print('run job: {}\non-finish job: {}'.format(slurm_id, finish_id))
