@@ -119,6 +119,7 @@ def run_job(
         pername,
         years,
         model,
+        read_acct,
         baseline_model,
         seasons,
         agglev,
