@@ -68,6 +68,9 @@ def _prep_slurm(filepath, jobname='slurm_job', job_spec=None, dependencies=None,
 
     if dependencies:
         for status, deps in dependencies:
+            if len(deps) == 0:
+                break
+
             depstr += '\n'.join([
                 '#',
                 '#SBATCH --dependency=afterok:{}'.format(
@@ -166,12 +169,12 @@ def slurm_runner(job_spec, run, onfinish, additional_metadata=None):
             filepath=__file__,
             jobname=jobname,
             job_spec=job_spec,
-            dependencies=dependency)
+            dependencies=('afterany', dependency))
 
         finish_id = run_slurm(
             filepath=__file__,
             jobname=jobname+'_finish',
-            dependencies=('afterany', ('afterany', [slurm_id])),
+            dependencies=('afterany', [slurm_id]),
             flags=['cleanup', slurm_id])
 
         print('run job: {}\non-finish job: {}'.format(slurm_id, finish_id))
