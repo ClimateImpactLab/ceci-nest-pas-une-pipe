@@ -159,7 +159,9 @@ def slurm_runner(job_spec, run, onfinish, additional_metadata=None):
     @click.option('--dependency', '-d', type=int, multiple=True)
     def prep(dependency=False):
         _prep_slurm(
-            filepath=__file__, job_spec=job_spec, dependencies=dependency)
+            filepath=__file__,
+            job_spec=job_spec,
+            dependencies=('afterany', dependency))
 
     @slurm.command()
     @click.option('--jobname', default='slurm_job', help='name of the job')
