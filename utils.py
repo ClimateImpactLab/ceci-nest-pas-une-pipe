@@ -27,6 +27,8 @@ SLURM_SCRIPT = '''
 #SBATCH --time=72:00:00
 #
 #SBATCH --array=0-{numjobs}
+#
+#SBATCH --requeue
 
 ## Run command
 python {filepath} --job_id ${{SLURM_ARRAY_TASK_ID}}
