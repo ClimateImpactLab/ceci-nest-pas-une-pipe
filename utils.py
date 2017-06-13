@@ -97,7 +97,7 @@ def run_slurm(filepath, job_spec, dependencies=None, flags=None):
         stdout=subprocess.PIPE,
         stderr=subprocess.PIPE)
 
-    out, err = subprocess.communicate()
+    out, err = proc.communicate()
 
     matcher = re.search(r'^\s*Submitted batch job (?P<run_id>[0-9]+)\s*$', out)
 

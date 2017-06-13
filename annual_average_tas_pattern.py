@@ -131,11 +131,11 @@ def run_job(
     metadata.update(dict(
         time_horizon='{}-{}'.format(years[0], years[-1])))
 
-    del metadata['read_acct']
-
     baseline_file = BASELINE_FILE.format(**metadata)
     pattern_file = BCSD_pattern_files.format(**metadata)
     write_file = WRITE_PATH.format(**metadata)
+    
+    del metadata['read_acct']
 
     # Get transformed data
     total = None
