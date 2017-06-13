@@ -29,9 +29,10 @@ SLURM_SCRIPT = '''
 #SBATCH --array=0-{numjobs}
 #
 #SBATCH --requeue
+{dependencies}
 
 ## Run command
-python {filepath} --job_id ${{SLURM_ARRAY_TASK_ID}}
+python {filepath} {flags} --job_id ${{SLURM_ARRAY_TASK_ID}}
 '''.strip()
 
 
@@ -61,16 +62,43 @@ def generate_jobs(job_spec):
         yield _unpack_job(specs)
 
 
-def _prep_slurm(filepath, job_spec):
+def _prep_slurm(filepath, job_spec, dependencies=None, flags=None):
+    if dependencies is None:
+        depstr = ''
+
+    else:
+        depstr = '\n'.join([
+            '#',
+            '#SBATCH --dependency=afterok:{}'.format(
+                ','.join(map(str, dependencies)))])
+
+    if flags is None:
+        flagstr = ''
+    else:
+        flagstr = ' '.join(map(str, flags))
+
     with open('do_job.sh', 'w+') as f:
         f.write(SLURM_SCRIPT.format(
             numjobs = len(list(generate_jobs(job_spec))),
-            filepath = filepath))
+            filepath = filepath,
+            dependencies = depstr,
+            flags = flagstr))
 
 
-def run_slurm(filepath, job_spec):
-    _prep_slurm(filepath, job_spec)
-    os.system('sbatch do_job.sh')
+def run_slurm(filepath, job_spec, dependencies=None, flags=None):
+    _prep_slurm(filepath, job_spec, dependencies)
+
+    job_command = ['sbatch', 'do_job.sh']
+
+    proc = subprocess.Popen(
+        job_command,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE)
+
+    out, err = subprocess.communicate()
+
+    print(out)
+    print(err)
 
 
 def get_job_by_index(job_spec, index):
