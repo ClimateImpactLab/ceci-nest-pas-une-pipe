@@ -2,6 +2,8 @@ import os
 import click
 import itertools
 import functools
+import subprocess
+import re
 
 SLURM_SCRIPT = '''
 #!/bin/bash
@@ -97,8 +99,18 @@ def run_slurm(filepath, job_spec, dependencies=None, flags=None):
 
     out, err = subprocess.communicate()
 
+    matcher = re.search(r'^\s*Submitted batch job (?P<run_id>[0-9]+)\s*$', out)
+
+    if matcher:
+        run_id = matcher.group('run_id')
+    else:
+        run_id = None
+
     print(out)
     print(err)
+    print(run_id)
+
+    return run_id
 
 
 def get_job_by_index(job_spec, index):
