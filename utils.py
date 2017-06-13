@@ -84,7 +84,7 @@ def _prep_slurm(filepath, job_spec=None, dependencies=None, flags=None):
             '#SBATCH --array=0-{}'.format(
                 len(list(generate_jobs(job_spec))))])
         
-        flagstr = flagstr + ' --job_id ${{SLURM_ARRAY_TASK_ID}}'
+        flagstr = flagstr + ' --job_id ${SLURM_ARRAY_TASK_ID}'
 
     else:
         jobstr = ''
