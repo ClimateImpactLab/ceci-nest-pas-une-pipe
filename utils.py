@@ -98,7 +98,7 @@ def _prep_slurm(filepath, job_spec=None, dependencies=None, flags=None):
 
 
 def run_slurm(filepath, job_spec=None, dependencies=None, flags=None):
-    _prep_slurm(filepath, job_spec, dependencies)
+    _prep_slurm(filepath, job_spec, dependencies, flags)
 
     job_command = ['sbatch', 'do_job.sh']
 
