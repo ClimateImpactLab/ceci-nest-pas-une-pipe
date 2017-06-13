@@ -28,13 +28,12 @@ SLURM_SCRIPT = '''
 # Wall clock limit:
 #SBATCH --time=72:00:00
 #
-#SBATCH --array=0-{numjobs}
-#
 #SBATCH --requeue
+{jobs}
 {dependencies}
 
 ## Run command
-python {filepath} {flags} --job_id ${{SLURM_ARRAY_TASK_ID}}
+python {filepath} {flags}
 '''.strip()
 
 
@@ -64,7 +63,7 @@ def generate_jobs(job_spec):
         yield _unpack_job(specs)
 
 
-def _prep_slurm(filepath, job_spec, dependencies=None, flags=None):
+def _prep_slurm(filepath, job_spec=None, dependencies=None, flags=None):
     if dependencies:
         depstr = '\n'.join([
             '#',
@@ -79,15 +78,26 @@ def _prep_slurm(filepath, job_spec, dependencies=None, flags=None):
     else:
         flagstr = ''
 
+    if job_spec:
+        jobstr = '\n'.join([
+            '#',
+            '#SBATCH --array=0-{}'.format(
+                len(list(generate_jobs(job_spec))))])
+        
+        flagstr = flagstr + ' --job_id ${{SLURM_ARRAY_TASK_ID}}'
+
+    else:
+        jobstr = ''
+
     with open('do_job.sh', 'w+') as f:
         f.write(SLURM_SCRIPT.format(
-            numjobs = len(list(generate_jobs(job_spec))),
+            numjobs = jobstr,
             filepath = filepath,
             dependencies = depstr,
             flags = flagstr))
 
 
-def run_slurm(filepath, job_spec, dependencies=None, flags=None):
+def run_slurm(filepath, job_spec=None, dependencies=None, flags=None):
     _prep_slurm(filepath, job_spec, dependencies)
 
     job_command = ['sbatch', 'do_job.sh']

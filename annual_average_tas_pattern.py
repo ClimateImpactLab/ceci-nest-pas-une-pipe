@@ -74,7 +74,7 @@ def annual_average_tas(ds):
 
 
 JOBS = [
-    dict(variable='tasmax', transformation=annual_average_tas, unit='degreesC')]
+    dict(variable='tas', transformation=annual_average_tas, unit='degreesC')]
 
 per20 = list(range(2020, 2040))
 per40 = list(range(2040, 2060))
@@ -213,12 +213,16 @@ def run_job(
 
     ds.to_netcdf(write_file)
 
+def onfinish():
+    print('all done!')
+
 
 @click.command()
 @click.option('--prep', is_flag=True, default=False)
 @click.option('--run', is_flag=True, default=False)
 @click.option('--job_id', type=int, default=None)
-@click.option('--dependency', '-d', multiple=True)
+@click.option('--finish', is_flag=True, default=False)
+@click.option('--dependency', '-d', type=int, multiple=True)
 def main(prep=False, run=False, job_id=None, dependency=None):
     if prep:
         utils._prep_slurm(
@@ -227,6 +231,12 @@ def main(prep=False, run=False, job_id=None, dependency=None):
     elif run:
         slurm_id = utils.run_slurm(
             filepath=__file__, job_spec=JOB_SPEC, dependencies=dependency)
+
+        slurm_id = utils.run_slurm(
+            filepath=__file__, dependencies=[slurm_id], flags=['--finish'])
+
+    elif finish:
+        onfinish()
 
     if job_id is not None:
         job = utils.get_job_by_index(JOB_SPEC, job_id)
