@@ -67,14 +67,18 @@ def _prep_slurm(filepath, jobname='slurm_job', job_spec=None, dependencies=None,
     depstr = ''
 
     if (dependencies is not None) and (len(dependencies) > 1):
-        for status, deps in dependencies:
-            if len(deps) == 0:
-                break
+        try:
+            for status, deps in dependencies:
+                if len(deps) == 0:
+                    break
 
-            depstr += '\n'.join([
-                '#',
-                '#SBATCH --dependency=afterok:{}'.format(
-                    ','.join(map(str, deps)))])
+                depstr += '\n'.join([
+                    '#',
+                    '#SBATCH --dependency=afterok:{}'.format(
+                        ','.join(map(str, deps)))])
+        except ValueError as e:
+            print(dependencies)
+            raise
 
     if flags:
         flagstr = ' '.join(map(str, flags))
