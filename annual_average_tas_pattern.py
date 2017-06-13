@@ -83,24 +83,52 @@ per80 = list(range(2080, 2100))
 PERIODS = [
     dict(rcp='rcp45', read_acct='mdelgado', pername='2020', years=per20),
     dict(rcp='rcp45', read_acct='mdelgado', pername='2040', years=per40),
-    dict(rcp='rcp45', read_acct='mdelgado', pername='2080', years=per80),
-    dict(rcp='rcp85', read_acct='jiacany', pername='2020', years=per20),
-    dict(rcp='rcp85', read_acct='jiacany', pername='2040', years=per40),
-    dict(rcp='rcp85', read_acct='jiacany', pername='2080', years=per80)]
+    dict(rcp='rcp45', read_acct='mdelgado', pername='2080', years=per80)]
+    # dict(rcp='rcp85', read_acct='jiacany', pername='2020', years=per20),
+    # dict(rcp='rcp85', read_acct='jiacany', pername='2040', years=per40),
+    # dict(rcp='rcp85', read_acct='jiacany', pername='2080', years=per80)]
 
-MODELS = list(map(lambda x: dict(model=x[0], baseline_model=x[1]), [
-        ('pattern1','MRI-CGCM3'),
-        ('pattern2','GFDL-ESM2G'),
-        ('pattern3','MRI-CGCM3'),
-        ('pattern4','GFDL-ESM2G'),
-        ('pattern5','MRI-CGCM3'),
-        ('pattern6','GFDL-ESM2G'),
-        ('pattern28','GFDL-CM3'),
-        ('pattern29','CanESM2'),
-        ('pattern30','GFDL-CM3'),
-        ('pattern31','CanESM2'), 
-        ('pattern32','GFDL-CM3'), 
-        ('pattern33','CanESM2')]))
+rcp_models = {
+    'rcp45': 
+        list(map(lambda x: dict(model=x[0], baseline_model=x[1]), [
+            ('pattern1','MRI-CGCM3'),
+            ('pattern2','GFDL-ESM2G'),
+            ('pattern3','MRI-CGCM3'),
+            ('pattern4','GFDL-ESM2G'),
+            ('pattern5','MRI-CGCM3'),
+            ('pattern6','GFDL-ESM2G'),
+            ('pattern27','GFDL-CM3'),
+            ('pattern28','CanESM2'),
+            ('pattern29','GFDL-CM3'),
+            ('pattern30','CanESM2'), 
+            ('pattern31','GFDL-CM3'), 
+            ('pattern32','CanESM2')])),
+
+    'rcp85':
+        list(map(lambda x: dict(model=x[0], baseline_model=x[1]), [
+            ('pattern1','MRI-CGCM3'),
+            ('pattern2','GFDL-ESM2G'),
+            ('pattern3','MRI-CGCM3'),
+            ('pattern4','GFDL-ESM2G'),
+            ('pattern5','MRI-CGCM3'),
+            ('pattern6','GFDL-ESM2G'),
+            ('pattern28','GFDL-CM3'),
+            ('pattern29','CanESM2'),
+            ('pattern30','GFDL-CM3'),
+            ('pattern31','CanESM2'), 
+            ('pattern32','GFDL-CM3'), 
+            ('pattern33','CanESM2')]))}
+
+MODELS = []
+
+for spec in PERIODS:
+    for model in rcp_models[spec['rcp']]:
+        job = {}
+        job.update(spec)
+        job.update(model)
+        MODELS.append(job)
+
+
 
 SEASONS = [{'seasons': [ 'DJF', 'MAM', 'JJA', 'SON']}]
 
@@ -109,7 +137,7 @@ AGGREGATIONS = [
     {'agglev': 'hierid', 'aggwt': 'areawt'}]
 
 
-JOB_SPEC = [JOBS, PERIODS, MODELS, SEASONS, AGGREGATIONS]
+JOB_SPEC = [JOBS, MODELS, SEASONS, AGGREGATIONS]
 
 def run_job(
         metadata,
@@ -126,6 +154,11 @@ def run_job(
         agglev,
         aggwt,
         weights=None):
+
+
+
+    logger.debug('Beginning job\nkwargs:\t{}'.format(
+        pprint.pformat(metadata, indent=2)))
 
     # Add to job metadata
     metadata.update(dict(
@@ -218,40 +251,16 @@ def onfinish():
     print('all done!')
 
 
-@click.command()
-@click.option('--prep', is_flag=True, default=False)
-@click.option('--run', is_flag=True, default=False)
-@click.option('--job_id', type=int, default=None)
-@click.option('--finish', is_flag=True, default=False)
-@click.option('--dependency', '-d', type=int, multiple=True)
-def main(prep=False, run=False, finish=False, job_id=None, dependency=None):
-    if prep:
-        utils._prep_slurm(
-            filepath=__file__, job_spec=JOB_SPEC, dependencies=dependency)
+def onfail():
+    print('oops')
 
-    elif run:
-        slurm_id = utils.run_slurm(
-            filepath=__file__, job_spec=JOB_SPEC, dependencies=dependency)
 
-        finish_id = utils.run_slurm(
-            filepath=__file__, dependencies=[slurm_id], flags=['--finish'])
-
-        print('run job: {}\non-finish job: {}'.format(slurm_id, finish_id))
-
-    elif finish:
-        onfinish()
-
-    if job_id is not None:
-        job = utils.get_job_by_index(JOB_SPEC, job_id)
-
-        logger.debug('Beginning job\nid:\t{}\nkwargs:\t{}'.format(
-            job_id,
-            pprint.pformat(job, indent=2)))
-
-        metadata = {k: str(v) for k, v in ADDITIONAL_METADATA.items()}
-        metadata.update({k: str(v) for k, v in job.items()})
-
-        run_job(metadata=metadata, **job)
+main = utils.slurm_runner(
+    job_spec=JOB_SPEC,
+    run=run_job,
+    onfinish=onfinish,
+    onfail=onfail,
+    additional_metadata=ADDITIONAL_METADATA)
 
 
 if __name__ == '__main__':

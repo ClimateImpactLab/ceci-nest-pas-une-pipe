@@ -64,14 +64,14 @@ def generate_jobs(job_spec):
 
 
 def _prep_slurm(filepath, job_spec=None, dependencies=None, flags=None):
-    if dependencies:
-        depstr = '\n'.join([
-            '#',
-            '#SBATCH --dependency=afterok:{}'.format(
-                ','.join(map(str, dependencies)))])
+    depstr = ''
 
-    else:
-        depstr = ''
+    if dependencies:
+        for status, deps in dependencies:
+            depstr += '\n'.join([
+                '#',
+                '#SBATCH --dependency=afterok:{}'.format(
+                    ','.join(map(str, deps)))])
 
     if flags:
         flagstr = ' '.join(map(str, flags))
@@ -143,3 +143,63 @@ def get_job_by_index(job_spec, index):
         job_spec[i][
             (index//(_product(map(len, job_spec[i+1:])))%len(job_spec[i]))]
         for i in range(len(job_spec))])
+
+
+def slurm_runner(job_spec, run, onfinish, onfail, additional_metadata=None):
+
+    @click.group()
+    def slurm():
+        pass
+
+    @slurm.command()
+    @click.option('--dependency', '-d', type=int, multiple=True)
+    def prep(dependency=False):
+        _prep_slurm(
+            filepath=__file__, job_spec=job_spec, dependencies=dependency)
+
+    @slurm.command()
+    @click.option('--dependency', '-d', type=int, multiple=True)
+    def run(dependency=False):
+        slurm_id = run_slurm(
+            filepath=__file__,
+            job_spec=job_spec,
+            dependencies=dependency)
+
+        finish_id = run_slurm(
+            filepath=__file__,
+            dependencies=('afterany', [slurm_id]),
+            flags=['cleanup', slurm_id])
+
+        print('run job: {}\non-finish job: {}'.format(slurm_id, finish_id))
+
+
+    @slurm.command()
+    @click.argument('slurm_id')
+    def cleanup(slurm_id):
+        proc = subprocess.Popen(
+            ['sacct', '-j', slurm_id, '--format=JobID,JobName,MaxRSS,Elapsed,State'],
+            stdout = subprocess.PIPE,
+            stderr = subprocess.PIPE)
+
+        out, err = proc.communicate()
+
+        print(out)
+
+
+    @slurm.command()
+    @click.argument('job_id', type=int)
+    def do_job(job_id=None):
+
+        job = get_job_by_index(job_spec, job_id)
+        
+        metadata = {}
+        
+        if additional_metadata is not None:
+            metadata.update(
+                {k: str(v) for k, v in additional_metadata.items()})
+
+        metadata.update({k: str(v) for k, v in job.items()})
+
+        run_job(metadata=metadata, **job)
+
+    return main
