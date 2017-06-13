@@ -165,7 +165,7 @@ def slurm_runner(job_spec, run, onfinish, additional_metadata=None):
         _prep_slurm(
             filepath=__file__,
             job_spec=job_spec,
-            dependencies=('afterany', dependency))
+            dependencies=('afterany', list(dependency)))
 
     @slurm.command()
     @click.option('--jobname', default='slurm_job', help='name of the job')
@@ -175,7 +175,7 @@ def slurm_runner(job_spec, run, onfinish, additional_metadata=None):
             filepath=__file__,
             jobname=jobname,
             job_spec=job_spec,
-            dependencies=('afterany', dependency))
+            dependencies=('afterany', list(dependency)))
 
         finish_id = run_slurm(
             filepath=__file__,
