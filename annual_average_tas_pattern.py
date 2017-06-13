@@ -223,7 +223,7 @@ def onfinish():
 @click.option('--job_id', type=int, default=None)
 @click.option('--finish', is_flag=True, default=False)
 @click.option('--dependency', '-d', type=int, multiple=True)
-def main(prep=False, run=False, job_id=None, dependency=None):
+def main(prep=False, run=False, finish=False, job_id=None, dependency=None):
     if prep:
         utils._prep_slurm(
             filepath=__file__, job_spec=JOB_SPEC, dependencies=dependency)
