@@ -232,8 +232,10 @@ def main(prep=False, run=False, finish=False, job_id=None, dependency=None):
         slurm_id = utils.run_slurm(
             filepath=__file__, job_spec=JOB_SPEC, dependencies=dependency)
 
-        slurm_id = utils.run_slurm(
+        finish_id = utils.run_slurm(
             filepath=__file__, dependencies=[slurm_id], flags=['--finish'])
+
+        print('run job: {}\non-finish job: {}'.format(slurm_id, finish_id))
 
     elif finish:
         onfinish()

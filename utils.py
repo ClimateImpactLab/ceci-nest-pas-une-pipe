@@ -91,7 +91,7 @@ def _prep_slurm(filepath, job_spec=None, dependencies=None, flags=None):
 
     with open('do_job.sh', 'w+') as f:
         f.write(SLURM_SCRIPT.format(
-            numjobs = jobstr,
+            jobs = jobstr,
             filepath = filepath,
             dependencies = depstr,
             flags = flagstr))
