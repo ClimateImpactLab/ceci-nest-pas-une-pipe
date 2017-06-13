@@ -122,6 +122,7 @@ def run_job(
         read_acct,
         baseline_model,
         seasons,
+        unit,
         agglev,
         aggwt,
         weights=None):
