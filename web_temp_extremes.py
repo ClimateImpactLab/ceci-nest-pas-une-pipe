@@ -228,8 +228,8 @@ def main(prep=False, run=False, job_id=None):
             job_id,
             pprint.pformat(job, indent=2)))
 
-        metadata = {k: v for k, v in ADDITIONAL_METADATA.items()}
-        metadata.update(job)
+        metadata = {k: str(v) for k, v in ADDITIONAL_METADATA.items()}
+        metadata.update({k: str(v) for k, v in job.items()})
 
         run_job(metadata=metadata, **job)
 
