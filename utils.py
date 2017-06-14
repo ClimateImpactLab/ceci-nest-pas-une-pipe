@@ -92,7 +92,7 @@ def _prep_slurm(filepath, jobname='slurm_job', job_spec=None, dependencies=None,
     else:
         jobstr = ''
 
-    with open('do_job.sh', 'w+') as f:
+    with open('slurm-script.sh', 'w+') as f:
         f.write(SLURM_SCRIPT.format(
             jobname = jobname,
             jobs = jobstr,
@@ -104,7 +104,7 @@ def _prep_slurm(filepath, jobname='slurm_job', job_spec=None, dependencies=None,
 def run_slurm(filepath, jobname='slurm_job', job_spec=None, dependencies=None, flags=None):
     _prep_slurm(filepath, jobname, job_spec, dependencies, flags)
 
-    job_command = ['sbatch', 'do_job.sh']
+    job_command = ['sbatch', 'slurm-script.sh']
 
     proc = subprocess.Popen(
         job_command,

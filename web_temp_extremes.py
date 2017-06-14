@@ -210,31 +210,16 @@ def run_job(
     ds.to_netcdf(write_file)
 
 
-@click.command()
-@click.option('--prep', is_flag=True, default=False)
-@click.option('--run', is_flag=True, default=False)
-@click.option('--job_id', type=int, default=None)
-@click.option('--dependency', '-d', multiple=True)
-def main(prep=False, run=False, job_id=None, dependency=None):
-    if prep:
-        utils._prep_slurm(
-            filepath=__file__, job_spec=JOB_SPEC, dependencies=dependency)
+def onfinish():
+    print('all done!')
 
-    elif run:
-        slurm_id = utils.run_slurm(
-            filepath=__file__, job_spec=JOB_SPEC, dependencies=dependency)
 
-    if job_id is not None:
-        job = utils.get_job_by_index(JOB_SPEC, job_id)
-
-        logger.debug('Beginning job\nid:\t{}\nkwargs:\t{}'.format(
-            job_id,
-            pprint.pformat(job, indent=2)))
-
-        metadata = {k: str(v) for k, v in ADDITIONAL_METADATA.items()}
-        metadata.update({k: str(v) for k, v in job.items()})
-
-        run_job(metadata=metadata, **job)
+main = utils.slurm_runner(
+    filepath=__file__,
+    job_spec=JOB_SPEC,
+    run_job=run_job,
+    onfinish=onfinish,
+    additional_metadata=ADDITIONAL_METADATA)
 
 
 if __name__ == '__main__':
