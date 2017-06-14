@@ -11,7 +11,7 @@ SLURM_SCRIPT = '''
 #SBATCH --job-name={jobname}
 #
 # Partition:
-#SBATCH --partition=savio2
+#SBATCH --partition={partition}
 #
 # Account:
 #SBATCH --account=co_laika
@@ -63,7 +63,14 @@ def generate_jobs(job_spec):
         yield _unpack_job(specs)
 
 
-def _prep_slurm(filepath, jobname='slurm_job', job_spec=None, dependencies=None, flags=None):
+def _prep_slurm(
+        filepath,
+        jobname='slurm_job',
+        partition='savio2',
+        job_spec=None,
+        dependencies=None,
+        flags=None):
+
     depstr = ''
 
     if (dependencies is not None) and (len(dependencies) > 1):
@@ -96,13 +103,21 @@ def _prep_slurm(filepath, jobname='slurm_job', job_spec=None, dependencies=None,
         f.write(SLURM_SCRIPT.format(
             jobname = jobname,
             jobs = jobstr,
+            partition = partition,
             filepath = filepath.replace(os.sep, '/'),
             dependencies = depstr,
             flags = flagstr))
 
 
-def run_slurm(filepath, jobname='slurm_job', job_spec=None, dependencies=None, flags=None):
-    _prep_slurm(filepath, jobname, job_spec, dependencies, flags)
+def run_slurm(
+        filepath,
+        jobname='slurm_job',
+        partition='savio2',
+        job_spec=None,
+        dependencies=None,
+        flags=None):
+
+    _prep_slurm(filepath, jobname, partition, job_spec, dependencies, flags)
 
     job_command = ['sbatch', 'slurm-script.sh']
 
@@ -166,11 +181,13 @@ def slurm_runner(filepath, job_spec, run_job, onfinish, additional_metadata=None
 
     @slurm.command()
     @click.option('--jobname', default='slurm_job', help='name of the job')
+    @click.option('--partition', default='savio2', help='resource on which to run')
     @click.option('--dependency', '-d', type=int, multiple=True)
     def run(jobname='slurm_job', dependency=None):
         slurm_id = run_slurm(
             filepath=filepath,
             jobname=jobname,
+            partition=partition,
             job_spec=job_spec,
             dependencies=('afterany', list(dependency)),
             flags=['do_job'])
@@ -178,6 +195,7 @@ def slurm_runner(filepath, job_spec, run_job, onfinish, additional_metadata=None
         finish_id = run_slurm(
             filepath=filepath,
             jobname=jobname+'_finish',
+            partition=partition,
             dependencies=('afterany', [slurm_id]),
             flags=['cleanup', slurm_id])
 
