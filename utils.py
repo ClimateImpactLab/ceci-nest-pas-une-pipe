@@ -183,7 +183,7 @@ def slurm_runner(filepath, job_spec, run_job, onfinish, additional_metadata=None
     @click.option('--jobname', default='slurm_job', help='name of the job')
     @click.option('--partition', default='savio2', help='resource on which to run')
     @click.option('--dependency', '-d', type=int, multiple=True)
-    def run(jobname='slurm_job', dependency=None):
+    def run(jobname='slurm_job', dependency=None, partition='savio2'):
         slurm_id = run_slurm(
             filepath=filepath,
             jobname=jobname,
