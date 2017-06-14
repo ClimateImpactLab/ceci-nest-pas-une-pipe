@@ -252,6 +252,7 @@ def onfinish():
 
 
 main = utils.slurm_runner(
+    filepath=__file__,
     job_spec=JOB_SPEC,
     run_job=run_job,
     onfinish=onfinish,

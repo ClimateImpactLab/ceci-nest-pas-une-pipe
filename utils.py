@@ -96,7 +96,7 @@ def _prep_slurm(filepath, jobname='slurm_job', job_spec=None, dependencies=None,
         f.write(SLURM_SCRIPT.format(
             jobname = jobname,
             jobs = jobstr,
-            filepath = filepath,
+            filepath = filepath.replace(os.sep, '/'),
             dependencies = depstr,
             flags = flagstr))
 
@@ -149,7 +149,7 @@ def get_job_by_index(job_spec, index):
         for i in range(len(job_spec))])
 
 
-def slurm_runner(job_spec, run_job, onfinish, additional_metadata=None):
+def slurm_runner(filepath, job_spec, run_job, onfinish, additional_metadata=None):
 
     @click.group()
     def slurm():
@@ -159,7 +159,7 @@ def slurm_runner(job_spec, run_job, onfinish, additional_metadata=None):
     @click.option('--dependency', '-d', type=int, multiple=True)
     def prep(dependency=False):
         _prep_slurm(
-            filepath=__file__,
+            filepath=filepath,
             job_spec=job_spec,
             dependencies=('afterany', list(dependency)),
             flags=['do_job'])
@@ -169,14 +169,14 @@ def slurm_runner(job_spec, run_job, onfinish, additional_metadata=None):
     @click.option('--dependency', '-d', type=int, multiple=True)
     def run(jobname='slurm_job', dependency=None):
         slurm_id = run_slurm(
-            filepath=__file__,
+            filepath=filepath,
             jobname=jobname,
             job_spec=job_spec,
             dependencies=('afterany', list(dependency)),
             flags=['do_job'])
 
         finish_id = run_slurm(
-            filepath=__file__,
+            filepath=filepath,
             jobname=jobname+'_finish',
             dependencies=('afterany', [slurm_id]),
             flags=['cleanup', slurm_id])
