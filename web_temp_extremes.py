@@ -42,7 +42,8 @@ BCSD_pattern_files = (
     '{variable}_BCSD_{model}_{rcp}_r1i1p1_{{season}}_{{year}}.nc')
 
 WRITE_PATH = (
-    '/global/scratch/mdelgado/web/gcp/climate/{rcp}/{agglev}/{variable}/' +
+    '/global/scratch/mdelgado/web/gcp/climate/' +
+    '{rcp}/{agglev}/{output_variable}/' +
     '{variable}_{agglev}_{aggwt}_{model}_{pername}.nc')
 
 description = '\n\n'.join(
@@ -82,7 +83,7 @@ def tasmax_over_95F(ds):
 
 
 JOBS = [
-    dict(variable='tasmax', transformation=tasmax_over_95F)]
+    dict(output_variable='tasmax-over-95F', variable='tasmax', transformation=tasmax_over_95F)]
 
 
 per20 = list(range(2020, 2040))
@@ -149,6 +150,7 @@ JOB_SPEC = [JOBS, MODELS, SEASONS, AGGREGATIONS]
 def run_job(
         metadata,
         variable,
+        output_variable,
         transformation,
         read_acct,
         rcp,
