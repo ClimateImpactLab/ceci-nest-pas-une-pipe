@@ -65,7 +65,7 @@ JOBS = [
 
 
 PERIODS = [
-    dict(rcp='historical', pername='historical', years=list(range(1985, 2006))),
+    dict(rcp='historical', pername='1986', years=list(range(1986, 2006))),
     #dict(rcp='rcp45', pername='2040', years=list(range(2040, 2060))),
     #dict(rcp='rcp45', pername='2080', years=list(range(2080, 2100)))
     ]
