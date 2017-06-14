@@ -27,13 +27,13 @@ BASELINE_FILE = (
     '{variable}_baseline_1986-2005_r1i1p1_{baseline_model}_{season}.nc')
 
 BCSD_pattern_files = (
-    '/global/scratch/mdelgado/nasa_bcsd/pattern/SMME_surrogate/' +
+    '/global/scratch/{read_acct}/nasa_bcsd/pattern/SMME_surrogate/' +
     '{rcp}/{variable}/{model}/' +
-    '{variable}_BCSD_{model}_{rcp}_r1i1p1_{season}_{{year}}.nc')
+    '{variable}_BCSD_{model}_{rcp}_r1i1p1_{{season}}_{{year}}.nc')
 
 WRITE_PATH = (
-    '/global/scratch/mdelgado/web/gcp/climate/{rcp}/{agglev}/{variable}/' +
-    '{variable}_{agglev}_{aggwt}_{model}_{season}_{pername}.nc')
+    '/global/scratch/mdelgado/web/gcp/climate/{rcp}/{agglev}/{output_variable}/' +
+    '{output_variable}_{agglev}_{aggwt}_{model}_{season}_{pername}.nc')
 
 ADDITIONAL_METADATA = dict(
     description=__file__.__doc__,
@@ -58,28 +58,58 @@ def average_seasonal_temp_pattern(ds):
 
 
 JOBS = [
-    dict(variable='tas', transformation=average_seasonal_temp_pattern)]
+    dict(
+        output_variable='tas-seasonal',
+        variable='tas',
+        transformation=average_seasonal_temp_pattern)]
 
 PERIODS = [
-    dict(rcp='rcp45', pername='2020', years=list(range(2020, 2040))),
-    dict(rcp='rcp45', pername='2040', years=list(range(2040, 2060))),
-    dict(rcp='rcp45', pername='2080', years=list(range(2080, 2100)))]
+    dict(rcp='rcp45', read_acct='mdelgado', pername='2020', years=per20),
+    dict(rcp='rcp45', read_acct='mdelgado', pername='2040', years=per40),
+    dict(rcp='rcp45', read_acct='mdelgado', pername='2080', years=per80),
+    dict(rcp='rcp85', read_acct='jiacany', pername='2020', years=per20),
+    dict(rcp='rcp85', read_acct='jiacany', pername='2040', years=per40),
+    dict(rcp='rcp85', read_acct='jiacany', pername='2080', years=per80)]
 
-YEARS = []
+rcp_models = {
+    'rcp45': 
+        list(map(lambda x: dict(model=x[0], baseline_model=x[1]), [
+            ('pattern1','MRI-CGCM3'),
+            ('pattern2','GFDL-ESM2G'),
+            ('pattern3','MRI-CGCM3'),
+            ('pattern4','GFDL-ESM2G'),
+            ('pattern5','MRI-CGCM3'),
+            ('pattern6','GFDL-ESM2G'),
+            ('pattern27','GFDL-CM3'),
+            ('pattern28','CanESM2'),
+            ('pattern29','GFDL-CM3'),
+            ('pattern30','CanESM2'), 
+            ('pattern31','GFDL-CM3'), 
+            ('pattern32','CanESM2')])),
 
-MODELS = list(map(lambda x: dict(model=x[0], baseline_model=x[1]), [
-        ('pattern1','MRI-CGCM3'),
-        ('pattern2','GFDL-ESM2G'),
-        ('pattern3','MRI-CGCM3'),
-        ('pattern4','GFDL-ESM2G'),
-        ('pattern5','MRI-CGCM3'),
-        ('pattern6','GFDL-ESM2G'),
-        ('pattern28','GFDL-CM3'),
-        ('pattern29','CanESM2'),
-        ('pattern30','GFDL-CM3'),
-        ('pattern31','CanESM2'), 
-        ('pattern32','GFDL-CM3'), 
-        ('pattern33','CanESM2')]))
+    'rcp85':
+        list(map(lambda x: dict(model=x[0], baseline_model=x[1]), [
+            ('pattern1','MRI-CGCM3'),
+            ('pattern2','GFDL-ESM2G'),
+            ('pattern3','MRI-CGCM3'),
+            ('pattern4','GFDL-ESM2G'),
+            ('pattern5','MRI-CGCM3'),
+            ('pattern6','GFDL-ESM2G'),
+            ('pattern28','GFDL-CM3'),
+            ('pattern29','CanESM2'),
+            ('pattern30','GFDL-CM3'),
+            ('pattern31','CanESM2'), 
+            ('pattern32','GFDL-CM3'), 
+            ('pattern33','CanESM2')]))}
+
+MODELS = []
+
+for spec in PERIODS:
+    for model in rcp_models[spec['rcp']]:
+        job = {}
+        job.update(spec)
+        job.update(model)
+        MODELS.append(job)
 
 SEASONS = list(map(lambda x: dict(season=x),[ 'DJF', 'MAM', 'JJA', 'SON']))
 
@@ -88,11 +118,12 @@ AGGREGATIONS = [
     {'agglev': 'hierid', 'aggwt': 'areawt'}]
 
 
-JOB_SPEC = [JOBS, PERIODS, MODELS, SEASONS, AGGREGATIONS]
+JOB_SPEC = [JOBS, MODELS, SEASONS, AGGREGATIONS]
 
 def run_job(
         metadata,
         variable,
+        output_variable,
         transformation,
         rcp,
         pername,
