@@ -63,6 +63,10 @@ JOBS = [
         variable='tas',
         transformation=average_seasonal_temp_pattern)]
 
+per20 = list(range(2020, 2040))
+per40 = list(range(2040, 2060))
+per80 = list(range(2080, 2100))
+
 PERIODS = [
     dict(rcp='rcp45', read_acct='mdelgado', pername='2020', years=per20),
     dict(rcp='rcp45', read_acct='mdelgado', pername='2040', years=per40),
