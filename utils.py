@@ -149,7 +149,7 @@ def get_job_by_index(job_spec, index):
         for i in range(len(job_spec))])
 
 
-def slurm_runner(job_spec, run, onfinish, additional_metadata=None):
+def slurm_runner(job_spec, run_job, onfinish, additional_metadata=None):
 
     @click.group()
     def slurm():
@@ -199,7 +199,7 @@ def slurm_runner(job_spec, run, onfinish, additional_metadata=None):
 
 
     @slurm.command()
-    @click.argument('--job_id', required=True, type=int)
+    @click.option('--job_id', required=True, type=int)
     def do_job(job_id=None):
 
         job = get_job_by_index(job_spec, job_id)

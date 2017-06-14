@@ -253,7 +253,7 @@ def onfinish():
 
 main = utils.slurm_runner(
     job_spec=JOB_SPEC,
-    run=run_job,
+    run_job=run_job,
     onfinish=onfinish,
     additional_metadata=ADDITIONAL_METADATA)
 
