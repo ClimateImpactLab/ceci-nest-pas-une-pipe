@@ -29,7 +29,7 @@ BASELINE_FILE = (
 BCSD_pattern_files = (
     '/global/scratch/{read_acct}/nasa_bcsd/pattern/SMME_surrogate/' +
     '{rcp}/{variable}/{model}/' +
-    '{variable}_BCSD_{model}_{rcp}_r1i1p1_{{season}}_{{year}}.nc')
+    '{variable}_BCSD_{model}_{rcp}_r1i1p1_{season}_{{year}}.nc')
 
 WRITE_PATH = (
     '/global/scratch/mdelgado/web/gcp/climate/{rcp}/{agglev}/{output_variable}/' +
@@ -131,6 +131,7 @@ def run_job(
         transformation,
         rcp,
         pername,
+        read_acct,
         years,
         model,
         baseline_model,
