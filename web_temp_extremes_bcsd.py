@@ -248,13 +248,17 @@ def job_test_transformations(
 
         if transformation_name == 'tasmax-over-95F':
             diff = (tasmax_over_95F(ds) - tasmax_over_95F_365day(ds))
-            assert (diff >= 0).all().values()[0], nonzero_msg
-            assert (diff <= 0.25).all().values()[0], toobig_msg
+            print('diff >= 0:\n{}'.format((diff >= 0).all()))
+            assert (diff >= 0).all(), nonzero_msg
+            print('diff <= 0.25:\n{}'.format((diff <= 0.25).all()))
+            assert (diff <= 0.25).all(), toobig_msg
 
         elif transformation_name == 'tasmin-under-32F':
             diff = (tasmin_under_32F(ds) - tasmin_under_32F_365day(ds))
-            assert (diff >= 0).all().values()[0], nonzero_msg
-            assert (diff <= 0.25).all().values()[0], toobig_msg
+            print('diff >= 0:\n{}'.format((diff >= 0).all()))
+            assert (diff >= 0).all(), nonzero_msg
+            print('diff <= 0.25:\n{}'.format((diff <= 0.25).all()))
+            assert (diff <= 0.25).all(), toobig_msg
 
         else:
             raise ValueError('transformation "{}" not recognized'
