@@ -72,7 +72,8 @@ def load_model(fp, **kwargs):
     with xr.open_dataset(fp) as ds:
         ds.load()
     
-    return xr.Dataset({kwargs['variable']: ds[ds.data_vars.keys()[0]]})
+    var = kwargs['variable']
+    return xr.Dataset({var: ds[ds.data_vars.keys()[0]]})
 
 
 def get_data(model, kwargs):
