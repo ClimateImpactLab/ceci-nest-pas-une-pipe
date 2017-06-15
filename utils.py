@@ -242,9 +242,6 @@ def slurm_runner(filepath, job_spec, run_job, onfinish=None, test_job=None, addi
 
         run_job(metadata=metadata, **job)
 
-    return slurm
-
-
     @slurm.command()
     @click.option('--num_jobs', '-n', type=int, required=False, default=None, help='Number of iterations to run')
     @click.option('--jobname', '-j', default='test', help='name of the job')
