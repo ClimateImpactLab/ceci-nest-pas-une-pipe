@@ -99,7 +99,6 @@ def test_loader():
 
     assert not ds.isnull().any().values()[0]
 
-test_loader()
 
 def sample_data(rcp, outfile):
 
@@ -183,9 +182,6 @@ def upper_coord_names(da, dim='model'):
     da.coords[dim] = list(map(lambda x: x.upper(), da.coords[dim].values))
 
     return da
-
-assert len(get_weights('rcp45')) == 32
-assert len(get_weights('rcp85')) == 33
 
 
 def get_quantiles(da, rcp, quantiles = [0.05, 0.5, 0.95]):
@@ -321,8 +317,13 @@ def output_all():
                             variable_descriptor=variable_descriptor,
                             nat='-national' if agglev == 'ISO' else ''))
 
+def test():
+    test_loader()
+    assert len(get_weights('rcp45')) == 32
+    assert len(get_weights('rcp85')) == 33
 
 def main():
+
     sample_data('rcp45', 'sample_data_plot_rcp45.pdf')
     sample_data('rcp85', 'sample_data_plot_rcp85.pdf')
     sample_quantiles('rcp45', 'sample_quantiles_plot_rcp45.pdf')
@@ -332,4 +333,5 @@ def main():
 
 
 if __name__ == '__main__':
+    test()
     main()
