@@ -1,14 +1,14 @@
+import matplotlib
+matplotlib.use('Agg')
+
 import xarray as xr
 import pandas as pd
 import numpy as np
 import os, re, glob, shutil
-import matplotlib
 import matplotlib.pyplot as plt
 import seaborn
 import impactlab_tools.utils.weighting
 
-plt.ioff()
-matplotlib.use('Agg')
 
 read_path = (
     '/shares/gcp/outputs/impact_lab_website/global/climate/{agglev}/{rcp_per}/{variable}/' +
