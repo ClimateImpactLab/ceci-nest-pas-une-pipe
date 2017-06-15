@@ -36,8 +36,8 @@ BCSD_orig_files = (
     '{variable}_day_BCSD_{rcp}_r1i1p1_{model}_{{year}}.nc')
 
 WRITE_PATH = (
-    '/global/scratch/mdelgado/web/diagnostics/climate/{rcp}/{agglev}/{output_variable}/' +
-    '{output_variable}_{agglev}_{aggwt}_{model}_{pername}.nc')
+    '/global/scratch/mdelgado/web/diagnostics/climate/{rcp}/{agglev}/{transformation_name}/' +
+    '{transformation_name}_{agglev}_{aggwt}_{model}_{pername}.nc')
 
 description = '\n\n'.join(
         map(lambda s: ' '.join(s.split('\n')),
@@ -94,7 +94,8 @@ def tasmax_over_95F_365day(ds):
 
 
 JOBS = [
-    dict(output_variable='tasmax-over-95F', variable='tasmax', transformation=tasmax_over_95F_365day)]
+    dict(transformation_name='tasmin-under-32F', variable='tasmin', transformation=tasmin_under_32F_365day),
+    dict(transformation_name='tasmax-over-95F', variable='tasmax', transformation=tasmax_over_95F_365day)]
 
 PERIODS = [
     dict(rcp='historical', pername='1986', years=list(range(1986, 2006))),
@@ -137,7 +138,7 @@ def run_job(
         read_file,
         write_file,
         variable,
-        output_variable,
+        transformation_name,
         transformation,
         rcp,
         pername,
@@ -186,7 +187,7 @@ def onfinish():
 def job_test_filepaths(
         metadata,
         variable,
-        output_variable,
+        transformation_name,
         transformation,
         read_acct,
         rcp,
@@ -214,7 +215,7 @@ def job_test_filepaths(
 def job_test_transformations(
         metadata,
         variable,
-        output_variable,
+        transformation_name,
         transformation,
         rcp,
         pername,
@@ -245,13 +246,19 @@ def job_test_transformations(
         nonzero_msg = "diff less than zero in {}".format(read_file)
         toobig_msg = "diff more than 1/4 in {}".format(read_file)
 
-        diff = (tasmin_under_32F(ds) - tasmin_under_32F_365day(ds))
-        assert (diff >= 0).all().values()[0], nonzero_msg
-        assert (diff <= 0.25).all().values()[0], toobig_msg
+        if transformation_name == 'tasmax-over-95F':
+            diff = (tasmax_over_95F(ds) - tasmax_over_95F_365day(ds))
+            assert (diff >= 0).all().values()[0], nonzero_msg
+            assert (diff <= 0.25).all().values()[0], toobig_msg
 
-        diff = (tasmax_over_95F(ds) - tasmax_over_95F_365day(ds))
-        assert (diff >= 0).all().values()[0], nonzero_msg
-        assert (diff <= 0.25).all().values()[0], toobig_msg
+        elif transformation_name == 'tasmin-under-32F':
+            diff = (tasmin_under_32F(ds) - tasmin_under_32F_365day(ds))
+            assert (diff >= 0).all().values()[0], nonzero_msg
+            assert (diff <= 0.25).all().values()[0], toobig_msg
+
+        else:
+            raise ValueError('transformation "{}" not recognized'
+                .format(transformation_name))
 
 
 main = utils.slurm_runner(
