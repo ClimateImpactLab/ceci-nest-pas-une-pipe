@@ -6,7 +6,7 @@ import functools
 SLURM_SCRIPT = '''
 #!/bin/bash
 # Job name:
-#SBATCH --job-name=tasmax
+#SBATCH --job-name=tasmax_test
 #
 # Partition:
 #SBATCH --partition=savio2_bigmem
