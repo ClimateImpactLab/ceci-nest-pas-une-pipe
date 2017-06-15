@@ -234,17 +234,16 @@ def job_test_transformations(
     # Get transformed data
     for y in years:
 
-        ds = load_bcsd(
-                    read_file.format(year=y),
-                    variable,
-                    broadcast_dims=('time',))
+        fp = read_file.format(year=y)
+
+        ds = load_bcsd(fp, variable, broadcast_dims=('time',))
 
         logger.debug((
             '{} {} - testing transforms against one another ')
                 .format(model, y))
 
-        nonzero_msg = "diff less than zero in {}".format(read_file)
-        toobig_msg = "diff more than 1/4 in {}".format(read_file)
+        nonzero_msg = "diff less than zero in {}".format(fp)
+        toobig_msg = "diff more than 1/4 in {}".format(fp)
 
         if transformation_name == 'tasmax-over-95F':
             diff = (tasmax_over_95F(ds) - tasmax_over_95F_365day(ds))
