@@ -6,6 +6,9 @@ import matplotlib.pyplot as plt
 import seaborn
 import impactlab_tools.utils.weighting
 
+plt.ioff()
+
+
 read_path = (
     '/shares/gcp/outputs/impact_lab_website/global/climate/{agglev}/{rcp_per}/{variable}/' +
     '{variable}_{agglev}_{aggwt}_{model}_{period}.nc')
