@@ -31,6 +31,7 @@ SLURM_SCRIPT = '''
 #SBATCH --requeue
 {jobs}
 {dependencies}
+{output}
 
 ## Run command
 python {filepath} {flags}
@@ -79,10 +80,9 @@ def _prep_slurm(
 
         if len(deps) > 0:
 
-            depstr += '\n'.join([
-                '#',
-                '#SBATCH --dependency=afterok:{}'.format(
-                    ','.join(map(str, deps)))])
+            depstr += (
+                '#\n#SBATCH --dependency=afterok:{}'
+                    .format(','.join(map(str, deps))))
 
     if flags:
         flagstr = ' '.join(map(str, flags))
@@ -95,23 +95,24 @@ def _prep_slurm(
         if num_jobs is not None:
             n = min(num_jobs, n)
 
-        jobstr = '\n'.join([
-            '#',
-            '#SBATCH --array=0-{}'.format(n)])
+        jobstr = '#\n#SBATCH --array=0-{}'.format(n)
         
         flagstr = flagstr + ' --job_id ${SLURM_ARRAY_TASK_ID}'
+        output = 'log/slurm-%A_%a.out'
 
     else:
         jobstr = ''
+        output = '#\n#SBATCH --output log/slurm-%A.out'
 
     with open('run-slurm.sh', 'w+') as f:
         f.write(SLURM_SCRIPT.format(
-            jobname = jobname,
-            jobs = jobstr,
-            partition = partition,
-            filepath = filepath.replace(os.sep, '/'),
-            dependencies = depstr,
-            flags = flagstr))
+            jobname=jobname,
+            jobs=jobstr,
+            partition=partition,
+            filepath=filepath.replace(os.sep, '/'),
+            dependencies=depstr,
+            flags=flagstr,
+            output=output))
 
 
 def run_slurm(
@@ -174,7 +175,8 @@ def slurm_runner(filepath, job_spec, run_job, onfinish=None, test_job=None, addi
 
     @click.group()
     def slurm():
-        pass
+        if not os.path.isdir('log'):
+            os.path.makedir('log')
 
     @slurm.command()
     @click.option('--dependency', '-d', type=int, multiple=True)

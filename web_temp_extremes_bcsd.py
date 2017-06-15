@@ -125,14 +125,12 @@ MODELS = list(map(lambda x: dict(model=x), [
     'inmcm4',
     'NorESM1-M']))
 
-SEASONS = [{'seasons': [ 'DJF', 'MAM', 'JJA', 'SON']}]
-
 AGGREGATIONS = [
     {'agglev': 'ISO', 'aggwt': 'areawt'},
     {'agglev': 'hierid', 'aggwt': 'areawt'}]
 
 
-JOB_SPEC = [JOBS, PERIODS, MODELS, SEASONS, AGGREGATIONS]
+JOB_SPEC = [JOBS, PERIODS, MODELS, AGGREGATIONS]
 
 def run_job(
         metadata,
