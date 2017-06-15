@@ -27,7 +27,7 @@ BCSD_orig_files = os.path.join(
 
 WRITE_PATH = os.path.join(
     '/global/scratch/jsimcock/gcp/climate/data_test_outputs',
-    '{variable}_{agglev}_{aggwt}_{model}_{pername}_test1.nc')
+    '{variable}_{transformation_name}_{agglev}_{aggwt}_{model}_{pername}_test.nc')
 
 ADDITIONAL_METADATA = dict(
     description=__file__.__doc__,
@@ -51,21 +51,23 @@ def tasmax_over_95F(ds):
     
     return ds.tasmax.where((ds.tasmax - 273.15) > 35).count(dim='time')
 
-def tasmin_under_32F(ds):
+def tasmax_over_95F_365day(ds):
     '''
-    Count of days with tasmin under 32F/0C
+    Count of days with tasmax over 95F/35C
+    Leap years are removed before counting days (uses a 365 day calendar)
     '''
-    return ds.tasmin.where((ds.tasmin- 273.15) < 0).count(dim='time')
+    ds = ds.loc[{'time': ~((ds['time.month'] == 2) & (ds['time.day'] == 29))}]
+    return ds.tasmax.where((ds.tasmax- 273.15) > 35).count(dim='time')
 
 
 JOBS = [
-    dict(variable='tasmax', transformation=tasmax_over_95F), 
-    #dict(variable='tasmin', transformation_name='tasmin_under_32F', transformation=tasmin_under_32F)
+    dict(variable='tasmax', ttransformation_name='tasmax_over_95F', ransformation=tasmax_over_95F), 
+    dict(variable='tasmax', transformation_name='tasmax_over_95F_365day', transformation=tasmax_over_95F_365day)
     ] 
 
 
 PERIODS = [
-    dict(rcp='historical', pername='1986', years=list(range(1986, 1990))),
+    dict(rcp='historical', pername='1986', years=list(range(1986, 2006))),
     #dict(rcp='rcp45', pername='2040', years=list(range(2040, 2060))),
     #dict(rcp='rcp45', pername='2080', years=list(range(2080, 2100)))
     ]
