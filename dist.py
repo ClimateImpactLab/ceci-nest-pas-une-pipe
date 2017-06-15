@@ -190,7 +190,6 @@ def get_quantiles(da, rcp, quantiles = [0.05, 0.5, 0.95]):
             'model',
             values_sorted=False)
 
-assert not get_quantiles(ds['tasmax-over-95F'], 'rcp85').isnull().any().values()[0]
 
 def sample_quantiles(rcp, outfile):
 
