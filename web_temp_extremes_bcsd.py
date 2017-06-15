@@ -36,7 +36,7 @@ BCSD_orig_files = (
     '{variable}_day_BCSD_{rcp}_r1i1p1_{model}_{{year}}.nc')
 
 WRITE_PATH = (
-    '/global/scratch/mdelgado/web/diagnostics/climate/{rcp}/{agglev}/{transformation_name}/' +
+    '/global/scratch/mdelgado/web/gcp/climate/{rcp}/{agglev}/{transformation_name}/' +
     '{transformation_name}_{agglev}_{aggwt}_{model}_{pername}.nc')
 
 description = '\n\n'.join(
@@ -94,8 +94,8 @@ def tasmax_over_95F_365day(ds):
 
 
 JOBS = [
-    dict(transformation_name='tasmin-under-32F', variable='tasmin', transformation=tasmin_under_32F_365day),
-    dict(transformation_name='tasmax-over-95F', variable='tasmax', transformation=tasmax_over_95F_365day)]
+    dict(transformation_name='tasmax-over-95F-365day', variable='tasmax', transformation=tasmax_over_95F_365day),
+    dict(transformation_name='tasmin-under-32F-365day', variable='tasmin', transformation=tasmin_under_32F_365day)]
 
 PERIODS = [
     dict(rcp='historical', pername='1986', years=list(range(1986, 2006))),
