@@ -98,7 +98,7 @@ def _prep_slurm(
         jobstr = '#\n#SBATCH --array=0-{}'.format(n)
         
         flagstr = flagstr + ' --job_id ${SLURM_ARRAY_TASK_ID}'
-        output = 'log/slurm-%A_%a.out'
+        output = '#\n#SBATCH --output log/slurm-%A_%a.out'
 
     else:
         jobstr = ''
