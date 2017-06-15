@@ -27,7 +27,7 @@ BCSD_orig_files = os.path.join(
 
 WRITE_PATH = os.path.join(
     '/global/scratch/jsimcock/gcp/climate/data_test_outputs',
-    '{variable}_tasmax_over_95F{agglev}_{aggwt}_{model}_{pername}_test.nc')
+    '{variable}_tasmax_over_95F_{agglev}_{aggwt}_{model}_{pername}_test.nc')
 
 ADDITIONAL_METADATA = dict(
     description=__file__.__doc__,
