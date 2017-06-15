@@ -79,7 +79,7 @@ def tasmax_over_95F(ds):
     '''
     Count of days with tasmax over 95F/35C
     '''
-    return ds.tasmax.where((ds.tasmax- 273.15) >= 35).count(dim='time')
+    return ds.tasmax.where((ds.tasmax- 273.15) > 35).count(dim='time')
 
 
 JOBS = [
