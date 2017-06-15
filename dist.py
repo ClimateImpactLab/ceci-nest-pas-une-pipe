@@ -104,7 +104,7 @@ def sample_data(rcp, outfile):
     rcp_and_period = zip((['historical'] + [rcp]*3), [1986, 2020, 2040, 2080])
     countries = ['USA', 'IND', 'CHN', 'AUS', 'CHL', 'SSD']
 
-    fig = plt.figure(figsize=(20, 4*len(countries)))
+    fig = plt.figure()
         
     ax = None
 
@@ -203,7 +203,7 @@ def sample_quantiles(rcp, outfile):
     rcp_and_period = zip((['historical'] + [rcp]*3), [1986, 2020, 2040, 2080])
     countries = ['USA', 'IND', 'CHN', 'AUS', 'CHL', 'SSD']
 
-    fig = plt.figure(figsize=(20, 4*len(countries)))
+    fig = plt.figure()
         
     ax = None
 
