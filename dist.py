@@ -77,10 +77,9 @@ def load_model(fp, **kwargs):
 
 
 def get_data(model, kwargs):
-    print(kwargs)
     if model.startswith('pattern'):
         if int(kwargs['period']) > 2006:
-            return load_model(read_path.format(model=model, **kwargs))
+            return load_model(read_path.format(model=model, **kwargs), **kwargs)
         else:
             model = pattern_sources[kwargs['rcp']][model]
 
