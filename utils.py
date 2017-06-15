@@ -176,7 +176,7 @@ def slurm_runner(filepath, job_spec, run_job, onfinish=None, test_job=None, addi
     @click.group()
     def slurm():
         if not os.path.isdir('log'):
-            os.path.makedir('log')
+            os.makedirs('log')
 
     @slurm.command()
     @click.option('--dependency', '-d', type=int, multiple=True)
