@@ -68,6 +68,7 @@ def _prep_slurm(
         jobname='slurm_job',
         partition='savio2',
         job_spec=None,
+        num_jobs=None,
         dependencies=None,
         flags=None):
 
@@ -89,10 +90,14 @@ def _prep_slurm(
         flagstr = ''
 
     if job_spec:
+        n = len(list(generate_jobs(job_spec)))
+
+        if num_jobs is not None:
+            n = min(num_jobs, n)
+
         jobstr = '\n'.join([
             '#',
-            '#SBATCH --array=0-{}'.format(
-                len(list(generate_jobs(job_spec))))])
+            '#SBATCH --array=0-{}'.format(n)])
         
         flagstr = flagstr + ' --job_id ${SLURM_ARRAY_TASK_ID}'
 
@@ -114,10 +119,11 @@ def run_slurm(
         jobname='slurm_job',
         partition='savio2',
         job_spec=None,
+        num_jobs=None,
         dependencies=None,
         flags=None):
 
-    _prep_slurm(filepath, jobname, partition, job_spec, dependencies, flags)
+    _prep_slurm(filepath, jobname, partition, job_spec, num_jobs, dependencies, flags)
 
     job_command = ['sbatch', 'slurm-script.sh']
 
@@ -164,7 +170,7 @@ def get_job_by_index(job_spec, index):
         for i in range(len(job_spec))])
 
 
-def slurm_runner(filepath, job_spec, run_job, onfinish, additional_metadata=None):
+def slurm_runner(filepath, job_spec, run_job, onfinish=None, test_job=None, additional_metadata=None):
 
     @click.group()
     def slurm():
@@ -180,15 +186,17 @@ def slurm_runner(filepath, job_spec, run_job, onfinish, additional_metadata=None
             flags=['do_job'])
 
     @slurm.command()
+    @click.option('--num_jobs', required=False, default=None, help='Number of iterations to run')
     @click.option('--jobname', default='slurm_job', help='name of the job')
     @click.option('--partition', default='savio2', help='resource on which to run')
     @click.option('--dependency', '-d', type=int, multiple=True)
-    def run(jobname='slurm_job', dependency=None, partition='savio2'):
+    def run(num_jobs=None, jobname='slurm_job', num_jobs=None, dependency=None, partition='savio2'):
         slurm_id = run_slurm(
             filepath=filepath,
             jobname=jobname,
             partition=partition,
             job_spec=job_spec,
+            num_jobs=num_jobs,
             dependencies=('afterany', list(dependency)),
             flags=['do_job'])
 
@@ -213,7 +221,9 @@ def slurm_runner(filepath, job_spec, run_job, onfinish, additional_metadata=None
         out, err = proc.communicate()
 
         print(out)
-        onfinish()
+
+        if onfinish:
+            onfinish()
 
 
     @slurm.command()
@@ -231,5 +241,41 @@ def slurm_runner(filepath, job_spec, run_job, onfinish, additional_metadata=None
         metadata.update({k: str(v) for k, v in job.items()})
 
         run_job(metadata=metadata, **job)
+
+    return slurm
+
+
+    @slurm.command()
+    @click.option('--num_jobs', required=False, default=None, help='Number of iterations to run')
+    @click.option('--jobname', default='test', help='name of the job')
+    @click.option('--partition', default='savio2', help='resource on which to run')
+    @click.option('--dependency', '-d', type=int, multiple=True)
+    def test(num_jobs=None, jobname='slurm_job', num_jobs=None, dependency=None, partition='savio2'):
+        slurm_id = run_slurm(
+            filepath=filepath,
+            jobname=jobname,
+            partition=partition,
+            job_spec=job_spec,
+            num_jobs=num_jobs,
+            dependencies=('afterany', list(dependency)),
+            flags=['do_test'])
+
+        print('test job: {}'.format(slurm_id))
+
+    @slurm.command()
+    @click.option('--job_id', required=True, type=int)
+    def do_test(job_id=None):
+
+        job = get_job_by_index(job_spec, job_id)
+        
+        metadata = {}
+        
+        if additional_metadata is not None:
+            metadata.update(
+                {k: str(v) for k, v in additional_metadata.items()})
+
+        metadata.update({k: str(v) for k, v in job.items()})
+
+        test_job(metadata=metadata, **job)
 
     return slurm
