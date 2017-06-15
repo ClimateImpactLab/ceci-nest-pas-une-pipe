@@ -8,7 +8,7 @@ import seaborn
 import impactlab_tools.utils.weighting
 
 plt.ioff()
-matplotlib.use('agg')
+matplotlib.use('Agg')
 
 read_path = (
     '/shares/gcp/outputs/impact_lab_website/global/climate/{agglev}/{rcp_per}/{variable}/' +
