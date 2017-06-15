@@ -36,7 +36,7 @@ BCSD_orig_files = (
     '{variable}_day_BCSD_{rcp}_r1i1p1_{model}_{{year}}.nc')
 
 WRITE_PATH = (
-    '/global/scratch/mdelgado/web/gcp/climate/{rcp}/{agglev}/{output_variable}/' +
+    '/global/scratch/mdelgado/web/diagnostics/climate/{rcp}/{agglev}/{output_variable}/' +
     '{output_variable}_{agglev}_{aggwt}_{model}_{pername}.nc')
 
 description = '\n\n'.join(

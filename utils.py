@@ -186,9 +186,9 @@ def slurm_runner(filepath, job_spec, run_job, onfinish=None, test_job=None, addi
             flags=['do_job'])
 
     @slurm.command()
-    @click.option('--num_jobs', required=False, default=None, help='Number of iterations to run')
-    @click.option('--jobname', default='slurm_job', help='name of the job')
-    @click.option('--partition', default='savio2', help='resource on which to run')
+    @click.option('--num_jobs', '-n', type=int, required=False, default=None, help='Number of iterations to run')
+    @click.option('--jobname', '-j', default='test', help='name of the job')
+    @click.option('--partition', '-p', default='savio2', help='resource on which to run')
     @click.option('--dependency', '-d', type=int, multiple=True)
     def run(num_jobs=None, jobname='slurm_job', num_jobs=None, dependency=None, partition='savio2'):
         slurm_id = run_slurm(
@@ -246,9 +246,9 @@ def slurm_runner(filepath, job_spec, run_job, onfinish=None, test_job=None, addi
 
 
     @slurm.command()
-    @click.option('--num_jobs', required=False, default=None, help='Number of iterations to run')
-    @click.option('--jobname', default='test', help='name of the job')
-    @click.option('--partition', default='savio2', help='resource on which to run')
+    @click.option('--num_jobs', '-n', type=int, required=False, default=None, help='Number of iterations to run')
+    @click.option('--jobname', '-j', default='test', help='name of the job')
+    @click.option('--partition', '-p', default='savio2', help='resource on which to run')
     @click.option('--dependency', '-d', type=int, multiple=True)
     def test(num_jobs=None, jobname='slurm_job', num_jobs=None, dependency=None, partition='savio2'):
         slurm_id = run_slurm(
