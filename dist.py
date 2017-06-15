@@ -99,6 +99,7 @@ def test_loader():
 
     assert not ds.isnull().any().values()[0]
 
+test_loader()
 
 def sample_data(rcp, outfile):
 
