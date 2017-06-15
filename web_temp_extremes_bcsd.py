@@ -139,6 +139,7 @@ def run_job(
         read_file,
         write_file,
         variable,
+        output_variable,
         transformation,
         rcp,
         pername,
@@ -215,6 +216,7 @@ def job_test_filepaths(
 def job_test_transformations(
         metadata,
         variable,
+        output_variable,
         transformation,
         rcp,
         pername,
