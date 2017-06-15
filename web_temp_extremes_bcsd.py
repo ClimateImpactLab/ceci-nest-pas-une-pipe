@@ -242,8 +242,8 @@ def job_test_transformations(
             '{} {} - testing transforms against one another ')
                 .format(model, y))
 
-        nonzero_msg = "diff less than zero in {}".format(baseline_file)
-        toobig_msg = "diff more than 1/4 in {}".format(baseline_file)
+        nonzero_msg = "diff less than zero in {}".format(read_file)
+        toobig_msg = "diff more than 1/4 in {}".format(read_file)
 
         diff = (tasmin_under_32F(ds) - tasmin_under_32F_365day(ds))
         assert (diff >= 0).all().values()[0], nonzero_msg
