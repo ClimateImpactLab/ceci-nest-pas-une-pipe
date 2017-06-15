@@ -240,7 +240,7 @@ def job_test_transformations(
 
         logger.debug((
             '{} {} - testing transforms against one another ')
-                .format(model, year))
+                .format(model, y))
 
         nonzero_msg = "diff less than zero in {}".format(baseline_file)
         toobig_msg = "diff more than 1/4 in {}".format(baseline_file)
