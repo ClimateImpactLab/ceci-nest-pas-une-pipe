@@ -61,8 +61,8 @@ def tasmax_over_95F_365day(ds):
 
 
 JOBS = [
-    dict(variable='tasmax', transformation_name='tasmax_over_95F', transformation=tasmax_over_95F), 
-    #dict(variable='tasmax', transformation_name='tasmax_over_95F_365day', transformation=tasmax_over_95F_365day)
+    dict(variable='tasmax',transformation=tasmax_over_95F), 
+    #dict(variable='tasmax',transformation=tasmax_over_95F_365day)
     ] 
 
 
