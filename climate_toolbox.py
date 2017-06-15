@@ -11,15 +11,7 @@ from scipy.interpolate import griddata
 from six import string_types
 import itertools
 import toolz
-import os
 import datafs
-import click
-import dill
-import json
-import logging
-import pprint
-
-logger = logging.getLogger('uploader')
 
 WEIGHTS_FILE = (
     'GCP/spatial/world-combo-new/segment_weights/' +

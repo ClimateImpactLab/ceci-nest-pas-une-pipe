@@ -190,7 +190,7 @@ def slurm_runner(filepath, job_spec, run_job, onfinish=None, test_job=None, addi
     @click.option('--jobname', '-j', default='test', help='name of the job')
     @click.option('--partition', '-p', default='savio2', help='resource on which to run')
     @click.option('--dependency', '-d', type=int, multiple=True)
-    def run(num_jobs=None, jobname='slurm_job', num_jobs=None, dependency=None, partition='savio2'):
+    def run(num_jobs=None, jobname='slurm_job', dependency=None, partition='savio2'):
         slurm_id = run_slurm(
             filepath=filepath,
             jobname=jobname,
@@ -250,7 +250,7 @@ def slurm_runner(filepath, job_spec, run_job, onfinish=None, test_job=None, addi
     @click.option('--jobname', '-j', default='test', help='name of the job')
     @click.option('--partition', '-p', default='savio2', help='resource on which to run')
     @click.option('--dependency', '-d', type=int, multiple=True)
-    def test(num_jobs=None, jobname='slurm_job', num_jobs=None, dependency=None, partition='savio2'):
+    def test(num_jobs=None, jobname='slurm_job', dependency=None, partition='savio2'):
         slurm_id = run_slurm(
             filepath=filepath,
             jobname=jobname,
