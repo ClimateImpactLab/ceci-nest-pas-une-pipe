@@ -94,7 +94,7 @@ def tasmax_over_95F_365day(ds):
 
 
 JOBS = [
-    dict(output_variable='tasmax-over-95F', variable='tasmax', transformation=tasmax_over_95F)]
+    dict(output_variable='tasmax-over-95F', variable='tasmax', transformation=tasmax_over_95F_365day)]
 
 PERIODS = [
     dict(rcp='historical', pername='1986', years=list(range(1986, 2006))),
