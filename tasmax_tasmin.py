@@ -46,7 +46,7 @@ ADDITIONAL_METADATA = dict(
 
 def tasmax_over_95F(ds):
     '''
-    Average seasonal tas
+    Count of days above 95F/35F
     '''
     
     return ds.tasmax.where((ds.tasmax - 273.15) > 35).count(dim='time')
