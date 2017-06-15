@@ -135,11 +135,11 @@ AGGREGATIONS = [
 JOB_SPEC = [JOBS, PERIODS, MODELS, SEASONS, AGGREGATIONS]
 
 def run_job(
+        metadata,
         read_file,
         write_file,
         variable,
         transformation,
-        metadata,
         rcp,
         pername,
         years,
@@ -213,7 +213,7 @@ def job_test_filepaths(
 
 
 def job_test_transformations(
-        metadata
+        metadata,
         variable,
         transformation,
         rcp,
