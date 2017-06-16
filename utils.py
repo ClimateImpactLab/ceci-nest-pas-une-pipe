@@ -81,7 +81,7 @@ def _prep_slurm(
         if len(deps) > 0:
 
             depstr += (
-                '#\n#SBATCH --dependency=afterok:{}'
+                '#\n#SBATCH --dependency=afterany:{}'
                     .format(','.join(map(str, deps))))
 
     if flags:
