@@ -82,7 +82,7 @@ def tasmax_over_95F_365day(ds):
     ds = ds.loc[{'time': ~((ds['time.month'] == 2) & (ds['time.day'] == 29))}]
     return ds.tasmax.where((ds.tasmax- 273.15) > 35).count(dim='time')
 
-def annual_average_tas(ds):
+def annual_average_tas_365day(ds):
     '''
     Mean of daily average temperature in degrees C
     '''
@@ -90,7 +90,7 @@ def annual_average_tas(ds):
     return (ds.tas - 273.15).mean(dim='time')
 
 
-def average_seasonal_temp(ds):
+def average_seasonal_temp_365day(ds):
     '''
     Average seasonal tas
     '''
@@ -102,25 +102,25 @@ JOBS = [
     dict(
         transformation_name='tas-seasonal',
         variable='tas',
-        transformation=average_seasonal_temp,
+        transformation=average_seasonal_temp_365day,
         unit='degreesC'),
 
     dict(
         transformation_name='tas-annual',
         variable='tas',
-        transformation=annual_average_tas,
+        transformation=annual_average_tas_365day,
         unit='degreesC'),
 
     dict(
         transformation_name='tasmax-over-95F',
         variable='tasmax',
-        transformation=tasmax_over_95F,
+        transformation=tasmax_over_95F_365day,
         unit='days'),
 
     dict(
         transformation_name='tasmin-under-32F',
         variable='tasmin',
-        transformation=tasmin_under_32F,
+        transformation=tasmin_under_32F_365day,
         unit='days')]
 
 PERIODS = [
