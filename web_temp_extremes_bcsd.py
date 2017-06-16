@@ -94,8 +94,8 @@ def tasmax_over_95F_365day(ds):
 
 
 JOBS = [
-    dict(transformation_name='tasmax-over-95F-365day', variable='tasmax', transformation=tasmax_over_95F_365day),
-    dict(transformation_name='tasmin-under-32F-365day', variable='tasmin', transformation=tasmin_under_32F_365day)]
+    dict(transformation_name='tasmax-over-95F-unadjusted', variable='tasmax', transformation=tasmax_over_95F),
+    dict(transformation_name='tasmin-under-32F-unadjusted', variable='tasmin', transformation=tasmin_under_32F)]
 
 PERIODS = [
     dict(rcp='historical', pername='1986', years=list(range(1986, 2006))),
