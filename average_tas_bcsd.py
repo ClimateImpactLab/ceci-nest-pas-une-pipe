@@ -181,21 +181,31 @@ def run_job(
     metadata.update(dict(
         time_horizon='{}-{}'.format(years[0], years[-1])))
 
+    logger.debug('Beginning job:\n\tkwargs:\t{}'.format(
+        pprint.pformat(metadata, indent=2)))
+
     read_file = BCSD_orig_files.format(**metadata)
     write_file = WRITE_PATH.format(**metadata)
 
     # Get transformed data
-    ds = xr.Dataset({variable: xr.concat([
-        (load_bcsd(
-                read_file.format(year=y),
-                variable,
-                broadcast_dims=('time',))
-            .pipe(transformation))
-        for y in years],
-        dim=pd.Index(years, name='year')).mean(dim='year')})
+    annual = []
+    for y in years:
+        
+        fp = read_file.format(year=y)
+        
+        logging.debug('year {} - attempting to read file "{}"'.format(y, fp))
+        annual.append(
+            load_bcsd(fp, variable, broadcast_dims=('time',))
+                .pipe(transformation))
+
+    logging.debug('concatenating & reducing annual data')
+    ds = xr.Dataset({
+        variable: xr.concat(annual, dim=pd.Index(years, name='year'))
+                        .mean(dim='year')})
     
     # Reshape to regions
     if not agglev.startswith('grid'):
+        logger.debug('aggregating to "{}" using "{}"'.format(agglev, aggwt))
         ds = weighted_aggregate_grid_to_regions(
                 ds, variable, aggwt, agglev, weights=weights)
 
@@ -204,13 +214,20 @@ def run_job(
 
     # Write output
     if not os.path.isdir(os.path.dirname(write_file)):
+        logger.debug('attempting to create_directory "{}"'
+            .format(os.path.dirname(write_file)))
+
         os.makedirs(os.path.dirname(write_file))
+
+    logger.debug('attempting to write to file "{}"'.format(write_file))
 
     ds.to_netcdf(write_file)
 
+    logger.debug('job done')
+
 
 def onfinish():
-    print('all done!')
+    logger.info('all done!')
 
 
 def job_test_filepaths(
