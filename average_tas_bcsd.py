@@ -99,17 +99,17 @@ def average_seasonal_temp_365day(ds):
 
 
 JOBS = [
-    dict(
-        transformation_name='tas-seasonal',
-        variable='tas',
-        transformation=average_seasonal_temp_365day,
-        unit='degreesC'),
-
     # dict(
-    #     transformation_name='tas-annual',
+    #     transformation_name='tas-seasonal',
     #     variable='tas',
-    #     transformation=annual_average_tas_365day,
+    #     transformation=average_seasonal_temp_365day,
     #     unit='degreesC'),
+
+    dict(
+        transformation_name='tas-annual',
+        variable='tas',
+        transformation=annual_average_tas_365day,
+        unit='degreesC'),
 
     # dict(
     #     transformation_name='tasmax-over-95F',
