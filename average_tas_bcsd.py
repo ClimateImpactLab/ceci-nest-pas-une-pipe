@@ -105,23 +105,24 @@ JOBS = [
         transformation=average_seasonal_temp_365day,
         unit='degreesC'),
 
-    dict(
-        transformation_name='tas-annual',
-        variable='tas',
-        transformation=annual_average_tas_365day,
-        unit='degreesC'),
+    # dict(
+    #     transformation_name='tas-annual',
+    #     variable='tas',
+    #     transformation=annual_average_tas_365day,
+    #     unit='degreesC'),
 
-    dict(
-        transformation_name='tasmax-over-95F',
-        variable='tasmax',
-        transformation=tasmax_over_95F_365day,
-        unit='days'),
+    # dict(
+    #     transformation_name='tasmax-over-95F',
+    #     variable='tasmax',
+    #     transformation=tasmax_over_95F_365day,
+    #     unit='days'),
 
-    dict(
-        transformation_name='tasmin-under-32F',
-        variable='tasmin',
-        transformation=tasmin_under_32F_365day,
-        unit='days')]
+    # dict(
+    #     transformation_name='tasmin-under-32F',
+    #     variable='tasmin',
+    #     transformation=tasmin_under_32F_365day,
+    #     unit='days')
+]
 
 PERIODS = [
     dict(rcp='historical', pername='1986', years=list(range(1986, 2006))),
