@@ -83,7 +83,8 @@ def tasmax_over_95F(ds):
 
 
 JOBS = [
-    dict(output_variable='tasmax-over-95F', variable='tasmax', transformation=tasmax_over_95F)]
+    dict(output_variable='tasmax-over-95F', variable='tasmax', transformation=tasmax_over_95F),
+    dict(output_variable='tasmin-under-32F', variable='tasmin', transformation=tasmin_under_32F)]
 
 
 per20 = list(range(2020, 2040))
