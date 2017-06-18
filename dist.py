@@ -11,7 +11,7 @@ import impactlab_tools.utils.weighting
 
 
 read_path = (
-    '/shares/gcp/outputs/impact_lab_website/global/climate/{agglev}/{rcp_per}/{variable}/' +
+    '/shares/gcp/outputs/impact_lab_website/global/climate/{agglev}/{rcp_per}/{transformation}/' +
     '{variable}_{agglev}_{aggwt}_{model}_{period}.nc')
 
 write_path = (
@@ -95,7 +95,7 @@ def get_data(model, kwargs):
 def test_loader():
     ds = get_data(
         'pattern29',
-        {'rcp': 'rcp45', 'agglev': 'hierid', 'variable': 'tasmax-over-95F', 'aggwt': 'areawt', 'period': '2020', 'rcp_per': 'rcp45'})
+        {'rcp': 'rcp45', 'agglev': 'hierid', 'variable': 'tasmin' ,'transformation': 'tasmin-under-32F', 'aggwt': 'areawt', 'period': '2020', 'rcp_per': 'rcp45'})
 
     assert not ds.isnull().any().values()[0]
 
@@ -113,8 +113,9 @@ def sample_data(rcp, outfile):
 
         kwargs = dict(
             period = str(period),
-            variable = 'tasmax-over-95F',
-            varname = 'tasmax_gte_95',
+            variable = 'tasmin',
+            transformation = 'tasmin-under-32F',
+            varname = 'tasmin_lt_32',
             rcp = rcp,
             rcp_per = rcp_per,
             aggwt = 'areawt',
@@ -126,7 +127,7 @@ def sample_data(rcp, outfile):
             all_of_them.append(get_data(model, kwargs))
 
         ds = xr.concat(
-            [xr.Dataset({'tasmax-over-95F': var[var.data_vars.keys()[0]]}) for var in all_of_them],
+            [xr.Dataset({'tasmin-under-32F': var[var.data_vars.keys()[0]]}) for var in all_of_them],
             dim=pd.Index(models, name='model'))
         
         for j, ISO in enumerate(countries):
@@ -195,8 +196,9 @@ def get_quantiles(da, rcp, quantiles = [0.05, 0.5, 0.95]):
 
 def sample_quantiles(rcp, outfile):
 
-    variable = 'tasmax-over-95F'
-    varname = 'tasmax_gte_95'
+    variable = 'tasmin'
+    transformation = 'tasmin-under-32F'
+    varname = 'tasmin_lt_32'
 
     rcp_and_period = zip((['historical'] + [rcp]*3), [1986, 2020, 2040, 2080])
     countries = ['USA', 'IND', 'CHN', 'AUS', 'CHL', 'SSD']
@@ -210,6 +212,7 @@ def sample_quantiles(rcp, outfile):
         kwargs = dict(
             period = str(period),
             variable = variable,
+            transformation = transformation,
             varname = varname,
             aggwt = 'areawt',
             agglev = 'ISO',
@@ -239,8 +242,9 @@ def sample_quantiles(rcp, outfile):
 
 def prep_ds(
             period = '1986',
-            variable = 'tasmax-over-95F',
-            varname = 'tasmax_gte_95',
+            variable = 'tasmin',
+            transformation = 'tasmin-under-32F',
+            varname = 'tasmin_lt_32',
             aggwt = 'areawt',
             agglev = 'ISO',
             rcp = 'rcp85'):
@@ -250,6 +254,7 @@ def prep_ds(
     kwargs = dict(
         period = period,
         variable = variable,
+        transformation = transformation,
         varname = varname,
         aggwt = aggwt,
         agglev = agglev,
@@ -271,14 +276,14 @@ def prep_ds(
 def output_all():
 
     for agglev in ['ISO', 'hierid']:
-        for variable, varname, variable_descriptor in [('tasmax-over-95F', 'tasmax_gte_95', 'days-over-95F')]:
+        for variable, transformation, varname, variable_descriptor in [('tasmin', 'tasmin-under-32F', 'tasmin_lt_32', 'days-under-32F')]:
         
             for rcp in ['rcp45', 'rcp85']:
 
                 for rcp_per, period in zip((['historical'] + [rcp]*3), [1986, 2020, 2040, 2080]):
 
                     ds, nummodels = prep_ds(
-                        period=str(period), variable=variable, varname=varname, rcp=rcp, agglev=agglev)
+                        period=str(period), variable=variable, transformation=transformation, varname=varname, rcp=rcp, agglev=agglev)
 
                     print(agglev, variable, rcp, period, nummodels)
 
