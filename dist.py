@@ -11,7 +11,7 @@ import impactlab_tools.utils.weighting
 
 
 read_path = (
-    '/shares/gcp/outputs/impact_lab_website/global/climate/{agglev}/{rcp_per}/{transformation}/' +
+    '/shares/gcp/outputs/impact_lab_website/global/climate/{rcp_per}/{agglev}/{transformation}/' +
     '{variable}_{agglev}_{aggwt}_{model}_{period}.nc')
 
 write_path = (
@@ -29,8 +29,8 @@ pattern_sources = {
         'pattern27': 'GFDL-CM3',
         'pattern28': 'CanESM2',
         'pattern29': 'GFDL-CM3',
-        'pattern30': 'CanESM2', 
-        'pattern31': 'GFDL-CM3', 
+        'pattern30': 'CanESM2',
+        'pattern31': 'GFDL-CM3',
         'pattern32': 'CanESM2'},
     'rcp85': {
         'pattern1': 'MRI-CGCM3',
@@ -42,8 +42,8 @@ pattern_sources = {
         'pattern28': 'GFDL-CM3',
         'pattern29': 'CanESM2',
         'pattern30': 'GFDL-CM3',
-        'pattern31': 'CanESM2', 
-        'pattern32': 'GFDL-CM3', 
+        'pattern31': 'CanESM2',
+        'pattern32': 'GFDL-CM3',
         'pattern33': 'CanESM2'}}
 
 
@@ -75,7 +75,7 @@ def load_model(fp, **kwargs):
     except IOError as e:
         print('Failed loading "{}"'.format(fp))
         raise
-    
+
     var = kwargs['variable']
     return xr.Dataset({var: ds[ds.data_vars.keys()[0]]})
 
@@ -110,7 +110,7 @@ def sample_data(rcp, outfile):
     countries = ['USA', 'IND', 'CHN', 'AUS', 'CHL', 'SSD']
 
     fig = plt.figure(figsize=(20, 4*len(countries)))
-        
+
     ax = None
 
     for i, (rcp_per, period) in enumerate(rcp_and_period):
@@ -133,14 +133,14 @@ def sample_data(rcp, outfile):
         ds = xr.concat(
             [xr.Dataset({'tasmin-under-32F': var[var.data_vars.keys()[0]]}) for var in all_of_them],
             dim=pd.Index(models, name='model'))
-        
+
         for j, ISO in enumerate(countries):
 
             ax = fig.add_subplot(len(countries), 4, j*len(rcp_and_period) + i + 1, sharex=ax, sharey=ax)
             ax.set_title(str(period) + ' ' + ISO)
 
             ds.sel(ISO=ISO).to_dataframe().plot(ax = ax)
-            
+
     plt.tight_layout()
     fig.savefig(outfile)
     plt.close(fig)
@@ -157,7 +157,7 @@ def get_weights(rcp, path='/shares/gcp/climate/BCSD/SMME/SMME-weights/{}_2090_SM
 
     Returns
     -------
-    pd.Series of model weights 
+    pd.Series of model weights
 
     '''
 
@@ -172,13 +172,13 @@ def get_weights(rcp, path='/shares/gcp/climate/BCSD/SMME/SMME-weights/{}_2090_SM
 
 def upper_coord_names(da, dim='model'):
     '''
-    Coerces coord names to upper case and removes 
+    Coerces coord names to upper case and removes
 
     Paramters
     ---------
     ds: Xarray Dataset
 
-    
+
     Returns
     -------
     Xarray Dataset
@@ -208,7 +208,7 @@ def sample_quantiles(rcp, outfile):
     countries = ['USA', 'IND', 'CHN', 'AUS', 'CHL', 'SSD']
 
     fig = plt.figure(figsize=(20, 4*len(countries)))
-        
+
     ax = None
 
     for i, (rcp_per, period) in enumerate(rcp_and_period):
@@ -231,14 +231,14 @@ def sample_quantiles(rcp, outfile):
         ds = get_quantiles(xr.concat(
             [var.rename({var.data_vars.keys()[0]: variable}) for var in all_of_them],
             dim=pd.Index(models, name='model'))[variable], rcp)
-        
+
         for j, ISO in enumerate(countries):
 
             ax = fig.add_subplot(len(countries), 4, j*len(rcp_and_period) + i + 1, sharex=ax, sharey=ax)
             ax.set_title(str(period) + ' ' + ISO)
 
             ds.sel(ISO=ISO).to_dataframe(name='ISO').plot(ax = ax)
-            
+
     plt.tight_layout()
     fig.savefig(outfile)
     plt.close(fig)
@@ -252,7 +252,7 @@ def prep_ds(
             aggwt = 'areawt',
             agglev = 'ISO',
             rcp = 'rcp85'):
-    
+
     rcp_per = rcp if (period != '1986') else 'historical'
 
     kwargs = dict(
@@ -281,7 +281,7 @@ def output_all(variable_definitions):
 
     for agglev in ['ISO', 'hierid']:
         for variable, transformation, varname, variable_descriptor in variable_definitions:
-        
+
             for rcp in ['rcp45', 'rcp85']:
 
                 for rcp_per, period in zip((['historical'] + [rcp]*3), [1986, 2020, 2040, 2080]):
@@ -307,7 +307,7 @@ def output_all(variable_definitions):
 
                     if not os.path.isdir(os.path.dirname(outpath)):
                         os.makedirs(os.path.dirname(outpath))
-                        
+
                     if ds.isnull().any():
                         print('problems!!! {}'.format(outpath))
                         continue
@@ -338,7 +338,8 @@ def main():
     sample_quantiles('rcp45', 'sample_quantiles_plot_rcp45.pdf')
     sample_quantiles('rcp85', 'sample_quantiles_plot_rcp85.pdf')
 
-    output_all([('tasmin', 'tasmin-under-32F', 'tasmin_lt_32', 'days-under-32F')])
+    output_all([
+        ('tasmin', 'tasmin-under-32F', 'tasmin_lt_32', 'days-under-32F')])
 
 
 if __name__ == '__main__':
