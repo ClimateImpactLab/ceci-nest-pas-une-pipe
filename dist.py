@@ -69,8 +69,12 @@ def get_models(rcp):
 
 
 def load_model(fp, **kwargs):
-    with xr.open_dataset(fp) as ds:
-        ds.load()
+    try:
+        with xr.open_dataset(fp) as ds:
+            ds.load()
+    except IOError as e:
+        print('Failed loading "{}"'.format(fp))
+        raise
     
     var = kwargs['variable']
     return xr.Dataset({var: ds[ds.data_vars.keys()[0]]})
@@ -273,10 +277,10 @@ def prep_ds(
     return ds, len(all_of_them)
 
 
-def output_all():
+def output_all(variable_definitions):
 
     for agglev in ['ISO', 'hierid']:
-        for variable, transformation, varname, variable_descriptor in [('tasmin', 'tasmin-under-32F', 'tasmin_lt_32', 'days-under-32F')]:
+        for variable, transformation, varname, variable_descriptor in variable_definitions:
         
             for rcp in ['rcp45', 'rcp85']:
 
@@ -334,7 +338,7 @@ def main():
     sample_quantiles('rcp45', 'sample_quantiles_plot_rcp45.pdf')
     sample_quantiles('rcp85', 'sample_quantiles_plot_rcp85.pdf')
 
-    output_all()
+    output_all([('tasmin', 'tasmin-under-32F', 'tasmin_lt_32', 'days-under-32F')])
 
 
 if __name__ == '__main__':
