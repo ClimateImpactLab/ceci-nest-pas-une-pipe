@@ -12,7 +12,7 @@ import impactlab_tools.utils.weighting
 
 read_path = (
     '/shares/gcp/outputs/impact_lab_website/global/climate/{rcp_per}/{agglev}/{transformation}/' +
-    '{variable}_{agglev}_{aggwt}_{model}_{period}.nc')
+    '{transformation}_{agglev}_{aggwt}_{model}_{period}.nc')
 
 write_path = (
     '/shares/gcp/outputs/impact_lab_website/global-csvs-v1.0/{agglev}/' +
