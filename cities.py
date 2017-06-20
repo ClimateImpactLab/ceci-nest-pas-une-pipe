@@ -13,7 +13,8 @@ outpaths = (
 
 cities = [
     ('India-NewDelhi', 'IND.10.121.371'),
-    ('USA-WashingtonDC', 'USA.9.317')
+    ('USA-WashingtonDC', 'USA.9.317'), 
+    #('USA-PhoenixAZ', 'USA.3.101')
     ]
 
 rcps = ['rcp45', 'rcp85']
