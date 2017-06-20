@@ -9,15 +9,26 @@ import matplotlib.pyplot as plt
 import seaborn
 import impactlab_tools.utils.weighting
 
-read_path = (
+READ_PATH = (
     '/shares/gcp/outputs/impact_lab_website/web-v2.0/global/climate/' +
     '{rcp_per}/{agglev}/{transformation}/' +
     '{transformation}_{agglev}_{aggwt}_{model}_{period}.nc')
 
-write_path = (
+WRITE_PATH = (
     '/shares/gcp/outputs/impact_lab_website/web-v2.0/global-csvs-v2.0/' +
     '{agglev}/global_{variable}_{rcp}_{period}-{period_end}_{rel}_' +
     '{variable_descriptor}_percentiles{nat}.csv')
+
+READ_PATH_SEASONAL = (
+    '/shares/gcp/outputs/impact_lab_website/web-v2.0/global/climate/' +
+    '{rcp_per}/{agglev}/{transformation}/' +
+    '{transformation}_{agglev}_{aggwt}_{model}_{period}.nc')
+
+WRITE_PATH_SEASONAL = (
+    '/shares/gcp/outputs/impact_lab_website/web-v2.0/global-csvs-v2.0/' +
+    '{agglev}/global_{variable}_{season}_{rcp}_{period}-{period_end}_{rel}_' +
+    '{variable_descriptor}_percentiles{nat}.csv')
+
 
 pattern_sources = {
     'rcp45': {
@@ -103,18 +114,20 @@ def load_model(fp, **kwargs):
 def get_data(model, kwargs):
     if model.startswith('pattern'):
         if int(kwargs['period']) > 2006:
-            fp = read_path.format(model=model, **kwargs)
-            
+
             # Handle pattern models with separate files for each season
-            if '{season}' in fp:
+            if kwargs.get('seasonal', False):
+                fp = READ_PATH_SEASONAL.format(model=model, **kwargs)
                 return load_seasonal_model(fp, **kwargs)
             else:
+                fp = READ_PATH.format(model=model, **kwargs)
                 return load_model(fp, **kwargs)
+            
         else:
             model = pattern_sources[kwargs['rcp']][model]
 
     loader = load_model
-    fp = read_path.format(model=model, **kwargs)
+    fp = READ_PATH.format(model=model, **kwargs)
 
     try:
         return loader(fp, **kwargs)
@@ -277,6 +290,7 @@ def prep_ds(
             varname = 'tasmin_lt_32',
             aggwt = 'areawt',
             agglev = 'ISO',
+            seasonal=False,
             rcp = 'rcp85'):
 
     rcp_per = rcp if (period != '1986') else 'historical'
@@ -288,6 +302,7 @@ def prep_ds(
         varname = varname,
         aggwt = aggwt,
         agglev = agglev,
+        seasonal=seasonal,
         rcp = rcp,
         rcp_per = rcp_per)
 
@@ -303,7 +318,7 @@ def prep_ds(
     return ds, len(all_of_them)
 
 
-def output_all_tasminmax(variable_definitions):
+def output_all_tasminmax(variable_definitions, write_path):
 
     for agglev in ['ISO', 'hierid']:
         for variable, transformation, varname, variable_descriptor in variable_definitions:
@@ -313,7 +328,12 @@ def output_all_tasminmax(variable_definitions):
                 for rcp_per, period in zip((['historical'] + [rcp]*3), [1986, 2020, 2040, 2080]):
 
                     ds, nummodels = prep_ds(
-                        period=str(period), variable=variable, transformation=transformation, varname=varname, rcp=rcp, agglev=agglev)
+                        period=str(period),
+                        variable=variable,
+                        transformation=transformation,
+                        varname=varname,
+                        rcp=rcp,
+                        agglev=agglev)
 
                     print(agglev, variable, rcp, period, nummodels)
 
@@ -353,7 +373,7 @@ def output_all_tasminmax(variable_definitions):
                             nat='-national' if agglev == 'ISO' else ''))
 
 
-def output_all_tas(variable_definitions):
+def output_all_tas(variable_definitions, write_path, seasonal=False):
 
     for agglev in ['ISO', 'hierid']:
         for variable, transformation, varname, variable_descriptor in variable_definitions:
@@ -363,7 +383,13 @@ def output_all_tas(variable_definitions):
                 for rcp_per, period in zip((['historical'] + [rcp]*3), [1986, 2020, 2040, 2080]):
 
                     ds, nummodels = prep_ds(
-                        period=str(period), variable=variable, transformation=transformation, varname=varname, rcp=rcp, agglev=agglev)
+                        period=str(period),
+                        variable=variable,
+                        transformation=transformation,
+                        varname=varname,
+                        rcp=rcp,
+                        agglev=agglev,
+                        seasonal=seasonal)
 
                     print(agglev, variable, rcp, period, nummodels)
 
@@ -409,7 +435,7 @@ def output_all_tas(variable_definitions):
                             ((ds-hist).sel(seas, dim='season')
                                 .to_series()
                                 .unstack('quantile')
-                                .to_csv(outpath_hist))
+                                .to_csv(outpath_hist.format(season=seas)))
 
                     else:
                         (ds.to_series()
@@ -418,7 +444,7 @@ def output_all_tas(variable_definitions):
                         
                         ((ds-hist).to_series()
                             .unstack('quantile')
-                            .to_csv(outpath_hist.format(season=seas)))
+                            .to_csv(outpath_hist))
 
 
 def test():
@@ -438,14 +464,18 @@ def plot_sample_data():
 def do_tasminmax():
     output_all_tasminmax([
         ('tasmin', 'tasmin-under-32F', 'tasmin_lt_32', 'days-under-32F'),
-        ('tasmax', 'tasmax-over-95F', 'tasmin_gte_95', 'days-over-95F')])
+        ('tasmax', 'tasmax-over-95F', 'tasmin_gte_95', 'days-over-95F')],
+        write_path=WRITE_PATH)
 
 def do_tas():
 
-    output_all_tas([
-        ('tas', 'tas-seasonal', 'tas-seasonal', 'degF'),
-        # ('tas', 'tas-annual', 'tas-annual', 'degF')
-        ])
+    output_all_tas(
+        [('tas', 'tas-seasonal', 'tas-seasonal', 'degF')],
+        write_path=WRITE_PATH_SEASONAL, seasonal=True)
+
+    output_all_tas(
+        [('tas', 'tas-annual', 'tas-annual', 'degF')],
+        write_path=WRITE_PATH)
 
 
 if __name__ == '__main__':
