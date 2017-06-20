@@ -9,14 +9,15 @@ import matplotlib.pyplot as plt
 import seaborn
 import impactlab_tools.utils.weighting
 
-
 read_path = (
-    '/shares/gcp/outputs/impact_lab_website/global/climate/{rcp_per}/{agglev}/{transformation}/' +
+    '/shares/gcp/outputs/impact_lab_website/web-v2.0/global/climate/' +
+    '{rcp_per}/{agglev}/{transformation}/' +
     '{transformation}_{agglev}_{aggwt}_{model}_{period}.nc')
 
 write_path = (
-    '/shares/gcp/outputs/impact_lab_website/global-csvs-v1.0/{agglev}/' +
-    'global_{variable}_{rcp}_{period}-{period_end}_{rel}_{variable_descriptor}_percentiles{nat}.csv')
+    '/shares/gcp/outputs/impact_lab_website/web-v2.0/global-csvs-v2.0/' +
+    '{agglev}/global_{variable}_{rcp}_{period}-{period_end}_{rel}_' +
+    '{variable_descriptor}_percentiles{nat}.csv')
 
 pattern_sources = {
     'rcp45': {
@@ -46,6 +47,8 @@ pattern_sources = {
         'pattern32': 'GFDL-CM3',
         'pattern33': 'CanESM2'}}
 
+seasons = ['DJF', 'MAM', 'JJA', 'SON']
+
 
 def get_models(rcp):
 
@@ -68,6 +71,23 @@ def get_models(rcp):
     return these_models
 
 
+def load_seasonal_model(fp, **kwargs):
+    data = []
+    for seas in seasons:
+        sfp = fp.format(season=seas)
+        try:
+            with xr.open_dataset(sfp) as ds:
+                ds.load()
+        
+        except IOError as e:
+            print('Failed loading "{}"'.format(sfp))
+            raise
+
+        data.append(ds)
+
+    return xr.concat(data, dim=pd.Index(seasons, name='season'))
+
+
 def load_model(fp, **kwargs):
     try:
         with xr.open_dataset(fp) as ds:
@@ -83,7 +103,13 @@ def load_model(fp, **kwargs):
 def get_data(model, kwargs):
     if model.startswith('pattern'):
         if int(kwargs['period']) > 2006:
-            return load_model(read_path.format(model=model, **kwargs), **kwargs)
+            fp = read_path.format(model=model, **kwargs)
+            
+            # Handle pattern models with separate files for each season
+            if '{season}' in fp:
+                return load_seasonal_model(fp, **kwargs)
+            else:
+                return load_model(fp, **kwargs)
         else:
             model = pattern_sources[kwargs['rcp']][model]
 
@@ -277,7 +303,7 @@ def prep_ds(
     return ds, len(all_of_them)
 
 
-def output_all(variable_definitions):
+def output_all_tasminmax(variable_definitions):
 
     for agglev in ['ISO', 'hierid']:
         for variable, transformation, varname, variable_descriptor in variable_definitions:
@@ -326,22 +352,104 @@ def output_all(variable_definitions):
                             variable_descriptor=variable_descriptor,
                             nat='-national' if agglev == 'ISO' else ''))
 
+
+def output_all_tas(variable_definitions):
+
+    for agglev in ['ISO', 'hierid']:
+        for variable, transformation, varname, variable_descriptor in variable_definitions:
+
+            for rcp in ['rcp45', 'rcp85']:
+
+                for rcp_per, period in zip((['historical'] + [rcp]*3), [1986, 2020, 2040, 2080]):
+
+                    ds, nummodels = prep_ds(
+                        period=str(period), variable=variable, transformation=transformation, varname=varname, rcp=rcp, agglev=agglev)
+
+                    print(agglev, variable, rcp, period, nummodels)
+
+                    if rcp_per == 'historical':
+                        hist = ds
+
+                    outpath = write_path.format(
+                            agglev=agglev,
+                            variable=variable,
+                            varname=varname,
+                            variable_descriptor=variable_descriptor,
+                            period=str(period),
+                            rcp=rcp,
+                            period_end = period + 19,
+                            rel = 'absolute',
+                            nat='-national' if agglev == 'ISO' else '')
+
+                    outpath_hist = write_path.format(
+                            agglev=agglev,
+                            variable=variable,
+                            period=str(period),
+                            rcp=rcp,
+                            period_end = period + 19,
+                            rel = 'change-from-hist',
+                            varname=varname,
+                            variable_descriptor=variable_descriptor,
+                            nat='-national' if agglev == 'ISO' else '')
+
+                    if not os.path.isdir(os.path.dirname(outpath)):
+                        os.makedirs(os.path.dirname(outpath))
+
+                    if ds.isnull().any():
+                        print('problems!!! {}'.format(outpath))
+                        continue
+
+                    if 'season' in ds.dims:
+                        for seas in ds.season:
+                            (ds.sel(seas, dim='season')
+                                .to_series()
+                                .unstack('quantile')
+                                .to_csv(outpath.format(season=seas)))
+                            
+                            ((ds-hist).sel(seas, dim='season')
+                                .to_series()
+                                .unstack('quantile')
+                                .to_csv(outpath_hist))
+
+                    else:
+                        (ds.to_series()
+                            .unstack('quantile')
+                            .to_csv(outpath))
+                        
+                        ((ds-hist).to_series()
+                            .unstack('quantile')
+                            .to_csv(outpath_hist.format(season=seas)))
+
+
 def test():
     test_loader()
     assert len(get_weights('rcp45')) == 32
     assert len(get_weights('rcp85')) == 33
 
-def main():
+
+def plot_sample_data():
 
     sample_data('rcp45', 'sample_data_plot_rcp45.pdf')
     sample_data('rcp85', 'sample_data_plot_rcp85.pdf')
     sample_quantiles('rcp45', 'sample_quantiles_plot_rcp45.pdf')
     sample_quantiles('rcp85', 'sample_quantiles_plot_rcp85.pdf')
 
-    output_all([
-        ('tasmin', 'tasmin-under-32F', 'tasmin_lt_32', 'days-under-32F')])
+
+def do_tasminmax():
+    output_all_tasminmax([
+        ('tasmin', 'tasmin-under-32F', 'tasmin_lt_32', 'days-under-32F'),
+        ('tasmax', 'tasmax-over-95F', 'tasmin_gte_95', 'days-over-95F')])
+
+def do_tas():
+
+    output_all_tas([
+        ('tas', 'tas-seasonal', 'tas-seasonal', 'degF'),
+        # ('tas', 'tas-annual', 'tas-annual', 'degF')
+        ])
 
 
 if __name__ == '__main__':
     test()
-    main()
+    plot_sample_data()
+
+    do_tas()
