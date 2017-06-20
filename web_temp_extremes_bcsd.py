@@ -96,20 +96,20 @@ def tasmax_over_118F_365day(ds):
 
 
 JOBS = [
-    dict(transformation_name='tasmax-over-118F',
-        unit='days-over-118F',
-        variable='tasmax',
-        transformation=tasmax_over_118F_365day),
-    
-    # dict(transformation_name='tasmax-over-95F',
-    #     unit='days-over-95F',
+    # dict(transformation_name='tasmax-over-118F',
+    #     unit='days-over-118F',
     #     variable='tasmax',
-    #     transformation=tasmax_over_95F_365day),
+    #     transformation=tasmax_over_118F_365day),
     
-    # dict(transformation_name='tasmin-under-32F',
-    #     unit='days-under-32F',
-    #     variable='tasmin',
-    #     transformation=tasmin_under_32F_365day)
+    dict(transformation_name='tasmax-over-95F',
+        unit='days-over-95F',
+        variable='tasmax',
+        transformation=tasmax_over_95F_365day),
+    
+    dict(transformation_name='tasmin-under-32F',
+        unit='days-under-32F',
+        variable='tasmin',
+        transformation=tasmin_under_32F_365day)
     ]
 
 PERIODS = [
@@ -118,10 +118,10 @@ PERIODS = [
     dict(rcp='rcp85', pername='2040', years=list(range(2040, 2060))),
     dict(rcp='rcp85', pername='2060', years=list(range(2060, 2080))),
     dict(rcp='rcp85', pername='2080', years=list(range(2080, 2100))),
-    # dict(rcp='rcp45', pername='2020', years=list(range(2020, 2040))),
-    # dict(rcp='rcp45', pername='2040', years=list(range(2040, 2060))),
-    # dict(rcp='rcp45', pername='2060', years=list(range(2060, 2080))),
-    # dict(rcp='rcp45', pername='2080', years=list(range(2080, 2100)))
+    dict(rcp='rcp45', pername='2020', years=list(range(2020, 2040))),
+    dict(rcp='rcp45', pername='2040', years=list(range(2040, 2060))),
+    dict(rcp='rcp45', pername='2060', years=list(range(2060, 2080))),
+    dict(rcp='rcp45', pername='2080', years=list(range(2080, 2100)))
     ]
 
 MODELS = list(map(lambda x: dict(model=x), [
