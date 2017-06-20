@@ -22,7 +22,7 @@ WRITE_PATH = (
 READ_PATH_SEASONAL = (
     '/shares/gcp/outputs/impact_lab_website/web-v2.0/global/climate/' +
     '{rcp_per}/{agglev}/{transformation}/' +
-    '{transformation}_{agglev}_{aggwt}_{model}_{period}.nc')
+    '{transformation}_{agglev}_{aggwt}_{model}_{{season}}_{period}.nc')
 
 WRITE_PATH_SEASONAL = (
     '/shares/gcp/outputs/impact_lab_website/web-v2.0/global-csvs-v2.0/' +
