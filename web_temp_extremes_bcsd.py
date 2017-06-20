@@ -148,7 +148,7 @@ MODELS = list(map(lambda x: dict(model=x), [
     'NorESM1-M']))
 
 AGGREGATIONS = [
-    # {'agglev': 'ISO', 'aggwt': 'areawt'},
+    {'agglev': 'ISO', 'aggwt': 'areawt'},
     {'agglev': 'hierid', 'aggwt': 'areawt'}]
 
 
