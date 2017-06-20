@@ -98,11 +98,13 @@ def _prep_slurm(
         jobstr = '#\n#SBATCH --array=0-{}'.format(n)
         
         flagstr = flagstr + ' --job_id ${SLURM_ARRAY_TASK_ID}'
-        output = '#\n#SBATCH --output log/slurm-%x-%A_%a.out'
+        output = ('#\n#SBATCH --output log/slurm-{jobname}-%A_%a.out'
+                    .format(jobname=jobname))
 
     else:
         jobstr = ''
-        output = '#\n#SBATCH --output log/slurm-%x-%A.out'
+        output = ('#\n#SBATCH --output log/slurm-{jobname}-%A.out'
+                    .format(jobname=jobname))
 
     with open('run-slurm.sh', 'w+') as f:
         f.write(SLURM_SCRIPT.format(

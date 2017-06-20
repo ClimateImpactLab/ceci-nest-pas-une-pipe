@@ -315,7 +315,7 @@ def prep_ds(
             var.rename({var.data_vars.keys()[0]: variable})
             for var in all_of_them]
 
-    print([d.dims for d in model_data])
+    # print([d.dims for d in model_data])
 
     concatted = xr.concat(
         model_data,
@@ -434,16 +434,20 @@ def output_all_tas(variable_definitions, write_path, seasonal=False):
                         continue
 
                     if 'season' in ds.dims:
-                        for seas in seasons:
-                            (ds.sel(seas, dim='season')
-                                .to_series()
-                                .unstack('quantile')
-                                .to_csv(outpath.format(season=seas)))
-                            
-                            ((ds-hist).sel(seas, dim='season')
-                                .to_series()
-                                .unstack('quantile')
-                                .to_csv(outpath_hist.format(season=seas)))
+                        try:
+                            for seas in seasons:
+                                (ds.sel(seas, dim='season')
+                                    .to_series()
+                                    .unstack('quantile')
+                                    .to_csv(outpath.format(season=seas)))
+                                
+                                ((ds-hist).sel(seas, dim='season')
+                                    .to_series()
+                                    .unstack('quantile')
+                                    .to_csv(outpath_hist.format(season=seas)))
+                        except Exception as e:
+                            ds.to_netcdf('faildump.nc')
+                            raise
 
                     else:
                         (ds.to_series()
