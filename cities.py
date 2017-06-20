@@ -8,7 +8,7 @@ inpaths = (
     'global_tasmax-over-95F_{rcp}_{per}_{rel}_days-over-95F_percentiles.csv')
 
 outpaths = (
-    'cities-v2.0/' +
+    '../playground/csv2/cities-v2.0/' +
     'city-summary_tasmax-over-95F-{city}.csv')
 
 cities = [
