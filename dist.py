@@ -434,7 +434,7 @@ def output_all_tas(variable_definitions, write_path, seasonal=False):
                         continue
 
                     if 'season' in ds.dims:
-                        for seas in ds.season:
+                        for seas in seasons:
                             (ds.sel(seas, dim='season')
                                 .to_series()
                                 .unstack('quantile')
