@@ -271,7 +271,7 @@ def run_job(
     # Update netCDF metadata
     logger.debug('{} udpate metadata'.format(model))
     ds.attrs.update(
-        **{k: str(v) for k, v in metadata.keys() if k in DS_METADATA_FEILDS})
+        **{k: str(v) for k, v in metadata.items() if k in DS_METADATA_FEILDS})
 
     # Write output
     logger.debug('attempting to write to file: {}'.format(write_file))
