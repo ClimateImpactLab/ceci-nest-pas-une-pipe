@@ -311,9 +311,11 @@ def prep_ds(
     for model in models:
         all_of_them.append(get_data(model, kwargs))
 
-    ds = get_quantiles(xr.concat(
+    concatted = xr.concat(
         [var.rename({var.data_vars.keys()[0]: variable}) for var in all_of_them],
-        dim=pd.Index(models, name='model'))[variable], rcp)
+        dim=pd.Index(models, name='model'))
+
+    ds = get_quantiles(concatted[variable], rcp)
 
     return ds, len(all_of_them)
 
