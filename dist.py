@@ -436,7 +436,7 @@ def output_all_tas(variable_definitions, write_path, seasonal=False):
                     if 'season' in ds.dims:
                         try:
                             for seas in seasons:
-                                (ds.sel(seaon=seas)
+                                (ds.sel(season=seas)
                                     .to_series()
                                     .unstack('quantile')
                                     .to_csv(outpath.format(season=seas)))
