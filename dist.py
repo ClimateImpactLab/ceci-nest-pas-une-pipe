@@ -228,7 +228,7 @@ def upper_coord_names(da, dim='model'):
     return da
 
 
-def get_quantiles(da, rcp, quantiles = [0.05, 0.5, 0.95]):
+def get_quantiles(da, rcp, quantiles = [0.05, 0.167, 0.5, 0.833, 0.95]):
     return impactlab_tools.utils.weighting.weighted_quantile_xr(
             upper_coord_names(da),
             quantiles,
@@ -494,4 +494,5 @@ if __name__ == '__main__':
     test()
     plot_sample_data()
 
-    do_tas()
+    do_tasminmax()
+    # do_tas()
