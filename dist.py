@@ -315,7 +315,7 @@ def prep_ds(
             var.rename({var.data_vars.keys()[0]: variable})
             for var in all_of_them]
 
-    print(model_data)
+    print([d.shape for d in model_data])
 
     concatted = xr.concat(
         model_data,
