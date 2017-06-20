@@ -95,15 +95,15 @@ def average_seasonal_temp_365day(ds):
     Average seasonal tas
     '''
     ds = ds.loc[{'time': ~((ds['time.month'] == 2) & (ds['time.day'] == 29))}]
-    return (ds.tas - 273.15).mean(dim='time')
+    return (ds.tas - 273.15).groupby('time.season').mean(dim='time')
 
 
 JOBS = [
-    dict(
-        transformation_name='tas-seasonal',
-        variable='tas',
-        transformation=average_seasonal_temp_365day,
-        unit='degreesC'),
+    # dict(
+    #     transformation_name='tas-seasonal',
+    #     variable='tas',
+    #     transformation=average_seasonal_temp_365day,
+    #     unit='degreesC'),
 
     dict(
         transformation_name='tas-annual',

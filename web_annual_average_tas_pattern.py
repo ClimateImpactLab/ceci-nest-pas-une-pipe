@@ -41,8 +41,8 @@ BCSD_pattern_files = (
     '{variable}_BCSD_{model}_{rcp}_r1i1p1_{{season}}_{{year}}.nc')
 
 WRITE_PATH = (
-    '/global/scratch/mdelgado/web/gcp/climate/{rcp}/{agglev}/{output_variable}/' +
-    '{output_variable}_{agglev}_{aggwt}_{model}_{pername}.nc')
+    '/global/scratch/mdelgado/web/gcp/climate/{rcp}/{agglev}/{transformation_name}/' +
+    '{transformation_name}_{agglev}_{aggwt}_{model}_{pername}.nc')
 
 description = '\n\n'.join(
         map(lambda s: ' '.join(s.split('\n')),
@@ -73,22 +73,26 @@ def annual_average_tas(ds):
 
 JOBS = [
     dict(
-        output_variable='tas-annual',
+        transformation_name='tas-annual',
         variable='tas',
         transformation=annual_average_tas,
         unit='degreesC')]
 
 per20 = list(range(2020, 2040))
 per40 = list(range(2040, 2060))
+per60 = list(range(2060, 2080))
 per80 = list(range(2080, 2100))
 
 PERIODS = [
-    dict(rcp='rcp45', read_acct='mdelgado', pername='2020', years=per20),
-    dict(rcp='rcp45', read_acct='mdelgado', pername='2040', years=per40),
-    dict(rcp='rcp45', read_acct='mdelgado', pername='2080', years=per80),
-    dict(rcp='rcp85', read_acct='jiacany', pername='2020', years=per20),
-    dict(rcp='rcp85', read_acct='jiacany', pername='2040', years=per40),
-    dict(rcp='rcp85', read_acct='jiacany', pername='2080', years=per80)]
+    # dict(rcp='rcp45', read_acct='mdelgado', pername='2020', years=per20),
+    # dict(rcp='rcp45', read_acct='mdelgado', pername='2040', years=per40),
+    dict(rcp='rcp45', read_acct='mdelgado', pername='2060', years=per60),
+    # dict(rcp='rcp45', read_acct='mdelgado', pername='2080', years=per80),
+    # dict(rcp='rcp85', read_acct='jiacany', pername='2020', years=per20),
+    # dict(rcp='rcp85', read_acct='jiacany', pername='2040', years=per40),
+    dict(rcp='rcp85', read_acct='jiacany', pername='2060', years=per60),
+    # dict(rcp='rcp85', read_acct='jiacany', pername='2080', years=per80)
+    ]
 
 rcp_models = {
     'rcp45': 
@@ -143,7 +147,7 @@ JOB_SPEC = [JOBS, MODELS, SEASONS, AGGREGATIONS]
 
 def run_job(
         metadata,
-        output_variable,
+        transformation_name,
         variable,
         transformation,
         rcp,

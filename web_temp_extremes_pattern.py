@@ -43,8 +43,8 @@ BCSD_pattern_files = (
 
 WRITE_PATH = (
     '/global/scratch/mdelgado/web/gcp/climate/' +
-    '{rcp}/{agglev}/{output_variable}/' +
-    '{variable}_{agglev}_{aggwt}_{model}_{pername}.nc')
+    '{rcp}/{agglev}/{transformation_name}/' +
+    '{transformation_name}_{agglev}_{aggwt}_{model}_{pername}.nc')
 
 description = '\n\n'.join(
         map(lambda s: ' '.join(s.split('\n')),
@@ -83,21 +83,26 @@ def tasmax_over_95F(ds):
 
 
 JOBS = [
-    dict(output_variable='tasmax-over-95F', variable='tasmax', transformation=tasmax_over_95F),
-    dict(output_variable='tasmin-under-32F', variable='tasmin', transformation=tasmin_under_32F)]
+    dict(transformation_name='tasmax-over-95F', variable='tasmax', transformation=tasmax_over_95F),
+    dict(transformation_name='tasmin-under-32F', variable='tasmin', transformation=tasmin_under_32F)]
 
 
 per20 = list(range(2020, 2040))
 per40 = list(range(2040, 2060))
+per60 = list(range(2060, 2080))
 per80 = list(range(2080, 2100))
 
 PERIODS = [
-    dict(rcp='rcp45', read_acct='mdelgado', pername='2020', years=per20),
-    dict(rcp='rcp45', read_acct='mdelgado', pername='2040', years=per40),
-    dict(rcp='rcp45', read_acct='mdelgado', pername='2080', years=per80),
-    dict(rcp='rcp85', read_acct='jiacany', pername='2020', years=per20),
-    dict(rcp='rcp85', read_acct='jiacany', pername='2040', years=per40),
-    dict(rcp='rcp85', read_acct='jiacany', pername='2080', years=per80)]
+    # dict(rcp='rcp45', read_acct='mdelgado', pername='2020', years=per20),
+    # dict(rcp='rcp45', read_acct='mdelgado', pername='2040', years=per40),
+    dict(rcp='rcp45', read_acct='mdelgado', pername='2060', years=per60),
+    # dict(rcp='rcp45', read_acct='mdelgado', pername='2080', years=per80),
+    # dict(rcp='rcp85', read_acct='jiacany', pername='2060', years=per60),
+    # dict(rcp='rcp85', read_acct='jiacany', pername='2020', years=per20),
+    # dict(rcp='rcp85', read_acct='jiacany', pername='2040', years=per40),
+    dict(rcp='rcp85', read_acct='jiacany', pername='2060', years=per60),
+    # dict(rcp='rcp85', read_acct='jiacany', pername='2080', years=per80)
+    ]
 
 rcp_models = {
     'rcp45': 
@@ -151,7 +156,7 @@ JOB_SPEC = [JOBS, MODELS, SEASONS, AGGREGATIONS]
 def run_job(
         metadata,
         variable,
-        output_variable,
+        transformation_name,
         transformation,
         read_acct,
         rcp,
