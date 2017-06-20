@@ -60,19 +60,10 @@ ADDITIONAL_METADATA = dict(
     weighting='areawt',
     frequency='20yr')
 
-
-def tasmin_under_32F(ds):
-    '''
-    Count of days with tasmin under 32F/0C
-    '''
-    return ds.tasmin.where((ds.tasmin- 273.15) < 0).count(dim='time')
-
-
-def tasmax_over_95F(ds):
-    '''
-    Count of days with tasmax over 95F/35C
-    '''
-    return ds.tasmax.where((ds.tasmax- 273.15) > 35).count(dim='time')
+DS_METADATA_FEILDS = (
+    ADDITIONAL_METADATA.keys() + [
+        'rcp', 'pername', 'transformation_name',
+        'unit', 'model', 'agglev', 'aggwt'])
 
 
 def tasmin_under_32F_365day(ds):
@@ -93,19 +84,43 @@ def tasmax_over_95F_365day(ds):
     return ds.tasmax.where((ds.tasmax- 273.15) > 35).count(dim='time')
 
 
+def tasmax_over_118F_365day(ds):
+    '''
+    Count of days with tasmax over 118F/47.8C
+
+    Leap years are removed before counting days (uses a 365 day calendar)
+    '''
+    ds = ds.loc[{'time': ~((ds['time.month'] == 2) & (ds['time.day'] == 29))}]
+    return ds.tasmax.where(
+        (ds.tasmax- 273.15) > ((118. - 32.) * 5. / 9.)).count(dim='time')
+
+
 JOBS = [
-    dict(transformation_name='tasmax-over-95F', variable='tasmax', transformation=tasmax_over_95F_365day),
-    dict(transformation_name='tasmin-under-32F', variable='tasmin', transformation=tasmin_under_32F_365day)]
+    dict(transformation_name='tasmax-over-118F',
+        unit='days-over-118F',
+        variable='tasmax',
+        transformation=tasmax_over_118F_365day),
+    
+    # dict(transformation_name='tasmax-over-95F',
+    #     unit='days-over-95F',
+    #     variable='tasmax',
+    #     transformation=tasmax_over_95F_365day),
+    
+    # dict(transformation_name='tasmin-under-32F',
+    #     unit='days-under-32F',
+    #     variable='tasmin',
+    #     transformation=tasmin_under_32F_365day)
+    ]
 
 PERIODS = [
-    # dict(rcp='historical', pername='1986', years=list(range(1986, 2006))),
-    # dict(rcp='rcp85', pername='2020', years=list(range(2020, 2040))),
-    # dict(rcp='rcp85', pername='2060', years=list(range(2060, 2060))),
-    dict(rcp='rcp85', pername='2040', years=list(range(2040, 2080))),
-    # dict(rcp='rcp85', pername='2080', years=list(range(2080, 2100))),
+    dict(rcp='historical', pername='1986', years=list(range(1986, 2006))),
+    dict(rcp='rcp85', pername='2020', years=list(range(2020, 2040))),
+    dict(rcp='rcp85', pername='2040', years=list(range(2040, 2060))),
+    dict(rcp='rcp85', pername='2060', years=list(range(2060, 2080))),
+    dict(rcp='rcp85', pername='2080', years=list(range(2080, 2100))),
     # dict(rcp='rcp45', pername='2020', years=list(range(2020, 2040))),
     # dict(rcp='rcp45', pername='2040', years=list(range(2040, 2060))),
-    dict(rcp='rcp45', pername='2060', years=list(range(2060, 2080))),
+    # dict(rcp='rcp45', pername='2060', years=list(range(2060, 2080))),
     # dict(rcp='rcp45', pername='2080', years=list(range(2080, 2100)))
     ]
 
@@ -133,7 +148,7 @@ MODELS = list(map(lambda x: dict(model=x), [
     'NorESM1-M']))
 
 AGGREGATIONS = [
-    {'agglev': 'ISO', 'aggwt': 'areawt'},
+    # {'agglev': 'ISO', 'aggwt': 'areawt'},
     {'agglev': 'hierid', 'aggwt': 'areawt'}]
 
 
@@ -159,29 +174,40 @@ def run_job(
     read_file = BCSD_orig_files.format(**metadata)
     write_file = WRITE_PATH.format(**metadata)
 
-    # Get transformed data
-    ds = xr.Dataset({variable: xr.concat([
-        (load_bcsd(
-                read_file.format(year=y),
-                variable,
-                broadcast_dims=('time',))
-            .pipe(transformation))
-        for y in years],
-        dim=pd.Index(years, name='year')).mean(dim='year')})
+    # Prepare annual transformed data
+    annual = []
+    for y in years:
+        fp = read_file.format(year=y)
+        
+        logger.debug('attempting to load BCSD file: {}'.format(fp))
+        annual.append(
+            load_bcsd(fp, variable, broadcast_dims=('time',))
+                .pipe(transformation))
+
+    # Concatente years to single dataset and average across years
+    logger.debug('{} - concatenating annual data'.format(model))
+    ds = xr.Dataset({
+        variable: xr.concat(annual, dim=pd.Index(years, name='year'))
+                        .mean(dim='year')})
     
     # Reshape to regions
+    logger.debug('{} reshaping to regions'.format(model))
     if not agglev.startswith('grid'):
         ds = weighted_aggregate_grid_to_regions(
                 ds, variable, aggwt, agglev, weights=weights)
 
     # Update netCDF metadata
-    ds.attrs.update(**metadata)
+    logger.debug('{} udpate metadata'.format(model))
+    ds.attrs.update(
+        **{k: str(v) for k, v in metadata.keys() if k in DS_METADATA_FEILDS})
 
     # Write output
+    logger.debug('attempting to write to file: {}'.format(write_file))
     if not os.path.isdir(os.path.dirname(write_file)):
         os.makedirs(os.path.dirname(write_file))
 
     ds.to_netcdf(write_file)
+    logger.debug('done')
 
 
 def onfinish():

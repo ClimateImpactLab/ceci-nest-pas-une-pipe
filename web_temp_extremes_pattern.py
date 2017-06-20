@@ -1,5 +1,5 @@
 '''
-Counts of expected daily extremes (tasmax > 95F or tasmin < 32F)
+Counts of expected daily extremes (e.g. tasmax > 95F, tasmin < 32F)
 
 Values are expected daily extremes per year for 20-year periods, aggregated to
 regions (impact regions/hierids or country/ISO) using spatial/area weights.
@@ -67,6 +67,11 @@ ADDITIONAL_METADATA = dict(
     weighting='areawt',
     frequency='20yr')
 
+DS_METADATA_FEILDS = (
+    ADDITIONAL_METADATA.keys() + [
+        'rcp', 'pername', 'transformation_name',
+        'unit', 'model', 'agglev', 'aggwt'])
+
 
 def tasmin_under_32F(ds):
     '''
@@ -82,9 +87,30 @@ def tasmax_over_95F(ds):
     return ds.tasmax.where((ds.tasmax- 273.15) > 35).count(dim='time')
 
 
+def tasmax_over_118F(ds):
+    '''
+    Count of days with tasmax over 118F/47.8C
+    '''
+    return ds.tasmax.where(
+        (ds.tasmax - 273.15) > ((118. - 32.) * 5. / 9.)).count(dim='time')
+
+
 JOBS = [
-    dict(transformation_name='tasmax-over-95F', variable='tasmax', transformation=tasmax_over_95F),
-    dict(transformation_name='tasmin-under-32F', variable='tasmin', transformation=tasmin_under_32F)]
+    dict(transformation_name='tasmax-over-118F',
+        unit='days-over-118F',
+        variable='tasmax',
+        transformation=tasmax_over_118F),
+    
+    # dict(transformation_name='tasmax-over-95F',
+    #     unit='days-over-95F',
+    #     variable='tasmax',
+    #     transformation=tasmax_over_95F),
+    
+    # dict(transformation_name='tasmin-under-32F',
+    #     unit='days-under-32F',
+    #     variable='tasmin',
+    #     transformation=tasmin_under_32F)
+    ]
 
 
 per20 = list(range(2020, 2040))
@@ -95,13 +121,12 @@ per80 = list(range(2080, 2100))
 PERIODS = [
     # dict(rcp='rcp45', read_acct='mdelgado', pername='2020', years=per20),
     # dict(rcp='rcp45', read_acct='mdelgado', pername='2040', years=per40),
-    dict(rcp='rcp45', read_acct='mdelgado', pername='2060', years=per60),
+    # dict(rcp='rcp45', read_acct='mdelgado', pername='2060', years=per60),
     # dict(rcp='rcp45', read_acct='mdelgado', pername='2080', years=per80),
-    # dict(rcp='rcp85', read_acct='jiacany', pername='2060', years=per60),
-    # dict(rcp='rcp85', read_acct='jiacany', pername='2020', years=per20),
-    # dict(rcp='rcp85', read_acct='jiacany', pername='2040', years=per40),
+    dict(rcp='rcp85', read_acct='jiacany', pername='2020', years=per20),
+    dict(rcp='rcp85', read_acct='jiacany', pername='2040', years=per40),
     dict(rcp='rcp85', read_acct='jiacany', pername='2060', years=per60),
-    # dict(rcp='rcp85', read_acct='jiacany', pername='2080', years=per80)
+    dict(rcp='rcp85', read_acct='jiacany', pername='2080', years=per80)
     ]
 
 rcp_models = {
@@ -147,7 +172,7 @@ for spec in PERIODS:
 SEASONS = [{'seasons': [ 'DJF', 'MAM', 'JJA', 'SON']}]
 
 AGGREGATIONS = [
-    {'agglev': 'ISO', 'aggwt': 'areawt'},
+    # {'agglev': 'ISO', 'aggwt': 'areawt'},
     {'agglev': 'hierid', 'aggwt': 'areawt'}]
 
 
@@ -158,6 +183,7 @@ def run_job(
         variable,
         transformation_name,
         transformation,
+        unit,
         read_acct,
         rcp,
         pername,
@@ -244,7 +270,8 @@ def run_job(
 
     # Update netCDF metadata
     logger.debug('{} udpate metadata'.format(model))
-    ds.attrs.update(**metadata)
+    ds.attrs.update(
+        **{k: str(v) for k, v in metadata.keys() if k in DS_METADATA_FEILDS})
 
     # Write output
     logger.debug('attempting to write to file: {}'.format(write_file))
@@ -252,6 +279,7 @@ def run_job(
         os.makedirs(os.path.dirname(write_file))
 
     ds.to_netcdf(write_file)
+    logger.debug('done')
 
 
 def onfinish():
