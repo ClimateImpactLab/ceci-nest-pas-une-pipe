@@ -9,25 +9,42 @@ import matplotlib.pyplot as plt
 import seaborn
 import impactlab_tools.utils.weighting
 
+input_version = '2.0'
+output_version = '2.0'
+quantile_run = True
+
+
+if quantile_run:
+    output_dir = ('global-csvs-v{}'.format(output_version))
+    QUANTILES = [0.05, 0.167, 0.5, 0.833, 0.95]
+
+else:
+    output_dir = ('global-quants-v{}'.format(output_version))
+    QUANTILES = [0.05, 0.5, 0.95]
+
 READ_PATH = (
-    '/shares/gcp/outputs/impact_lab_website/web-v2.0/global/climate/' +
-    '{rcp_per}/{agglev}/{transformation}/' +
-    '{transformation}_{agglev}_{aggwt}_{model}_{period}.nc')
+    '/shares/gcp/outputs/impact_lab_website/web-v{input_version}/global/climate/' +
+    '{{rcp_per}}/{{agglev}}/{{transformation}}/' +
+    '{{transformation}}_{{agglev}}_{{aggwt}}_{{model}}_{{period}}.nc'
+        .format(input_version=input_version))
 
 WRITE_PATH = (
-    '/shares/gcp/outputs/impact_lab_website/web-v2.0/global-csvs-v2.0/' +
-    '{agglev}/global_{transformation}_{rcp}_{period}-{period_end}_{rel}_' +
-    '{variable_descriptor}_percentiles{nat}.csv')
+    '/shares/gcp/outputs/impact_lab_website/web-v{input_version}/{output_dir}/' +
+    '{{agglev}}/global_{{transformation}}_{{rcp}}_{{period}}-{{period_end}}_{{rel}}_' +
+    '{{variable_descriptor}}_percentiles{{nat}}.csv'
+        .format(input_version=input_version, output_dir=output_dir))
 
 READ_PATH_SEASONAL = (
-    '/shares/gcp/outputs/impact_lab_website/web-v2.0/global/climate/' +
-    '{rcp_per}/{agglev}/{transformation}/' +
-    '{transformation}_{agglev}_{aggwt}_{model}_{{season}}_{period}.nc')
+    '/shares/gcp/outputs/impact_lab_website/web-v{input_version}/global/climate/' +
+    '{{rcp_per}}/{{agglev}}/{{transformation}}/' +
+    '{{transformation}}_{{agglev}}_{{aggwt}}_{{model}}_{{{{season}}}}_{{period}}.nc'
+        .format(input_version=input_version))
 
 WRITE_PATH_SEASONAL = (
-    '/shares/gcp/outputs/impact_lab_website/web-v2.0/global-csvs-v2.0/' +
-    '{agglev}/global_{transformation}_{{season}}_{rcp}_{period}-{period_end}_{rel}_' +
-    '{variable_descriptor}_percentiles{nat}.csv')
+    '/shares/gcp/outputs/impact_lab_website/web-v{input_version}/{output_dir}/' +
+    '{{agglev}}/global_{{transformation}}_{{{{season}}}}_{{rcp}}_{{period}}-{{period_end}}_{{rel}}_' +
+    '{{variable_descriptor}}_percentiles{{nat}}.csv'
+        .format(input_version=input_version, output_dir=output_dir))
 
 
 pattern_sources = {
@@ -228,7 +245,7 @@ def upper_coord_names(da, dim='model'):
     return da
 
 
-def get_quantiles(da, rcp, quantiles = [0.05, 0.5, 0.95]):
+def get_quantiles(da, rcp, quantiles = QUANTILES):
     return impactlab_tools.utils.weighting.weighted_quantile_xr(
             upper_coord_names(da),
             quantiles,
@@ -440,7 +457,7 @@ def output_all_tas(variable_definitions, write_path, seasonal=False):
                     if 'season' in ds.dims:
                         try:
                             for seas in seasons:
-                                ((ds*9./5+32).sel(season=seas)
+                                (((ds*9./5)+32).sel(season=seas)
                                     .to_series()
                                     .unstack('quantile')
                                     .to_csv(outpath.format(season=seas)))
@@ -454,7 +471,7 @@ def output_all_tas(variable_definitions, write_path, seasonal=False):
                             raise e
 
                     else:
-                        ((ds*9./5+32).to_series()
+                        (((ds*9./5)+32).to_series()
                             .unstack('quantile')
                             .to_csv(outpath))
                         
