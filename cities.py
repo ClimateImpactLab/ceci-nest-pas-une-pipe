@@ -5,7 +5,7 @@ import pandas as pd
 
 inpaths = (
     '../playground/csv2/global-csvs-v2.0/hierid/' +
-    'global_tasmax-over-95F_{rcp}_{per}_{rel}_days-over-95F_percentiles.csv')
+    'global_tasmax_{rcp}_{per}_{rel}_days-over-95F_percentiles.csv')
 
 outpaths = (
     '../playground/csv2/cities-v2.0/' +
@@ -26,7 +26,7 @@ cities = [
     ('France-Paris', 'FRA.11.75'),
     ('Greece-Athens', 'GRC.2.6'),
     ('China-Shanghai-Puxi', 'CHN.25.262.1764'),
-    ('Japan-Tokyo', 'JPN.41'),
+    # ('Japan-Tokyo', 'JPN.41'),
     ('Somalia-Mogadishu', 'SOM.3.10'),
     ('Brazil-Brasilia', 'BRA.7.804.1862'),
     ('Mexico-Mexico City','MEX.9.264'),

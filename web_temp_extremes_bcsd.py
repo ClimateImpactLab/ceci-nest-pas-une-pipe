@@ -113,43 +113,44 @@ JOBS = [
     ]
 
 PERIODS = [
-    dict(rcp='historical', pername='1986', years=list(range(1986, 2006))),
-    dict(rcp='rcp85', pername='2020', years=list(range(2020, 2040))),
-    dict(rcp='rcp85', pername='2040', years=list(range(2040, 2060))),
-    dict(rcp='rcp85', pername='2060', years=list(range(2060, 2080))),
-    dict(rcp='rcp85', pername='2080', years=list(range(2080, 2100))),
-    dict(rcp='rcp45', pername='2020', years=list(range(2020, 2040))),
-    dict(rcp='rcp45', pername='2040', years=list(range(2040, 2060))),
-    dict(rcp='rcp45', pername='2060', years=list(range(2060, 2080))),
+    # dict(rcp='historical', pername='1986', years=list(range(1986, 2006))),
+    # dict(rcp='rcp85', pername='2020', years=list(range(2020, 2040))),
+    # dict(rcp='rcp85', pername='2040', years=list(range(2040, 2060))),
+    # dict(rcp='rcp85', pername='2060', years=list(range(2060, 2080))),
+    # dict(rcp='rcp85', pername='2080', years=list(range(2080, 2100))),
+    # dict(rcp='rcp45', pername='2020', years=list(range(2020, 2040))),
+    # dict(rcp='rcp45', pername='2040', years=list(range(2040, 2060))),
+    # dict(rcp='rcp45', pername='2060', years=list(range(2060, 2080))),
     dict(rcp='rcp45', pername='2080', years=list(range(2080, 2100)))
     ]
 
 MODELS = list(map(lambda x: dict(model=x), [
-    'ACCESS1-0',
-    'bcc-csm1-1',
-    'BNU-ESM',
-    'CanESM2',
-    'CCSM4',
-    'CESM1-BGC',
-    'CNRM-CM5',
-    'CSIRO-Mk3-6-0',
-    'GFDL-CM3',
-    'GFDL-ESM2G',
-    'GFDL-ESM2M',
-    'IPSL-CM5A-LR',
-    'IPSL-CM5A-MR',
-    'MIROC-ESM-CHEM',
-    'MIROC-ESM',
-    'MIROC5',
-    'MPI-ESM-LR',
+    # 'ACCESS1-0',
+    # 'bcc-csm1-1',
+    # 'BNU-ESM',
+    # 'CanESM2',
+    # 'CCSM4',
+    # 'CESM1-BGC',
+    # 'CNRM-CM5',
+    # 'CSIRO-Mk3-6-0',
+    # 'GFDL-CM3',
+    # 'GFDL-ESM2G',
+    # 'GFDL-ESM2M',
+    # 'IPSL-CM5A-LR',
+    # 'IPSL-CM5A-MR',
+    # 'MIROC-ESM-CHEM',
+    # 'MIROC-ESM',
+    # 'MIROC5',
+    # 'MPI-ESM-LR',
     'MPI-ESM-MR',
     'MRI-CGCM3',
     'inmcm4',
-    'NorESM1-M']))
+    'NorESM1-M'
+    ]))
 
 AGGREGATIONS = [
-    {'agglev': 'ISO', 'aggwt': 'areawt'},
-    # {'agglev': 'hierid', 'aggwt': 'areawt'}
+    # {'agglev': 'ISO', 'aggwt': 'areawt'},
+    {'agglev': 'hierid', 'aggwt': 'areawt'}
     ]
 
 

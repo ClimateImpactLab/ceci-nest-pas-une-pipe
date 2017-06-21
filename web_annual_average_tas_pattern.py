@@ -84,14 +84,14 @@ per60 = list(range(2060, 2080))
 per80 = list(range(2080, 2100))
 
 PERIODS = [
-    # dict(rcp='rcp45', read_acct='mdelgado', pername='2020', years=per20),
-    # dict(rcp='rcp45', read_acct='mdelgado', pername='2040', years=per40),
+    dict(rcp='rcp45', read_acct='mdelgado', pername='2020', years=per20),
+    dict(rcp='rcp45', read_acct='mdelgado', pername='2040', years=per40),
     dict(rcp='rcp45', read_acct='mdelgado', pername='2060', years=per60),
-    # dict(rcp='rcp45', read_acct='mdelgado', pername='2080', years=per80),
-    # dict(rcp='rcp85', read_acct='jiacany', pername='2020', years=per20),
-    # dict(rcp='rcp85', read_acct='jiacany', pername='2040', years=per40),
+    dict(rcp='rcp45', read_acct='mdelgado', pername='2080', years=per80),
+    dict(rcp='rcp85', read_acct='jiacany', pername='2020', years=per20),
+    dict(rcp='rcp85', read_acct='jiacany', pername='2040', years=per40),
     dict(rcp='rcp85', read_acct='jiacany', pername='2060', years=per60),
-    # dict(rcp='rcp85', read_acct='jiacany', pername='2080', years=per80)
+    dict(rcp='rcp85', read_acct='jiacany', pername='2080', years=per80)
     ]
 
 rcp_models = {
