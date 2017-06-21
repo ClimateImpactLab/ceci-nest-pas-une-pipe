@@ -228,7 +228,6 @@ main = utils.slurm_runner(
     filepath=__file__,
     job_spec=JOB_SPEC,
     run_job=run_job,
-    test_job=job_test_transformations,
     onfinish=onfinish,
     additional_metadata=ADDITIONAL_METADATA)
 
