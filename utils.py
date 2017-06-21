@@ -52,12 +52,12 @@ mkdir -p locks
 for i in {{1..{jobs_per_node}}}
 do
     nohup python {filepath} do_job --job_name {jobname} \
---job_id "${{SLURM_ARRAY_JOB_ID}}" --num_jobs {numjobs} {flags} \
-> log/nohup-{jobname}-${{SLURM_ARRAY_JOB_ID}}-${{SLURM_ARRAY_TASK_ID}}-$i.out &
+--job_id {uniqueid} --num_jobs {numjobs} {flags} \
+> log/nohup-{jobname}-{uniqueid}-${{SLURM_ARRAY_TASK_ID}}-$i.out &
 done
 
 python {filepath} wait --job_name {jobname} \
---job_id "${{SLURM_ARRAY_JOB_ID}}" --num_jobs {numjobs} {flags}
+--job_id {uniqueid} --num_jobs {numjobs} {flags}
 '''
 
 SLURM_SINGLE_SCRIPT = SLURM_SCRIPT + '''
@@ -99,6 +99,7 @@ def _prep_slurm(
         partition='savio2',
         job_spec=None,
         limit=None,
+        uniqueid='"${{SLURM_ARRAY_JOB_ID}}"',
         jobs_per_node=24,
         maxnodes=100,
         dependencies=None,
@@ -148,6 +149,7 @@ def _prep_slurm(
             numjobs=numjobs,
             jobs_per_node=jobs_per_node,
             maxnodes=maxnodes,
+            uniqueid=uniqueid,
             filepath=filepath.replace(os.sep, '/'),
             dependencies=depstr,
             flags=flagstr,
@@ -160,6 +162,7 @@ def run_slurm(
         partition='savio2',
         job_spec=None,
         limit=None,
+        uniqueid='"${{SLURM_ARRAY_JOB_ID}}"',
         jobs_per_node=24,
         maxnodes=100,
         dependencies=None,
@@ -171,6 +174,7 @@ def run_slurm(
         partition=partition,
         job_spec=job_spec,
         limit=limit,
+        uniqueid=uniqueid,
         jobs_per_node=jobs_per_node,
         maxnodes=maxnodes,
         dependencies=dependencies,
@@ -235,7 +239,8 @@ def slurm_runner(filepath, job_spec, run_job, onfinish=None):
     @click.option('--jobname', '-j', default='test', help='name of the job')
     @click.option('--partition', '-p', default='savio2', help='resource on which to run')
     @click.option('--dependency', '-d', type=int, multiple=True)
-    def prep(limit=None, jobs_per_node=24, jobname='slurm_job', dependency=None, partition='savio2', maxnodes=100):
+    @click.option('--uniqueid', '-u', default='"${{SLURM_ARRAY_JOB_ID}}"', help='Unique job pool id')
+    def prep(limit=None, jobs_per_node=24, jobname='slurm_job', dependency=None, partition='savio2', maxnodes=100, uniqueid='"${{SLURM_ARRAY_JOB_ID}}"'):
         _prep_slurm(
             filepath=filepath,
             jobname=jobname,
@@ -244,6 +249,7 @@ def slurm_runner(filepath, job_spec, run_job, onfinish=None):
             jobs_per_node=jobs_per_node,
             maxnodes=maxnodes,
             limit=limit,
+            uniqueid=uniqueid,
             dependencies=('afterany', list(dependency)))
 
     @slurm.command()
@@ -253,7 +259,8 @@ def slurm_runner(filepath, job_spec, run_job, onfinish=None):
     @click.option('--jobname', '-j', default='test', help='name of the job')
     @click.option('--partition', '-p', default='savio2', help='resource on which to run')
     @click.option('--dependency', '-d', type=int, multiple=True)
-    def run(limit=None, jobs_per_node=24, jobname='slurm_job', dependency=None, partition='savio2', maxnodes=100):
+    @click.option('--uniqueid', '-u', default='"${{SLURM_ARRAY_JOB_ID}}"', help='Unique job pool id')
+    def run(limit=None, jobs_per_node=24, jobname='slurm_job', dependency=None, partition='savio2', maxnodes=100, uniqueid='"${{SLURM_ARRAY_JOB_ID}}"'):
         slurm_id = run_slurm(
             filepath=filepath,
             jobname=jobname,
@@ -262,6 +269,7 @@ def slurm_runner(filepath, job_spec, run_job, onfinish=None):
             jobs_per_node=jobs_per_node,
             maxnodes=maxnodes,
             limit=limit,
+            uniqueid=uniqueid,
             dependencies=('afterany', list(dependency)))
 
         finish_id = run_slurm(
