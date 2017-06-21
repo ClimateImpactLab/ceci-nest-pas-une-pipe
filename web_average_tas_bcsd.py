@@ -25,7 +25,6 @@ from climate_toolbox import (
     weighted_aggregate_grid_to_regions)
 
 logger = logging.getLogger('uploader')
-logger.setLevel('DEBUG')
 
 __author__ = 'Michael Delgado'
 __contact__ = 'mdelgado@rhg.com'
@@ -183,7 +182,7 @@ def run_job(
 
     read_file = BCSD_orig_files.format(**metadata)
     write_file = WRITE_PATH.format(**metadata)
-    
+
     # do not duplicate
     if os.path.isfile(write_file):
         return
@@ -230,35 +229,6 @@ def run_job(
 
 def onfinish():
     logger.info('all done!')
-
-
-def job_test_filepaths(
-        metadata,
-        variable,
-        transformation_name,
-        transformation,
-        unit,
-        read_acct,
-        rcp,
-        pername,
-        years,
-        model,
-        baseline_model,
-        seasons,
-        agglev,
-        aggwt,
-        weights=None):
-
-    # make sure the input data exist
-
-    read_file = BCSD_orig_files.format(**metadata)
-
-    for y in years:
-        fp = read_file.format(year=y)
-        assert os.path.isfile(fp), "No such file: '{}'".format(fp)
-    
-    # make sure the output file has sufficient metadata
-    WRITE_PATH.format(**metadata)
 
 
 main = utils.slurm_runner(

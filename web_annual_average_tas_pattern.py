@@ -21,7 +21,6 @@ from climate_toolbox import (
     weighted_aggregate_grid_to_regions)
 
 logger = logging.getLogger('uploader')
-logger.setLevel('DEBUG')
 
 __author__ = 'Michael Delgado'
 __contact__ = 'mdelgado@rhg.com'

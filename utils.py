@@ -53,7 +53,7 @@ for i in {{1..{jobs_per_node}}}
 do
     nohup python {filepath} do_job --job_name {jobname} \
 --job_id "${{SLURM_ARRAY_JOB_ID}}" --num_jobs {numjobs} {flags} \
->> log/nohup-{jobname}-${{SLURM_ARRAY_JOB_ID}}-${{SLURM_ARRAY_TASK_ID}}-$i.out &
+> log/nohup-{jobname}-${{SLURM_ARRAY_JOB_ID}}-${{SLURM_ARRAY_TASK_ID}}-$i.out &
 done
 
 python {filepath} wait --job_name {jobname} \
