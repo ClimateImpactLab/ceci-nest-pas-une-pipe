@@ -352,6 +352,7 @@ def output_all_tasminmax(variable_definitions, write_path):
                             agglev=agglev,
                             variable=variable,
                             varname=varname,
+                            transformation=transformation,
                             variable_descriptor=variable_descriptor,
                             period=str(period),
                             rcp=rcp,
@@ -372,6 +373,7 @@ def output_all_tasminmax(variable_definitions, write_path):
                         write_path.format(
                             agglev=agglev,
                             variable=variable,
+                            transformation=transformation,
                             period=str(period),
                             rcp=rcp,
                             period_end = period + 19,
@@ -408,6 +410,7 @@ def output_all_tas(variable_definitions, write_path, seasonal=False):
                             agglev=agglev,
                             variable=variable,
                             varname=varname,
+                            transformation=transformation,
                             variable_descriptor=variable_descriptor,
                             period=str(period),
                             rcp=rcp,
@@ -418,6 +421,7 @@ def output_all_tas(variable_definitions, write_path, seasonal=False):
                     outpath_hist = write_path.format(
                             agglev=agglev,
                             variable=variable,
+                            transformation=transformation,
                             period=str(period),
                             rcp=rcp,
                             period_end = period + 19,
