@@ -101,47 +101,47 @@ JOBS = [
     #     variable='tasmax',
     #     transformation=tasmax_over_118F_365day),
     
-    dict(transformation_name='tasmax-over-95F',
-        unit='days-over-95F',
-        variable='tasmax',
-        transformation=tasmax_over_95F_365day),
+    # dict(transformation_name='tasmax-over-95F',
+    #     unit='days-over-95F',
+    #     variable='tasmax',
+    #     transformation=tasmax_over_95F_365day),
     
-    # dict(transformation_name='tasmin-under-32F',
-    #     unit='days-under-32F',
-    #     variable='tasmin',
-    #     transformation=tasmin_under_32F_365day)
+    dict(transformation_name='tasmin-under-32F',
+        unit='days-under-32F',
+        variable='tasmin',
+        transformation=tasmin_under_32F_365day)
     ]
 
 PERIODS = [
-    # dict(rcp='historical', pername='1986', years=list(range(1986, 2006))),
-    # dict(rcp='rcp85', pername='2020', years=list(range(2020, 2040))),
-    # dict(rcp='rcp85', pername='2040', years=list(range(2040, 2060))),
-    # dict(rcp='rcp85', pername='2060', years=list(range(2060, 2080))),
-    # dict(rcp='rcp85', pername='2080', years=list(range(2080, 2100))),
-    # dict(rcp='rcp45', pername='2020', years=list(range(2020, 2040))),
-    # dict(rcp='rcp45', pername='2040', years=list(range(2040, 2060))),
-    # dict(rcp='rcp45', pername='2060', years=list(range(2060, 2080))),
+    dict(rcp='historical', pername='1986', years=list(range(1986, 2006))),
+    dict(rcp='rcp85', pername='2020', years=list(range(2020, 2040))),
+    dict(rcp='rcp85', pername='2040', years=list(range(2040, 2060))),
+    dict(rcp='rcp85', pername='2060', years=list(range(2060, 2080))),
+    dict(rcp='rcp85', pername='2080', years=list(range(2080, 2100))),
+    dict(rcp='rcp45', pername='2020', years=list(range(2020, 2040))),
+    dict(rcp='rcp45', pername='2040', years=list(range(2040, 2060))),
+    dict(rcp='rcp45', pername='2060', years=list(range(2060, 2080))),
     dict(rcp='rcp45', pername='2080', years=list(range(2080, 2100)))
     ]
 
 MODELS = list(map(lambda x: dict(model=x), [
-    # 'ACCESS1-0',
-    # 'bcc-csm1-1',
-    # 'BNU-ESM',
-    # 'CanESM2',
-    # 'CCSM4',
-    # 'CESM1-BGC',
-    # 'CNRM-CM5',
-    # 'CSIRO-Mk3-6-0',
-    # 'GFDL-CM3',
-    # 'GFDL-ESM2G',
-    # 'GFDL-ESM2M',
-    # 'IPSL-CM5A-LR',
-    # 'IPSL-CM5A-MR',
-    # 'MIROC-ESM-CHEM',
-    # 'MIROC-ESM',
-    # 'MIROC5',
-    # 'MPI-ESM-LR',
+    'ACCESS1-0',
+    'bcc-csm1-1',
+    'BNU-ESM',
+    'CanESM2',
+    'CCSM4',
+    'CESM1-BGC',
+    'CNRM-CM5',
+    'CSIRO-Mk3-6-0',
+    'GFDL-CM3',
+    'GFDL-ESM2G',
+    'GFDL-ESM2M',
+    'IPSL-CM5A-LR',
+    'IPSL-CM5A-MR',
+    'MIROC-ESM-CHEM',
+    'MIROC-ESM',
+    'MIROC5',
+    'MPI-ESM-LR',
     'MPI-ESM-MR',
     'MRI-CGCM3',
     'inmcm4',
@@ -149,7 +149,7 @@ MODELS = list(map(lambda x: dict(model=x), [
     ]))
 
 AGGREGATIONS = [
-    # {'agglev': 'ISO', 'aggwt': 'areawt'},
+    {'agglev': 'ISO', 'aggwt': 'areawt'},
     {'agglev': 'hierid', 'aggwt': 'areawt'}
     ]
 
@@ -222,88 +222,6 @@ def run_job(
 
 def onfinish():
     print('all done!')
-
-
-def job_test_filepaths(
-        metadata,
-        variable,
-        transformation_name,
-        transformation,
-        unit,
-        read_acct,
-        rcp,
-        pername,
-        years,
-        model,
-        baseline_model,
-        seasons,
-        agglev,
-        aggwt,
-        weights=None):
-
-    # make sure the input data exist
-
-    read_file = BCSD_orig_files.format(**metadata)
-
-    for y in years:
-        fp = read_file.format(year=y)
-        assert os.path.isfile(fp), "No such file: '{}'".format(fp)
-    
-    # make sure the output file has sufficient metadata
-    WRITE_PATH.format(**metadata)
-
-
-def job_test_transformations(
-        metadata,
-        variable,
-        transformation_name,
-        transformation,
-        unit,
-        rcp,
-        pername,
-        years,
-        model,
-        agglev,
-        aggwt,
-        weights=None):
-
-    # Add to job metadata
-    metadata.update(dict(
-        time_horizon='{}-{}'.format(years[0], years[-1])))
-
-    read_file = BCSD_orig_files.format(**metadata)
-
-    # Get transformed data
-    for y in years:
-
-        fp = read_file.format(year=y)
-
-        ds = load_bcsd(fp, variable, broadcast_dims=('time',))
-
-        logger.debug((
-            '{} {} - testing transforms against one another ')
-                .format(model, y))
-
-        nonzero_msg = "diff less than zero in {}".format(fp)
-        toobig_msg = "diff more than 1/4 in {}".format(fp)
-
-        if transformation_name == 'tasmax-over-95F':
-            diff = (tasmax_over_95F(ds) - tasmax_over_95F_365day(ds))
-            logger.debug('diff >= 0:\n{}'.format((diff >= 0).all()))
-            assert (diff >= 0).all(), nonzero_msg
-            logger.debug('diff <= 1:\n{}'.format((diff <= 1).all()))
-            assert (diff <= 1).all(), toobig_msg
-
-        elif transformation_name == 'tasmin-under-32F':
-            diff = (tasmin_under_32F(ds) - tasmin_under_32F_365day(ds))
-            logger.debug('diff >= 0:\n{}'.format((diff >= 0).all()))
-            assert (diff >= 0).all(), nonzero_msg
-            logger.debug('diff <= 1:\n{}'.format((diff <= 1).all()))
-            assert (diff <= 1).all(), toobig_msg
-
-        else:
-            raise ValueError('transformation "{}" not recognized'
-                .format(transformation_name))
 
 
 main = utils.slurm_runner(
