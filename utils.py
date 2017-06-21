@@ -52,12 +52,12 @@ mkdir -p locks
 for i in {{1..{jobs_per_node}}}
 do
     nohup python {filepath} do_job --job_name {jobname} \
---job_id "${{SLURM_JOB_ID}}" --num_jobs {numjobs} {flags} \
->> log/nohup-{jobname}-${{SLURM_JOB_ID}}-$i.out &
+--job_id "${{SLURM_ARRAY_JOB_ID}}" --num_jobs {numjobs} {flags} \
+>> log/nohup-{jobname}-${{SLURM_ARRAY_JOB_ID}}-$i.out &
 done
 
 python {filepath} wait --job_name {jobname} \
---job_id "${{SLURM_JOB_ID}}" --num_jobs {numjobs} {flags}
+--job_id "${{SLURM_ARRAY_JOB_ID}}" --num_jobs {numjobs} {flags}
 '''
 
 SLURM_SINGLE_SCRIPT = SLURM_SCRIPT + '''
