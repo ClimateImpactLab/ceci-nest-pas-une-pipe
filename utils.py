@@ -13,6 +13,8 @@ from _compat import exclusive_open
 FORMAT = '%(asctime)-15s %(message)s'
 
 logger = logging.getLogger('uploader')
+logger.setLevel('DEBUG')
+
 formatter = logging.Formatter(FORMAT)
 
 SLURM_SCRIPT = '''
