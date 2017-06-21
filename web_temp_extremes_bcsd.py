@@ -101,10 +101,10 @@ JOBS = [
         variable='tasmax',
         transformation=tasmax_over_95F_365day),
     
-    dict(transformation_name='tasmin-under-32F',
-        unit='days-under-32F',
-        variable='tasmin',
-        transformation=tasmin_under_32F_365day)
+    # dict(transformation_name='tasmin-under-32F',
+    #     unit='days-under-32F',
+    #     variable='tasmin',
+    #     transformation=tasmin_under_32F_365day)
     ]
 
 PERIODS = [
@@ -143,7 +143,7 @@ MODELS = list(map(lambda x: dict(model=x), [
     'NorESM1-M']))
 
 AGGREGATIONS = [
-    {'agglev': 'ISO', 'aggwt': 'areawt'},
+    # {'agglev': 'ISO', 'aggwt': 'areawt'},
     {'agglev': 'hierid', 'aggwt': 'areawt'}]
 
 
