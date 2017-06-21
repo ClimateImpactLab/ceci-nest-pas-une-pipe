@@ -11,7 +11,7 @@ import impactlab_tools.utils.weighting
 
 input_version = '2.0'
 output_version = '2.3'
-quantile_run = True
+quantile_run = False
 
 
 if quantile_run:
