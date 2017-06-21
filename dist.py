@@ -16,7 +16,7 @@ READ_PATH = (
 
 WRITE_PATH = (
     '/shares/gcp/outputs/impact_lab_website/web-v2.0/global-csvs-v2.0/' +
-    '{agglev}/global_{variable}_{rcp}_{period}-{period_end}_{rel}_' +
+    '{agglev}/global_{transformation}_{rcp}_{period}-{period_end}_{rel}_' +
     '{variable_descriptor}_percentiles{nat}.csv')
 
 READ_PATH_SEASONAL = (
@@ -26,7 +26,7 @@ READ_PATH_SEASONAL = (
 
 WRITE_PATH_SEASONAL = (
     '/shares/gcp/outputs/impact_lab_website/web-v2.0/global-csvs-v2.0/' +
-    '{agglev}/global_{variable}_{{season}}_{rcp}_{period}-{period_end}_{rel}_' +
+    '{agglev}/global_{transformation}_{{season}}_{rcp}_{period}-{period_end}_{rel}_' +
     '{variable_descriptor}_percentiles{nat}.csv')
 
 
@@ -495,4 +495,4 @@ if __name__ == '__main__':
     plot_sample_data()
 
     do_tasminmax()
-    # do_tas()
+    do_tas()
