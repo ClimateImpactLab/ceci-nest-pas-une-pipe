@@ -4,11 +4,11 @@ import itertools
 import pandas as pd
 
 inpaths = (
-    '../playground/csv2/global-csvs-v2.0/hierid/' +
-    'global_tasmax_{rcp}_{per}_{rel}_days-over-95F_percentiles.csv')
+    '../playground/csv3/global-quants-v2.3/hierid/' +
+    'global_tasmax-over-95F_{rcp}_{per}_{rel}_days-over-95F_percentiles.csv')
 
 outpaths = (
-    '../playground/csv2/cities-v2.0/' +
+    '../playground/csv3/cities-v2.3/' +
     'city-summary_tasmax-over-95F-{city}.csv')
 
 cities = [
@@ -29,7 +29,9 @@ cities = [
     # ('Japan-Tokyo', 'JPN.41'),
     ('Somalia-Mogadishu', 'SOM.3.10'),
     ('Brazil-Brasilia', 'BRA.7.804.1862'),
-    ('Mexico-Mexico City','MEX.9.264'),
+    ('Mexico-MexicoCity','MEX.9.264'),
+    ('USA-NewYorkNY', 'USA.33.1862'),
+    ('USA-ChicagoIL', 'USA.14.608')
     ]
 
 rcps = ['rcp45', 'rcp85']
