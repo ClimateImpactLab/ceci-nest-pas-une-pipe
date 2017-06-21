@@ -189,6 +189,10 @@ def run_job(
 
     read_file = BCSD_orig_files.format(**metadata)
     write_file = WRITE_PATH.format(**metadata)
+    
+    # do not duplicate
+    if os.path.isfile(write_file):
+        return
 
     # Get transformed data
     annual = []
