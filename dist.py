@@ -23,27 +23,27 @@ else:
     QUANTILES = [0.05, 0.5, 0.95]
 
 READ_PATH = (
-    '/shares/gcp/outputs/impact_lab_website/web-v{input_version}/global/climate/' +
-    '{{rcp_per}}/{{agglev}}/{{transformation}}/' +
-    '{{transformation}}_{{agglev}}_{{aggwt}}_{{model}}_{{period}}.nc'
+    ('/shares/gcp/outputs/impact_lab_website/web-v{input_version}/global/climate/' +
+        '{{rcp_per}}/{{agglev}}/{{transformation}}/' +
+        '{{transformation}}_{{agglev}}_{{aggwt}}_{{model}}_{{period}}.nc')
         .format(input_version=input_version))
 
 WRITE_PATH = (
-    '/shares/gcp/outputs/impact_lab_website/web-v{input_version}/{output_dir}/' +
-    '{{agglev}}/global_{{transformation}}_{{rcp}}_{{period}}-{{period_end}}_{{rel}}_' +
-    '{{variable_descriptor}}_percentiles{{nat}}.csv'
+    ('/shares/gcp/outputs/impact_lab_website/web-v{input_version}/{output_dir}/' +
+        '{{agglev}}/global_{{transformation}}_{{rcp}}_{{period}}-{{period_end}}_{{rel}}_' +
+        '{{variable_descriptor}}_percentiles{{nat}}.csv')
         .format(input_version=input_version, output_dir=output_dir))
 
 READ_PATH_SEASONAL = (
-    '/shares/gcp/outputs/impact_lab_website/web-v{input_version}/global/climate/' +
-    '{{rcp_per}}/{{agglev}}/{{transformation}}/' +
-    '{{transformation}}_{{agglev}}_{{aggwt}}_{{model}}_{{{{season}}}}_{{period}}.nc'
+    ('/shares/gcp/outputs/impact_lab_website/web-v{input_version}/global/climate/' +
+        '{{rcp_per}}/{{agglev}}/{{transformation}}/' +
+        '{{transformation}}_{{agglev}}_{{aggwt}}_{{model}}_{{{{season}}}}_{{period}}.nc')
         .format(input_version=input_version))
 
 WRITE_PATH_SEASONAL = (
-    '/shares/gcp/outputs/impact_lab_website/web-v{input_version}/{output_dir}/' +
-    '{{agglev}}/global_{{transformation}}_{{{{season}}}}_{{rcp}}_{{period}}-{{period_end}}_{{rel}}_' +
-    '{{variable_descriptor}}_percentiles{{nat}}.csv'
+    ('/shares/gcp/outputs/impact_lab_website/web-v{input_version}/{output_dir}/' +
+        '{{agglev}}/global_{{transformation}}_{{{{season}}}}_{{rcp}}_{{period}}-{{period_end}}_{{rel}}_' +
+        '{{variable_descriptor}}_percentiles{{nat}}.csv')
         .format(input_version=input_version, output_dir=output_dir))
 
 
