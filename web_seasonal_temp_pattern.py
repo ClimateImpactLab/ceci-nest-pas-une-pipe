@@ -74,6 +74,7 @@ JOBS = [
     dict(
         transformation_name='tas-seasonal',
         variable='tas',
+        unit='degC'
         transformation=average_seasonal_temp_pattern)]
 
 per20 = list(range(2020, 2040))
@@ -146,6 +147,7 @@ def run_job(
         variable,
         transformation_name,
         transformation,
+        unit,
         rcp,
         pername,
         read_acct,
