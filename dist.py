@@ -10,16 +10,16 @@ import seaborn
 import impactlab_tools.utils.weighting
 
 input_version = '2.0'
-output_version = '2.0'
+output_version = '2.3'
 quantile_run = True
 
 
 if quantile_run:
-    output_dir = ('global-csvs-v{}'.format(output_version))
+    output_dir = ('global-quants-v{}'.format(output_version))
     QUANTILES = [0.05, 0.167, 0.5, 0.833, 0.95]
 
 else:
-    output_dir = ('global-quants-v{}'.format(output_version))
+    output_dir = ('global-csvs-v{}'.format(output_version))
     QUANTILES = [0.05, 0.5, 0.95]
 
 READ_PATH = (
