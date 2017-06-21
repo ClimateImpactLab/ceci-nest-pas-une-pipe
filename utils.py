@@ -1,9 +1,19 @@
+import re
 import os
+import time
 import click
+import pprint
+import logging
 import itertools
 import functools
 import subprocess
-import re
+
+from _compat import exclusive_open
+
+FORMAT = '%(asctime)-15s %(message)s'
+logging.basicConfig(format=FORMAT)
+
+logger = logging.getLogger('uploader')
 
 SLURM_SCRIPT = '''
 #!/bin/bash
@@ -21,21 +31,40 @@ SLURM_SCRIPT = '''
 #
 #SBATCH --nodes=1
 #
-#SBATCH --ntasks-per-node=24
-#
-#SBATCH  --cpus-per-task=1
-#
 # Wall clock limit:
 #SBATCH --time=72:00:00
 #
 #SBATCH --requeue
-{jobs}
 {dependencies}
 {output}
+'''.strip()
+
+SLURM_MULTI_SCRIPT = SLURM_SCRIPT + '''
+#
+#SBATCH --array=0-{maxnodes}
+
+# set up directories
+mkdir -p log
+mkdir -p locks
+
+## Run command
+
+for i in {{1..{jobs_per_node}}}
+do
+    nohup python {filepath} do_job --job_name {jobname} \
+--job_id "${{SLURM_JOB_ID}}" --num_jobs {numjobs} {flags} \
+>> log/nohup-{jobname}-${{SLURM_JOB_ID}}-$i.out &
+done
+
+python {filepath} wait --job_name {jobname} \
+--job_id "${{SLURM_JOB_ID}}" --num_jobs {numjobs} {flags}
+'''
+
+SLURM_SINGLE_SCRIPT = SLURM_SCRIPT + '''
 
 ## Run command
 python {filepath} {flags}
-'''.strip()
+'''
 
 
 def _product(values):
@@ -69,7 +98,9 @@ def _prep_slurm(
         jobname='slurm_job',
         partition='savio2',
         job_spec=None,
-        num_jobs=None,
+        limit=None,
+        jobs_per_node=24,
+        maxnodes=100,
         dependencies=None,
         flags=None):
 
@@ -89,28 +120,34 @@ def _prep_slurm(
     else:
         flagstr = ''
 
+
     if job_spec:
         n = len(list(generate_jobs(job_spec)))
 
-        if num_jobs is not None:
-            n = min(num_jobs, n)
+        if limit is not None:
+            n = min(limit, n)
 
-        jobstr = '#\n#SBATCH --array=0-{}'.format(n)
-        
-        flagstr = flagstr + ' --job_id ${SLURM_ARRAY_TASK_ID}'
+        numjobs = n
+
         output = ('#\n#SBATCH --output log/slurm-{jobname}-%A_%a.out'
                     .format(jobname=jobname))
 
+        template = SLURM_MULTI_SCRIPT
+
     else:
-        jobstr = ''
+        numjobs = 1
         output = ('#\n#SBATCH --output log/slurm-{jobname}-%A.out'
                     .format(jobname=jobname))
 
+        template = SLURM_SINGLE_SCRIPT
+
     with open('run-slurm.sh', 'w+') as f:
-        f.write(SLURM_SCRIPT.format(
+        f.write(template.format(
             jobname=jobname,
-            jobs=jobstr,
             partition=partition,
+            numjobs=numjobs,
+            jobs_per_node=jobs_per_node,
+            maxnodes=maxnodes,
             filepath=filepath.replace(os.sep, '/'),
             dependencies=depstr,
             flags=flagstr,
@@ -122,11 +159,22 @@ def run_slurm(
         jobname='slurm_job',
         partition='savio2',
         job_spec=None,
-        num_jobs=None,
+        limit=None,
+        jobs_per_node=24,
+        maxnodes=100,
         dependencies=None,
         flags=None):
 
-    _prep_slurm(filepath, jobname, partition, job_spec, num_jobs, dependencies, flags)
+    _prep_slurm(
+        filepath=filepath,
+        jobname=jobname,
+        partition=partition,
+        job_spec=job_spec,
+        limit=limit,
+        jobs_per_node=jobs_per_node,
+        maxnodes=maxnodes,
+        dependencies=dependencies,
+        flags=flags)
 
     job_command = ['sbatch', 'run-slurm.sh']
 
@@ -173,7 +221,7 @@ def get_job_by_index(job_spec, index):
         for i in range(len(job_spec))])
 
 
-def slurm_runner(filepath, job_spec, run_job, onfinish=None, test_job=None, additional_metadata=None):
+def slurm_runner(filepath, job_spec, run_job, onfinish=None):
 
     @click.group()
     def slurm():
@@ -181,28 +229,40 @@ def slurm_runner(filepath, job_spec, run_job, onfinish=None, test_job=None, addi
             os.makedirs('log')
 
     @slurm.command()
-    @click.option('--dependency', '-d', type=int, multiple=True)
-    def prep(dependency=False):
-        _prep_slurm(
-            filepath=filepath,
-            job_spec=job_spec,
-            dependencies=('afterany', list(dependency)),
-            flags=['do_job'])
-
-    @slurm.command()
-    @click.option('--num_jobs', '-n', type=int, required=False, default=None, help='Number of iterations to run')
+    @click.option('--limit', '-l', type=int, required=False, default=None, help='Number of iterations to run')
+    @click.option('--jobs_per_node', '-n', type=int, required=False, default=24, help='Number of jobs to run per node')
+    @click.option('--maxnodes', '-x', type=int, required=False, default=100, help='Number of nodes to request for this job')
     @click.option('--jobname', '-j', default='test', help='name of the job')
     @click.option('--partition', '-p', default='savio2', help='resource on which to run')
     @click.option('--dependency', '-d', type=int, multiple=True)
-    def run(num_jobs=None, jobname='slurm_job', dependency=None, partition='savio2'):
+    def prep(limit=None, jobs_per_node=24, jobname='slurm_job', dependency=None, partition='savio2', maxnodes=100):
+        _prep_slurm(
+            filepath=filepath,
+            jobname=jobname,
+            partition=partition,
+            job_spec=job_spec,
+            jobs_per_node=jobs_per_node,
+            maxnodes=maxnodes,
+            limit=limit,
+            dependencies=('afterany', list(dependency)))
+
+    @slurm.command()
+    @click.option('--limit', '-l', type=int, required=False, default=None, help='Number of iterations to run')
+    @click.option('--jobs_per_node', '-n', type=int, required=False, default=24, help='Number of jobs to run per node')
+    @click.option('--maxnodes', '-x', type=int, required=False, default=100, help='Number of nodes to request for this job')
+    @click.option('--jobname', '-j', default='test', help='name of the job')
+    @click.option('--partition', '-p', default='savio2', help='resource on which to run')
+    @click.option('--dependency', '-d', type=int, multiple=True)
+    def run(limit=None, jobs_per_node=24, jobname='slurm_job', dependency=None, partition='savio2', maxnodes=100):
         slurm_id = run_slurm(
             filepath=filepath,
             jobname=jobname,
             partition=partition,
             job_spec=job_spec,
-            num_jobs=num_jobs,
-            dependencies=('afterany', list(dependency)),
-            flags=['do_job'])
+            jobs_per_node=jobs_per_node,
+            maxnodes=maxnodes,
+            limit=limit,
+            dependencies=('afterany', list(dependency)))
 
         finish_id = run_slurm(
             filepath=filepath,
@@ -229,54 +289,71 @@ def slurm_runner(filepath, job_spec, run_job, onfinish=None, test_job=None, addi
         if onfinish:
             onfinish()
 
+    @slurm.command()
+    @click.option('--job_name', required=True)
+    @click.option('--job_id', required=True)
+    @click.option('--num_jobs', required=True, type=int)
+    def do_job(job_name, job_id, num_jobs=None):
+
+        if not os.path.isdir('locks'):
+            os.makedirs('locks')
+
+        for task_id in range(num_jobs):
+
+            try:
+                with exclusive_open(
+                        'locks/{}-{}-{}.lck'.format(job_name, job_id, task_id)) as f:
+                    pass
+
+            except OSError:
+                print('{} already in progress. skipping'.format(task_id))
+                continue
+
+            handler = logging.FileHandler(
+                'log/run-{}-{}-{}.log'.format(job_name, job_id, task_id))
+
+            logger.addHandler(handler)
+
+            try:
+
+                job = get_job_by_index(job_spec, task_id)
+
+                metadata = {}
+                metadata.update({k: str(v) for k, v in job.items()})
+
+                logger.debug('Beginning job\nkwargs:\t{}'.format(
+                    pprint.pformat(metadata, indent=2)))
+
+                run_job(metadata=metadata, **job)
+
+            except (KeyboardInterrupt, SystemExit):
+                raise
+
+            except Exception as e:
+                logger.error(
+                    'Error encountered in job {} {} {}'
+                        .format(job_name, job_id, task_id),
+                    exc_info=e)
+
+            finally:
+                if os.path.exists('locks/{}-{}-{}.lck'.format(job_name, job_id, task_id)):
+                    os.remove('locks/{}-{}-{}.lck'.format(job_name, job_id, task_id))
+
+                with open('locks/{}-{}-{}.done'.format(job_name, job_id, task_id), 'w+') as f:
+                    pass
+
+            logger.removeHandler(handler)
+
 
     @slurm.command()
-    @click.option('--job_id', required=True, type=int)
-    def do_job(job_id=None):
+    @click.option('--job_name', required=True)
+    @click.option('--job_id', required=True)
+    @click.option('--num_jobs', required=True, type=int)
+    def wait(job_name, job_id, num_jobs=None):
 
-        job = get_job_by_index(job_spec, job_id)
-        
-        metadata = {}
-        
-        if additional_metadata is not None:
-            metadata.update(
-                {k: str(v) for k, v in additional_metadata.items()})
-
-        metadata.update({k: str(v) for k, v in job.items()})
-
-        run_job(metadata=metadata, **job)
-
-    @slurm.command()
-    @click.option('--num_jobs', '-n', type=int, required=False, default=None, help='Number of iterations to run')
-    @click.option('--jobname', '-j', default='test', help='name of the job')
-    @click.option('--partition', '-p', default='savio2', help='resource on which to run')
-    @click.option('--dependency', '-d', type=int, multiple=True)
-    def test(num_jobs=None, jobname='slurm_job', dependency=None, partition='savio2'):
-        slurm_id = run_slurm(
-            filepath=filepath,
-            jobname=jobname,
-            partition=partition,
-            job_spec=job_spec,
-            num_jobs=num_jobs,
-            dependencies=('afterany', list(dependency)),
-            flags=['do_test'])
-
-        print('test job: {}'.format(slurm_id))
-
-    @slurm.command()
-    @click.option('--job_id', required=True, type=int)
-    def do_test(job_id=None):
-
-        job = get_job_by_index(job_spec, job_id)
-        
-        metadata = {}
-        
-        if additional_metadata is not None:
-            metadata.update(
-                {k: str(v) for k, v in additional_metadata.items()})
-
-        metadata.update({k: str(v) for k, v in job.items()})
-
-        test_job(metadata=metadata, **job)
+        for task_id in range(num_jobs):
+            while not os.path.exists(
+                        'locks/{}-{}-{}.done'.format(job_name, job_id, task_id)):
+                time.sleep(10)
 
     return slurm

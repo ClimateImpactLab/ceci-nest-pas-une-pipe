@@ -80,3 +80,6 @@ nohup.out
 
 # output sh files
 *.sh
+
+# file locks
+locks
