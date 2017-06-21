@@ -1,3 +1,12 @@
+'''
+Seasonal average temperature, calculated for pattern models
+
+Values are expected seasonal average daily mean temperature for 20-year
+periods, aggregated to regions (impact regions/hierids or country/ISO) using
+spatial/area weights. Data is aggregated to annual values using a 365-day
+calendar (leap years excluded).
+'''
+
 import os
 import click
 import pprint
@@ -35,8 +44,12 @@ WRITE_PATH = (
     '/global/scratch/mdelgado/web/gcp/climate/{rcp}/{agglev}/{transformation_name}/' +
     '{transformation_name}_{agglev}_{aggwt}_{model}_{season}_{pername}.nc')
 
+description = '\n\n'.join(
+        map(lambda s: ' '.join(s.split('\n')),
+            __doc__.strip().split('\n\n')))
+
 ADDITIONAL_METADATA = dict(
-    description=__file__.__doc__,
+    description=description,
     author=__author__,
     contact=__contact__,
     version=__version__,
@@ -71,11 +84,11 @@ per80 = list(range(2080, 2100))
 PERIODS = [
     dict(rcp='rcp45', read_acct='mdelgado', pername='2020', years=per20),
     dict(rcp='rcp45', read_acct='mdelgado', pername='2040', years=per40),
-    dict(rcp='rcp45', read_acct='mdelgado', pername='2060', years=per60),
+    # dict(rcp='rcp45', read_acct='mdelgado', pername='2060', years=per60),
     dict(rcp='rcp45', read_acct='mdelgado', pername='2080', years=per80),
     dict(rcp='rcp85', read_acct='jiacany', pername='2020', years=per20),
     dict(rcp='rcp85', read_acct='jiacany', pername='2040', years=per40),
-    dict(rcp='rcp85', read_acct='jiacany', pername='2060', years=per60),
+    # dict(rcp='rcp85', read_acct='jiacany', pername='2060', years=per60),
     dict(rcp='rcp85', read_acct='jiacany', pername='2080', years=per80)
     ]
 
@@ -143,6 +156,9 @@ def run_job(
         agglev,
         aggwt,
         weights=None):
+
+    logger.debug('Beginning job\nkwargs:\t{}'.format(
+        pprint.pformat(metadata, indent=2)))
 
     # Add to job metadata
     metadata.update(dict(

@@ -46,7 +46,7 @@ WRITE_PATH = (
 
 description = '\n\n'.join(
         map(lambda s: ' '.join(s.split('\n')),
-            __file__.__doc__.strip().split('\n\n')))
+            __doc__.strip().split('\n\n')))
 
 oneline = description.split('\n')[0]
 
@@ -161,8 +161,6 @@ def run_job(
         agglev,
         aggwt,
         weights=None):
-
-
 
     logger.debug('Beginning job\nkwargs:\t{}'.format(
         pprint.pformat(metadata, indent=2)))
