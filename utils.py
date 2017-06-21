@@ -101,7 +101,7 @@ def _prep_slurm(
         partition='savio2',
         job_spec=None,
         limit=None,
-        uniqueid='"${{SLURM_ARRAY_JOB_ID}}"',
+        uniqueid='"${SLURM_ARRAY_JOB_ID}"',
         jobs_per_node=24,
         maxnodes=100,
         dependencies=None,
@@ -164,7 +164,7 @@ def run_slurm(
         partition='savio2',
         job_spec=None,
         limit=None,
-        uniqueid='"${{SLURM_ARRAY_JOB_ID}}"',
+        uniqueid='"${SLURM_ARRAY_JOB_ID}"',
         jobs_per_node=24,
         maxnodes=100,
         dependencies=None,
@@ -241,8 +241,8 @@ def slurm_runner(filepath, job_spec, run_job, onfinish=None):
     @click.option('--jobname', '-j', default='test', help='name of the job')
     @click.option('--partition', '-p', default='savio2', help='resource on which to run')
     @click.option('--dependency', '-d', type=int, multiple=True)
-    @click.option('--uniqueid', '-u', default='"${{SLURM_ARRAY_JOB_ID}}"', help='Unique job pool id')
-    def prep(limit=None, jobs_per_node=24, jobname='slurm_job', dependency=None, partition='savio2', maxnodes=100, uniqueid='"${{SLURM_ARRAY_JOB_ID}}"'):
+    @click.option('--uniqueid', '-u', default='"${SLURM_ARRAY_JOB_ID}"', help='Unique job pool id')
+    def prep(limit=None, jobs_per_node=24, jobname='slurm_job', dependency=None, partition='savio2', maxnodes=100, uniqueid='"${SLURM_ARRAY_JOB_ID}"'):
         _prep_slurm(
             filepath=filepath,
             jobname=jobname,
@@ -261,8 +261,8 @@ def slurm_runner(filepath, job_spec, run_job, onfinish=None):
     @click.option('--jobname', '-j', default='test', help='name of the job')
     @click.option('--partition', '-p', default='savio2', help='resource on which to run')
     @click.option('--dependency', '-d', type=int, multiple=True)
-    @click.option('--uniqueid', '-u', default='"${{SLURM_ARRAY_JOB_ID}}"', help='Unique job pool id')
-    def run(limit=None, jobs_per_node=24, jobname='slurm_job', dependency=None, partition='savio2', maxnodes=100, uniqueid='"${{SLURM_ARRAY_JOB_ID}}"'):
+    @click.option('--uniqueid', '-u', default='"${SLURM_ARRAY_JOB_ID}"', help='Unique job pool id')
+    def run(limit=None, jobs_per_node=24, jobname='slurm_job', dependency=None, partition='savio2', maxnodes=100, uniqueid='"${SLURM_ARRAY_JOB_ID}"'):
         slurm_id = run_slurm(
             filepath=filepath,
             jobname=jobname,
