@@ -20,9 +20,6 @@ from climate_toolbox import (
     load_baseline,
     weighted_aggregate_grid_to_regions)
 
-FORMAT = '%(asctime)-15s %(message)s'
-logging.basicConfig(format=FORMAT)
-
 logger = logging.getLogger('uploader')
 logger.setLevel('DEBUG')
 
@@ -60,10 +57,9 @@ ADDITIONAL_METADATA = dict(
     weighting='areawt',
     frequency='20yr')
 
-DS_METADATA_FEILDS = (
-    ADDITIONAL_METADATA.keys() + [
-        'rcp', 'pername', 'transformation_name',
-        'unit', 'model', 'agglev', 'aggwt'])
+DS_METADATA_FEILDS = [
+    'rcp', 'pername', 'transformation_name',
+    'unit', 'model', 'agglev', 'aggwt']
 
 
 def tasmin_under_32F_365day(ds):
@@ -168,9 +164,6 @@ def run_job(
         aggwt,
         weights=None):
 
-    logger.debug('Beginning job\nkwargs:\t{}'.format(
-        pprint.pformat(metadata, indent=2)))
-
     # Add to job metadata
     metadata.update(dict(
         time_horizon='{}-{}'.format(years[0], years[-1])))
@@ -204,6 +197,7 @@ def run_job(
     logger.debug('{} udpate metadata'.format(model))
     ds.attrs.update(
         **{k: str(v) for k, v in metadata.items() if k in DS_METADATA_FEILDS})
+    ds.attrs.update(**ADDITIONAL_METADATA)
 
     # Write output
     logger.debug('attempting to write to file: {}'.format(write_file))
@@ -218,95 +212,11 @@ def onfinish():
     print('all done!')
 
 
-def job_test_filepaths(
-        metadata,
-        variable,
-        transformation_name,
-        transformation,
-        unit,
-        read_acct,
-        rcp,
-        pername,
-        years,
-        model,
-        baseline_model,
-        seasons,
-        agglev,
-        aggwt,
-        weights=None):
-
-    # make sure the input data exist
-
-    read_file = BCSD_orig_files.format(**metadata)
-
-    for y in years:
-        fp = read_file.format(year=y)
-        assert os.path.isfile(fp), "No such file: '{}'".format(fp)
-    
-    # make sure the output file has sufficient metadata
-    WRITE_PATH.format(**metadata)
-
-
-def job_test_transformations(
-        metadata,
-        variable,
-        transformation_name,
-        transformation,
-        unit,
-        rcp,
-        pername,
-        years,
-        model,
-        agglev,
-        aggwt,
-        weights=None):
-
-    # Add to job metadata
-    metadata.update(dict(
-        time_horizon='{}-{}'.format(years[0], years[-1])))
-
-    read_file = BCSD_orig_files.format(**metadata)
-
-    # Get transformed data
-    for y in years:
-
-        fp = read_file.format(year=y)
-
-        ds = load_bcsd(fp, variable, broadcast_dims=('time',))
-
-        logger.debug((
-            '{} {} - testing transforms against one another ')
-                .format(model, y))
-
-        nonzero_msg = "diff less than zero in {}".format(fp)
-        toobig_msg = "diff more than 1/4 in {}".format(fp)
-
-        if transformation_name == 'tasmax-over-95F':
-            diff = (tasmax_over_95F(ds) - tasmax_over_95F_365day(ds))
-            logger.debug('diff >= 0:\n{}'.format((diff >= 0).all()))
-            assert (diff >= 0).all(), nonzero_msg
-            logger.debug('diff <= 1:\n{}'.format((diff <= 1).all()))
-            assert (diff <= 1).all(), toobig_msg
-
-        elif transformation_name == 'tasmin-under-32F':
-            diff = (tasmin_under_32F(ds) - tasmin_under_32F_365day(ds))
-            logger.debug('diff >= 0:\n{}'.format((diff >= 0).all()))
-            assert (diff >= 0).all(), nonzero_msg
-            logger.debug('diff <= 1:\n{}'.format((diff <= 1).all()))
-            assert (diff <= 1).all(), toobig_msg
-
-        else:
-            raise ValueError('transformation "{}" not recognized'
-                .format(transformation_name))
-
-
 main = utils.slurm_runner(
     filepath=__file__,
     job_spec=JOB_SPEC,
     run_job=run_job,
-    test_job=job_test_transformations,
-    onfinish=onfinish,
-    additional_metadata=ADDITIONAL_METADATA)
+    onfinish=onfinish)
 
 
 if __name__ == '__main__':

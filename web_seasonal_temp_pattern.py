@@ -20,9 +20,6 @@ from climate_toolbox import (
     load_baseline,
     weighted_aggregate_grid_to_regions)
 
-FORMAT = '%(asctime)-15s %(message)s'
-logging.basicConfig(format=FORMAT)
-
 logger = logging.getLogger('uploader')
 logger.setLevel('DEBUG')
 
@@ -157,9 +154,6 @@ def run_job(
         aggwt,
         weights=None):
 
-    logger.debug('Beginning job\nkwargs:\t{}'.format(
-        pprint.pformat(metadata, indent=2)))
-
     # Add to job metadata
     metadata.update(dict(
         time_horizon='{}-{}'.format(years[0], years[-1])))
@@ -203,6 +197,7 @@ def run_job(
     # Update netCDF metadata
     logger.debug('{} udpate metadata'.format(model))
     ds.attrs.update(**metadata)
+    ds.attrs.update(**ADDITIONAL_METADATA)
 
     # Write output
     logger.debug('attempting to write to file: {}'.format(write_file))
@@ -219,8 +214,7 @@ main = utils.slurm_runner(
     filepath=__file__,
     job_spec=JOB_SPEC,
     run_job=run_job,
-    onfinish=onfinish,
-    additional_metadata=ADDITIONAL_METADATA)
+    onfinish=onfinish)
 
 if __name__ == '__main__':
     main()
