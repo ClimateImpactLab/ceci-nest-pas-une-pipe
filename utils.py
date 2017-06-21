@@ -11,9 +11,9 @@ import subprocess
 from _compat import exclusive_open
 
 FORMAT = '%(asctime)-15s %(message)s'
-logging.basicConfig(format=FORMAT)
 
 logger = logging.getLogger('uploader')
+formatter = logging.Formatter(FORMAT)
 
 SLURM_SCRIPT = '''
 #!/bin/bash
@@ -311,6 +311,8 @@ def slurm_runner(filepath, job_spec, run_job, onfinish=None):
 
             handler = logging.FileHandler(
                 'log/run-{}-{}-{}.log'.format(job_name, job_id, task_id))
+            handler.setFormatter(formatter)
+            handler.setLevel(logging.DEBUG)
 
             logger.addHandler(handler)
 
