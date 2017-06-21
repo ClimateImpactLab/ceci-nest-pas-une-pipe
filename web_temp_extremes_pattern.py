@@ -198,6 +198,10 @@ def run_job(
     baseline_file = BASELINE_FILE.format(**metadata)
     pattern_file = BCSD_pattern_files.format(**metadata)
     write_file = WRITE_PATH.format(**metadata)
+    
+    # do not duplicate
+    if os.path.isfile(write_file):
+        return
 
     # Get transformed data
     total = None

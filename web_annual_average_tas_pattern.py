@@ -167,6 +167,10 @@ def run_job(
     pattern_file = BCSD_pattern_files.format(**metadata)
     write_file = WRITE_PATH.format(**metadata)
     
+    # do not duplicate
+    if os.path.isfile(write_file):
+        return
+    
     del metadata['read_acct']
 
     # Get transformed data
