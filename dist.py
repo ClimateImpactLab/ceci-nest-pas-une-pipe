@@ -228,7 +228,7 @@ def upper_coord_names(da, dim='model'):
     return da
 
 
-def get_quantiles(da, rcp, quantiles = [0.05, 0.167, 0.5, 0.833, 0.95]):
+def get_quantiles(da, rcp, quantiles = [0.05, 0.5, 0.95]):
     return impactlab_tools.utils.weighting.weighted_quantile_xr(
             upper_coord_names(da),
             quantiles,
@@ -343,7 +343,7 @@ def output_all_tasminmax(variable_definitions, write_path):
                         rcp=rcp,
                         agglev=agglev)
 
-                    print(agglev, variable, rcp, period, nummodels)
+                    print(agglev, transformation, rcp, period, nummodels)
 
                     if rcp_per == 'historical':
                         hist = ds
@@ -399,7 +399,7 @@ def output_all_tas(variable_definitions, write_path, seasonal=False):
                         agglev=agglev,
                         seasonal=seasonal)
 
-                    print(agglev, variable, rcp, period, nummodels)
+                    print(agglev, transformation, rcp, period, nummodels)
 
                     if rcp_per == 'historical':
                         hist = ds
