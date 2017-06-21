@@ -148,8 +148,9 @@ MODELS = list(map(lambda x: dict(model=x), [
     'NorESM1-M']))
 
 AGGREGATIONS = [
-    # {'agglev': 'ISO', 'aggwt': 'areawt'},
-    {'agglev': 'hierid', 'aggwt': 'areawt'}]
+    {'agglev': 'ISO', 'aggwt': 'areawt'},
+    # {'agglev': 'hierid', 'aggwt': 'areawt'}
+    ]
 
 
 JOB_SPEC = [JOBS, PERIODS, MODELS, AGGREGATIONS]
