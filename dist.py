@@ -440,12 +440,12 @@ def output_all_tas(variable_definitions, write_path, seasonal=False):
                     if 'season' in ds.dims:
                         try:
                             for seas in seasons:
-                                (ds.sel(season=seas)
+                                ((ds*9./5+32).sel(season=seas)
                                     .to_series()
                                     .unstack('quantile')
                                     .to_csv(outpath.format(season=seas)))
                                 
-                                ((ds-hist).sel(season=seas)
+                                (((ds-hist)*9./5).sel(season=seas)
                                     .to_series()
                                     .unstack('quantile')
                                     .to_csv(outpath_hist.format(season=seas)))
@@ -454,11 +454,11 @@ def output_all_tas(variable_definitions, write_path, seasonal=False):
                             raise e
 
                     else:
-                        (ds.to_series()
+                        ((ds*9./5+32).to_series()
                             .unstack('quantile')
                             .to_csv(outpath))
                         
-                        ((ds-hist).to_series()
+                        (((ds-hist)*9./5).to_series()
                             .unstack('quantile')
                             .to_csv(outpath_hist))
 
