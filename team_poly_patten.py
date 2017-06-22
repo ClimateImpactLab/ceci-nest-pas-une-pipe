@@ -202,8 +202,6 @@ def run_job(
         pprint.pformat(metadata, indent=2)))
 
     # Add to job metadata
-    metadata.update(dict(
-        time_horizon='{}-{}'.format(years[0], years[-1])))
     metadata.update(ADDITIONAL_METADATA)
 
 

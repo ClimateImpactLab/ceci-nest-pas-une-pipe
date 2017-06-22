@@ -172,8 +172,6 @@ def run_job(
         weights=None):
 
     # Add to job metadata
-    metadata.update(dict(
-        time_horizon='{}-{}'.format(years[0], years[-1])))
     metadata.update(ADDITIONAL_METADATA)
 
     logger.debug('Beginning job:\n\tkwargs:\t{}'.format(
