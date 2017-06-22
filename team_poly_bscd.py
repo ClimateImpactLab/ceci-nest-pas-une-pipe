@@ -187,7 +187,7 @@ def run_job(
     # Get transformed data
     fp = read_file.format(year=year)
     
-    logging.debug('year {} - attempting to read file "{}"'.format(year, fp))
+    logger.debug('year {} - attempting to read file "{}"'.format(year, fp))
     ds = (load_bcsd(fp, source_variable, broadcast_dims=('time',))
                 .pipe(transformation))
 
