@@ -190,7 +190,6 @@ def run_job(
         unit,
         transformation,
         scenario,
-        pername,
         year,
         model,
         read_acct,

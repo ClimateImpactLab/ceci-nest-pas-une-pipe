@@ -32,8 +32,8 @@ __version__ = '1.0'
 
 
 BCSD_orig_files = (
-    '/global/scratch/{read_acct}/nasa_bcsd/raw_data/{rcp}/{model}/{source_variable}/' +
-    '{source_variable}_day_BCSD_{rcp}_r1i1p1_{model}_{year}.nc')
+    '/global/scratch/{read_acct}/nasa_bcsd/raw_data/{scenario}/{model}/{source_variable}/' +
+    '{source_variable}_day_BCSD_{scenario}_r1i1p1_{model}_{year}.nc')
 
 WRITE_PATH = (
     '/global/scratch/mdelgado/web/gcp/climate/{scenario}/{agglev}/' +
@@ -121,8 +121,8 @@ def create_polynomial_transformation(power=2):
 JOBS = [create_polynomial_transformation(i) for i in range(1, 10)]
 
 PERIODS = (
-    [dict(rcp='rcp45', read_acct='jiacany', year=y) for y in range(1981, 2100)] +
-    [dict(rcp='rcp85', read_acct='jiacany', year=y) for y in range(1981, 2100)])
+    [dict(scenario='rcp45', read_acct='jiacany', year=y) for y in range(1981, 2100)] +
+    [dict(scenario='rcp85', read_acct='jiacany', year=y) for y in range(1981, 2100)])
 
 MODELS = list(map(lambda x: dict(model=x), [
     'ACCESS1-0',
@@ -163,8 +163,7 @@ def run_job(
         transformation,
         source_variable,
         unit,
-        rcp,
-        pername,
+        scenario,
         read_acct,
         year,
         model,
