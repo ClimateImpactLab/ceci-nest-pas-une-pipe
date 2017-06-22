@@ -32,8 +32,8 @@ __version__ = '1.0'
 
 
 BCSD_orig_files = (
-    '/global/scratch/{read_acct}/nasa_bcsd/raw_data/{rcp}/{model}/{variable}/' +
-    '{variable}_day_BCSD_{rcp}_r1i1p1_{model}_{year}.nc')
+    '/global/scratch/{read_acct}/nasa_bcsd/raw_data/{rcp}/{model}/{source_variable}/' +
+    '{source_variable}_day_BCSD_{rcp}_r1i1p1_{model}_{year}.nc')
 
 WRITE_PATH = (
     '/global/scratch/mdelgado/web/gcp/climate/{scenario}/{agglev}/' +
@@ -109,8 +109,8 @@ def create_polynomial_transformation(power=2):
     tas_poly.__doc__ = description
 
     transformation_spec = {
-        'transformation_name': varname,
-        'variable': 'tas',
+        'variable': varname,
+        'source_variable': 'tas',
         'transformation': tas_poly,
         'unit': 'degreesC-pow{}'.format(power)
     }
