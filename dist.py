@@ -11,7 +11,7 @@ import impactlab_tools.utils.weighting
 
 input_version = '2.0'
 output_version = '2.3'
-quantile_run = False
+quantile_run = True
 
 
 if quantile_run:
@@ -496,8 +496,9 @@ def plot_sample_data():
 
 def do_tasminmax():
     output_all_tasminmax([
-        ('tasmin', 'tasmin-under-32F', 'tasmin_lt_32', 'days-under-32F'),
-        ('tasmax', 'tasmax-over-95F', 'tasmin_gte_95', 'days-over-95F')],
+        # ('tasmin', 'tasmin-under-32F', 'tasmin_lt_32', 'days-under-32F'),
+        # ('tasmax', 'tasmax-over-95F', 'tasmin_gte_95', 'days-over-95F'),
+        ('tasmax', 'tasmax-over-118F', 'tasmin_gte_118', 'days-over-118F')],
         write_path=WRITE_PATH)
 
 def do_tas():
@@ -516,4 +517,4 @@ if __name__ == '__main__':
     plot_sample_data()
 
     do_tasminmax()
-    do_tas()
+    # do_tas()
