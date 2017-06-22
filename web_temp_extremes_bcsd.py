@@ -118,10 +118,10 @@ PERIODS = [
     dict(rcp='rcp85', pername='2040', years=list(range(2040, 2060))),
     dict(rcp='rcp85', pername='2060', years=list(range(2060, 2080))),
     dict(rcp='rcp85', pername='2080', years=list(range(2080, 2100))),
-    dict(rcp='rcp45', pername='2020', years=list(range(2020, 2040))),
-    dict(rcp='rcp45', pername='2040', years=list(range(2040, 2060))),
-    dict(rcp='rcp45', pername='2060', years=list(range(2060, 2080))),
-    dict(rcp='rcp45', pername='2080', years=list(range(2080, 2100)))
+    # dict(rcp='rcp45', pername='2020', years=list(range(2020, 2040))),
+    # dict(rcp='rcp45', pername='2040', years=list(range(2040, 2060))),
+    # dict(rcp='rcp45', pername='2060', years=list(range(2060, 2080))),
+    # dict(rcp='rcp45', pername='2080', years=list(range(2080, 2100)))
     ]
 
 MODELS = list(map(lambda x: dict(model=x), [
