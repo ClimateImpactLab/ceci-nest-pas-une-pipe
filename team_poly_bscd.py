@@ -121,8 +121,8 @@ def create_polynomial_transformation(power=2):
 JOBS = [create_polynomial_transformation(i) for i in range(1, 10)]
 
 PERIODS = (
-    [dict(scenario='rcp45', read_acct='jiacany', year=y) for y in range(1981, 2100)] +
-    [dict(scenario='rcp85', read_acct='jiacany', year=y) for y in range(1981, 2100)])
+    [dict(scenario='rcp45', read_acct='jiacany', year=y) for y in range(1982, 2100)] +
+    [dict(scenario='rcp85', read_acct='jiacany', year=y) for y in range(1982, 2100)])
 
 MODELS = list(map(lambda x: dict(model=x), [
     'ACCESS1-0',
