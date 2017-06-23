@@ -310,6 +310,10 @@ def slurm_runner(filepath, job_spec, run_job, onfinish=None):
 
         for task_id in range(num_jobs):
 
+            if os.path.exists('locks/{}-{}-{}.done'.format(job_name, job_id, task_id)):
+                print('{} already done. skipping'.format(task_id))
+                continue
+
             try:
                 with exclusive_open(
                         'locks/{}-{}-{}.lck'.format(job_name, job_id, task_id)) as f:
