@@ -174,7 +174,7 @@ for spec in PERIODS:
 SEASONS = [ 'DJF', 'MAM', 'JJA', 'SON']
 
 AGGREGATIONS = [
-    {'agglev': 'hierid', 'aggwt': 'areawt'}]
+    {'agglev': 'hierid', 'aggwt': 'popwt'}]
 
 
 JOB_SPEC = [JOBS, MODELS, AGGREGATIONS]
