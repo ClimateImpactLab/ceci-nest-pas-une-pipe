@@ -86,7 +86,7 @@ def create_polynomial_transformation(power=2):
 
         Leap years are removed before counting days (uses a 365 day 
         calendar). 
-        '''.format(powername=powername))
+        '''.format(powername=powername).strip())
 
     varname = 'tas-poly-{}'.format(power)
 
@@ -102,7 +102,7 @@ def create_polynomial_transformation(power=2):
         ds1[varname] = (ds.tas - 237.15)**power
 
         # document variable
-        ds1[varname].attrs['unit'] = 'degrees C'
+        ds1[varname].attrs['unit'] = 'degreesC-pow{}'.format(power)
         ds1[varname].attrs['oneline'] = description.splitlines()[0]
         ds1[varname].attrs['description'] = description
         ds1[varname].attrs['variable'] = varname
@@ -121,7 +121,7 @@ def create_polynomial_transformation(power=2):
     return transformation_spec
 
 
-JOBS = [create_polynomial_transformation(i) for i in range(1, 10)]
+JOBS = [create_polynomial_transformation(i) for i in range(3, 10)]
 
 PERIODS = (
     [dict(scenario='historical', read_acct='jiacany', year=y) for y in range(1981, 2006)] +
