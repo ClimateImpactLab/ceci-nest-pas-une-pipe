@@ -121,7 +121,7 @@ def create_polynomial_transformation(power=2):
     return transformation_spec
 
 
-JOBS = [create_polynomial_transformation(i) for i in range(3, 10)]
+JOBS = [create_polynomial_transformation(i) for i in range(1, 10)]
 
 PERIODS = (
     [dict(scenario='historical', read_acct='jiacany', year=y) for y in range(1981, 2006)] +
