@@ -157,7 +157,7 @@ AGGREGATIONS = [
 JOB_SPEC = [JOBS, PERIODS, MODELS, AGGREGATIONS]
 
 INCLUDED_METADATA = [
-    'variable', 'source_variable', 'transformation', 'unit', 'scenario',
+    'variable', 'source_variable', 'unit', 'scenario',
     'year', 'model', 'agglev', 'aggwt']
 
 
@@ -203,6 +203,8 @@ def run_job(
     ds = (load_bcsd(ds, source_variable, broadcast_dims=('time',))
                 .pipe(transformation))
 
+    varattrs = {var: dict(ds[var].attrs) for var in ds.data_vars.keys()}
+
     # Reshape to regions
     if not agglev.startswith('grid'):
         logger.debug('aggregating to "{}" using "{}"'.format(agglev, aggwt))
@@ -225,12 +227,16 @@ def run_job(
 
     attrs = dict(ds.attrs)
     attrs['dependencies'] = dependencies
+    
+    for var, vattrs in varattrs.items():
+        ds[var].attrs.update(vattrs)
 
     ds.to_netcdf(write_file)
+    
     metacsv.to_header(
         write_file.replace('.nc', '.fgh'),
         attrs=dict(attrs),
-        variables={variable: dict(ds[variable].attrs)})
+        variables=varattrs)
 
     logger.debug('job done')
 
