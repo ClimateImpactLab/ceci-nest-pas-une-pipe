@@ -107,6 +107,8 @@ def create_polynomial_transformation(power=2):
         ds1[varname].attrs['description'] = description
         ds1[varname].attrs['variable'] = varname
 
+        return ds1
+
     tas_poly.__doc__ = description
 
     transformation_spec = {
