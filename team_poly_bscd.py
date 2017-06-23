@@ -213,7 +213,6 @@ def run_job(
     ds.attrs.update(**{k: str(v)
         for k, v in metadata.items() if k in INCLUDED_METADATA})
     ds.attrs.update(ADDITIONAL_METADATA)
-    ds.attrs['dependencies'] = dependencies
 
     # Write output
     if not os.path.isdir(os.path.dirname(write_file)):
@@ -224,10 +223,13 @@ def run_job(
 
     logger.debug('attempting to write to file "{}"'.format(write_file))
 
+    attrs = dict(ds.attrs)
+    attrs['dependencies'] = dependencies
+
     ds.to_netcdf(write_file)
     metacsv.to_header(
         write_file.replace('.nc', '.fgh'),
-        attrs=dict(ds.attrs),
+        attrs=dict(attrs),
         variables={variable: dict(ds[variable].attrs)})
 
     logger.debug('job done')
