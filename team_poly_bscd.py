@@ -15,6 +15,7 @@ import xarray as xr
 import pandas as pd
 
 import utils
+import metacsv
 from climate_toolbox import (
     load_bcsd,
     load_baseline,
@@ -175,6 +176,8 @@ def run_job(
     # Add to job metadata
     metadata.update(ADDITIONAL_METADATA)
 
+    dependencies = {}
+
     logger.debug('Beginning job:\n\tkwargs:\t{}'.format(
         pprint.pformat(metadata, indent=2)))
 
@@ -188,8 +191,14 @@ def run_job(
     # Get transformed data
     fp = read_file.format(year=year)
     
+    with xr.open_dataset(fp) as ds:
+        ds.load()
+
+    dependencies[os.path.basename(fp).splitext()[0]] = str(
+        ds.attrs.get('version', '1.0'))
+
     logger.debug('year {} - attempting to read file "{}"'.format(year, fp))
-    ds = (load_bcsd(fp, source_variable, broadcast_dims=('time',))
+    ds = (load_bcsd(ds, source_variable, broadcast_dims=('time',))
                 .pipe(transformation))
 
     # Reshape to regions
@@ -202,6 +211,7 @@ def run_job(
     ds.attrs.update(**{k: str(v)
         for k, v in metadata.items() if k in INCLUDED_METADATA})
     ds.attrs.update(ADDITIONAL_METADATA)
+    ds.attrs['dependencies'] = dependencies
 
     # Write output
     if not os.path.isdir(os.path.dirname(write_file)):
@@ -213,6 +223,10 @@ def run_job(
     logger.debug('attempting to write to file "{}"'.format(write_file))
 
     ds.to_netcdf(write_file)
+    metacsv.to_header(
+        write_file.replace('.nc', '.fgh'),
+        attrs=dict(ds.attrs),
+        variables={variable: dict(ds[variable].attrs)})
 
     logger.debug('job done')
 
