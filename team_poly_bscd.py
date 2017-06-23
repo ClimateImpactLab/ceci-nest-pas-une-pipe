@@ -99,7 +99,7 @@ def create_polynomial_transformation(power=2):
             'time': ~((ds['time.month'] == 2) & (ds['time.day'] == 29))}]
         
         # do transformation
-        ds1[varname] = (ds.tasmin - 237.15)**power
+        ds1[varname] = (ds.tas - 237.15)**power
 
         # document variable
         ds1[varname].attrs['unit'] = 'degrees C'
