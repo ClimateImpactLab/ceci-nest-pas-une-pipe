@@ -368,7 +368,10 @@ def load_bcsd(fp, varname, lon_name='lon', broadcast_dims=('time',)):
     if lon_name is not None:
         lon_names = [lon_name]
 
-    if not hasattr(ds, 'sel_points'):
+    if hasattr(fp, 'sel_points'):
+        ds = fp
+
+    else:
         with xr.open_dataset(fp) as ds:
             ds.load()
 
