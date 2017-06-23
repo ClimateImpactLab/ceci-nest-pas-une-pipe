@@ -194,8 +194,8 @@ def run_job(
     with xr.open_dataset(fp) as ds:
         ds.load()
 
-    dependencies[os.path.basename(fp).splitext()[0]] = str(
-        ds.attrs.get('version', '1.0'))
+    dependencies[os.path.splitext(os.path.basename(fp))[0]] = (
+        str(ds.attrs.get('version', '1.0')))
 
     logger.debug('year {} - attempting to read file "{}"'.format(year, fp))
     ds = (load_bcsd(ds, source_variable, broadcast_dims=('time',))
