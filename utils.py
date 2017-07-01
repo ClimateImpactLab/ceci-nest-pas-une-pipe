@@ -46,7 +46,7 @@ SLURM_MULTI_SCRIPT = SLURM_SCRIPT + '''
 #SBATCH --array=0-{maxnodes}
 
 # set up directories
-mkdir -p log
+mkdir -p {logdir}
 mkdir -p locks
 
 ## Run command
@@ -55,7 +55,7 @@ for i in {{1..{jobs_per_node}}}
 do
     nohup python {filepath} do_job --job_name {jobname} \
 --job_id {uniqueid} --num_jobs {numjobs} {flags} \
-> log/nohup-{jobname}-{uniqueid}-${{SLURM_ARRAY_TASK_ID}}-$i.out &
+> {logdir}/nohup-{jobname}-{uniqueid}-${{SLURM_ARRAY_TASK_ID}}-$i.out &
 done
 
 python {filepath} wait --job_name {jobname} \
@@ -105,6 +105,7 @@ def _prep_slurm(
         jobs_per_node=24,
         maxnodes=100,
         dependencies=None,
+        logdir='log',
         flags=None):
 
     depstr = ''
@@ -132,15 +133,15 @@ def _prep_slurm(
 
         numjobs = n
 
-        output = ('#\n#SBATCH --output log/slurm-{jobname}-%A_%a.out'
-                    .format(jobname=jobname))
+        output = ('#\n#SBATCH --output {logdir}/slurm-{jobname}-%A_%a.out'
+                    .format(jobname=jobname, logdir=logdir))
 
         template = SLURM_MULTI_SCRIPT
 
     else:
         numjobs = 1
-        output = ('#\n#SBATCH --output log/slurm-{jobname}-%A.out'
-                    .format(jobname=jobname))
+        output = ('#\n#SBATCH --output {logdir}/slurm-{jobname}-%A.out'
+                    .format(jobname=jobname, logdir=logdir))
 
         template = SLURM_SINGLE_SCRIPT
 
@@ -155,6 +156,7 @@ def _prep_slurm(
             filepath=filepath.replace(os.sep, '/'),
             dependencies=depstr,
             flags=flagstr,
+            logdir=logdir,
             output=output))
 
 
@@ -168,6 +170,7 @@ def run_slurm(
         jobs_per_node=24,
         maxnodes=100,
         dependencies=None,
+        logdir='log',
         flags=None):
 
     _prep_slurm(
@@ -180,6 +183,7 @@ def run_slurm(
         jobs_per_node=jobs_per_node,
         maxnodes=maxnodes,
         dependencies=dependencies,
+        logdir=logdir,
         flags=flags)
 
     job_command = ['sbatch', 'run-slurm.sh']
@@ -229,20 +233,36 @@ def get_job_by_index(job_spec, index):
 
 def slurm_runner(filepath, job_spec, run_job, onfinish=None):
 
-    @click.group()
-    def slurm():
-        if not os.path.isdir('log'):
-            os.makedirs('log')
-
     @slurm.command()
-    @click.option('--limit', '-l', type=int, required=False, default=None, help='Number of iterations to run')
-    @click.option('--jobs_per_node', '-n', type=int, required=False, default=24, help='Number of jobs to run per node')
-    @click.option('--maxnodes', '-x', type=int, required=False, default=100, help='Number of nodes to request for this job')
-    @click.option('--jobname', '-j', default='test', help='name of the job')
-    @click.option('--partition', '-p', default='savio2', help='resource on which to run')
+    @click.option(
+        '--limit', '-l', type=int, required=False, default=None,
+        help='Number of iterations to run')
+    @click.option(
+        '--jobs_per_node', '-n', type=int, required=False, default=24,
+        help='Number of jobs to run per node')
+    @click.option(
+        '--maxnodes', '-x', type=int, required=False, default=100,
+        help='Number of nodes to request for this job')
+    @click.option(
+        '--jobname', '-j', default='test', help='name of the job')
+    @click.option(
+        '--partition', '-p', default='savio2', help='resource on which to run')
     @click.option('--dependency', '-d', type=int, multiple=True)
-    @click.option('--uniqueid', '-u', default='"${SLURM_ARRAY_JOB_ID}"', help='Unique job pool id')
-    def prep(limit=None, jobs_per_node=24, jobname='slurm_job', dependency=None, partition='savio2', maxnodes=100, uniqueid='"${SLURM_ARRAY_JOB_ID}"'):
+    @click.option(
+        '--logdir', '-L', defualt='log', help='Directory to write log files')
+    @click.option(
+        '--uniqueid', '-u', default='"${SLURM_ARRAY_JOB_ID}"',
+        help='Unique job pool id')
+    def prep(
+            limit=None,
+            jobs_per_node=24,
+            jobname='slurm_job',
+            dependency=None,
+            partition='savio2',
+            maxnodes=100,
+            logdir='log',
+            uniqueid='"${SLURM_ARRAY_JOB_ID}"'):
+
         _prep_slurm(
             filepath=filepath,
             jobname=jobname,
@@ -252,6 +272,7 @@ def slurm_runner(filepath, job_spec, run_job, onfinish=None):
             maxnodes=maxnodes,
             limit=limit,
             uniqueid=uniqueid,
+            logdir=logdir,
             dependencies=('afterany', list(dependency)))
 
     @slurm.command()
@@ -260,9 +281,20 @@ def slurm_runner(filepath, job_spec, run_job, onfinish=None):
     @click.option('--maxnodes', '-x', type=int, required=False, default=100, help='Number of nodes to request for this job')
     @click.option('--jobname', '-j', default='test', help='name of the job')
     @click.option('--partition', '-p', default='savio2', help='resource on which to run')
+    @click.option('--logdir', '-L', defualt='log', help='Directory to write log files')
     @click.option('--dependency', '-d', type=int, multiple=True)
+    @click.option('--logdir', '-L', defualt='log', help='Directory to write log files')
     @click.option('--uniqueid', '-u', default='"${SLURM_ARRAY_JOB_ID}"', help='Unique job pool id')
-    def run(limit=None, jobs_per_node=24, jobname='slurm_job', dependency=None, partition='savio2', maxnodes=100, uniqueid='"${SLURM_ARRAY_JOB_ID}"'):
+    def run(
+            limit=None,
+            jobs_per_node=24,
+            jobname='slurm_job',
+            dependency=None,
+            partition='savio2',
+            maxnodes=100,
+            logdir='log',
+            uniqueid='"${SLURM_ARRAY_JOB_ID}"'):
+
         slurm_id = run_slurm(
             filepath=filepath,
             jobname=jobname,
@@ -272,6 +304,7 @@ def slurm_runner(filepath, job_spec, run_job, onfinish=None):
             maxnodes=maxnodes,
             limit=limit,
             uniqueid=uniqueid,
+            logdir=logdir,
             dependencies=('afterany', list(dependency)))
 
         finish_id = run_slurm(
@@ -279,6 +312,7 @@ def slurm_runner(filepath, job_spec, run_job, onfinish=None):
             jobname=jobname+'_finish',
             partition=partition,
             dependencies=('afterany', [slurm_id]),
+            logdir=logdir,
             flags=['cleanup', slurm_id])
 
         print('run job: {}\non-finish job: {}'.format(slurm_id, finish_id))
