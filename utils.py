@@ -253,7 +253,7 @@ def slurm_runner(filepath, job_spec, run_job, onfinish=None):
         '--partition', '-p', default='savio2', help='resource on which to run')
     @click.option('--dependency', '-d', type=int, multiple=True)
     @click.option(
-        '--logdir', '-L', defualt='log', help='Directory to write log files')
+        '--logdir', '-L', default='log', help='Directory to write log files')
     @click.option(
         '--uniqueid', '-u', default='"${SLURM_ARRAY_JOB_ID}"',
         help='Unique job pool id')
@@ -285,9 +285,8 @@ def slurm_runner(filepath, job_spec, run_job, onfinish=None):
     @click.option('--maxnodes', '-x', type=int, required=False, default=100, help='Number of nodes to request for this job')
     @click.option('--jobname', '-j', default='test', help='name of the job')
     @click.option('--partition', '-p', default='savio2', help='resource on which to run')
-    @click.option('--logdir', '-L', defualt='log', help='Directory to write log files')
     @click.option('--dependency', '-d', type=int, multiple=True)
-    @click.option('--logdir', '-L', defualt='log', help='Directory to write log files')
+    @click.option('--logdir', '-L', default='log', help='Directory to write log files')
     @click.option('--uniqueid', '-u', default='"${SLURM_ARRAY_JOB_ID}"', help='Unique job pool id')
     def run(
             limit=None,
