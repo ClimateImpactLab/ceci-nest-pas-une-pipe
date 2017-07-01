@@ -29,7 +29,7 @@ logger.setLevel('DEBUG')
 
 __author__ = 'Michael Delgado'
 __contact__ = 'mdelgado@rhg.com'
-__version__ = '1.0'
+__version__ = '1.1'
 
 
 BCSD_orig_files = (
@@ -37,9 +37,9 @@ BCSD_orig_files = (
     '{source_variable}_day_BCSD_{scenario}_r1i1p1_{model}_{year}.nc')
 
 WRITE_PATH = (
-    '/global/scratch/mdelgado/web/gcp/climate/{scenario}/{agglev}/' +
-    '{variable}/' +
-    '{variable}_{frequency}_{unit}_{scenario}_{agglev}_{aggwt}_{model}_{year}.nc')
+    '/global/scratch/mdelgado/projection/gcp/climate/' +
+    '{agglev}/{aggwt}/{frequency}/{variable}/{scenario}/{model}/{year}/' +
+    '{version}.nc4')
 
 description = '\n\n'.join(
         map(lambda s: ' '.join(s.split('\n')),
@@ -59,7 +59,8 @@ ADDITIONAL_METADATA = dict(
     project='gcp', 
     team='climate',
     probability_method='SMME',
-    frequency='daily')
+    frequency='daily',
+    dependencies='climate-tas-NASA_BCSD-originals.1.0')
 
 ordinal = lambda n: "%d%s" % (n,"tsnrhtdd"[(n//10%10!=1)*(n%10<4)*n%10::4])
 ''' converts numbers into ordinal strings '''
@@ -81,14 +82,17 @@ def create_polynomial_transformation(power=2):
 
     powername = ordinal(power)
 
-    description = format_docstr('''
-        Daily average temperature (degrees C) raised to the {powername} power
+    description = format_docstr(('''
+            Daily average temperature (degrees C){raised}
+    
+            Leap years are removed before counting days (uses a 365 day 
+            calendar). 
+            '''.format(
+                raised='' if power == 1 else (
+                    ' raised to the {powername} power'
+                        .format(powername=powername)))).strip())
 
-        Leap years are removed before counting days (uses a 365 day 
-        calendar). 
-        '''.format(powername=powername).strip())
-
-    varname = 'tas-poly-{}'.format(power)
+    varname = 'tas-poly-{}'.format(power) if power > 1 else 'tas'
 
     def tas_poly(ds):
 
@@ -101,8 +105,16 @@ def create_polynomial_transformation(power=2):
         # do transformation
         ds1[varname] = (ds.tas - 237.15)**power
 
+        # Replace datetime64[ns] 'time' with YYYYDDD int 'day'
+        if ds.dims['time'] >= 365:
+            raise ValueError
+
+        ds1.coords['day'] = ds['time.year']*1000 + np.arange(1, len(ds.time)+1)
+        ds1 = ds1.swap_dims({'time': 'day'})
+        ds1 = ds1.drop('time')
+
         # document variable
-        ds1[varname].attrs['unit'] = 'degreesC-pow{}'.format(power)
+        ds1[varname].attrs['unit'] = 'C^{}'.format(power) if power > 1 else 'C'
         ds1[varname].attrs['oneline'] = description.splitlines()[0]
         ds1[varname].attrs['description'] = description
         ds1[varname].attrs['variable'] = varname
@@ -178,7 +190,7 @@ def run_job(
     # Add to job metadata
     metadata.update(ADDITIONAL_METADATA)
 
-    dependencies = {}
+    file_dependencies = {}
 
     logger.debug('Beginning job:\n\tkwargs:\t{}'.format(
         pprint.pformat(metadata, indent=2)))
@@ -196,7 +208,7 @@ def run_job(
     with xr.open_dataset(fp) as ds:
         ds.load()
 
-    dependencies[os.path.splitext(os.path.basename(fp))[0]] = (
+    file_dependencies[os.path.splitext(os.path.basename(fp))[0]] = (
         str(ds.attrs.get('version', '1.0')))
 
     logger.debug('year {} - attempting to read file "{}"'.format(year, fp))
@@ -226,7 +238,7 @@ def run_job(
     logger.debug('attempting to write to file "{}"'.format(write_file))
 
     attrs = dict(ds.attrs)
-    attrs['dependencies'] = dependencies
+    attrs['file_dependencies'] = file_dependencies
     
     for var, vattrs in varattrs.items():
         ds[var].attrs.update(vattrs)
