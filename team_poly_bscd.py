@@ -127,7 +127,7 @@ def create_polynomial_transformation(power=2):
         'variable': varname,
         'source_variable': 'tas',
         'transformation': tas_poly,
-        'unit': 'degreesC-pow{}'.format(power)
+        'unit': 'C^{}'.format(power) if power > 1 else 'C'
     }
 
     return transformation_spec
