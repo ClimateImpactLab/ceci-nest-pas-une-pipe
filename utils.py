@@ -233,6 +233,10 @@ def get_job_by_index(job_spec, index):
 
 def slurm_runner(filepath, job_spec, run_job, onfinish=None):
 
+    @click.group()
+    def slurm():
+        pass
+
     @slurm.command()
     @click.option(
         '--limit', '-l', type=int, required=False, default=None,
