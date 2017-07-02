@@ -106,7 +106,7 @@ def create_polynomial_transformation(power=2):
         ds1[varname] = (ds.tas - 237.15)**power
 
         # Replace datetime64[ns] 'time' with YYYYDDD int 'day'
-        if ds.dims['time'] >= 365:
+        if ds.dims['time'] > 365:
             raise ValueError
 
         ds1.coords['day'] = ds['time.year']*1000 + np.arange(1, len(ds.time)+1)
