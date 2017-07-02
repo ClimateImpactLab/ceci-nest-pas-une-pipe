@@ -54,7 +54,7 @@ mkdir -p locks
 for i in {{1..{jobs_per_node}}}
 do
     nohup python {filepath} do_job --job_name {jobname} \
---job_id {uniqueid} --num_jobs {numjobs} {flags} \
+--job_id {uniqueid} --num_jobs {numjobs} --logdir "{logdir}" {flags} \
 > {logdir}/nohup-{jobname}-{uniqueid}-${{SLURM_ARRAY_TASK_ID}}-$i.out &
 done
 
@@ -340,10 +340,14 @@ def slurm_runner(filepath, job_spec, run_job, onfinish=None):
     @click.option('--job_name', required=True)
     @click.option('--job_id', required=True)
     @click.option('--num_jobs', required=True, type=int)
-    def do_job(job_name, job_id, num_jobs=None):
+    @click.option('--logdir', '-L', default='log', help='Directory to write log files')
+    def do_job(job_name, job_id, num_jobs=None, logdir='log'):
 
         if not os.path.isdir('locks'):
             os.makedirs('locks')
+
+        if not os.path.isdir(logdir):
+            os.makedirs(logdir)
 
         for task_id in range(num_jobs):
 
@@ -360,8 +364,9 @@ def slurm_runner(filepath, job_spec, run_job, onfinish=None):
                 print('{} already in progress. skipping'.format(task_id))
                 continue
 
-            handler = logging.FileHandler(
-                'log/run-{}-{}-{}.log'.format(job_name, job_id, task_id))
+            handler = logging.FileHandler(os.path.join(
+                logdir,
+                'run-{}-{}-{}.log'.format(job_name, job_id, task_id)))
             handler.setFormatter(formatter)
             handler.setLevel(logging.DEBUG)
 
