@@ -17,9 +17,8 @@ logger.setLevel('DEBUG')
 
 formatter = logging.Formatter(FORMAT)
 
-SCRIPT_START = '''#!/bin/bash'''
-
 SLURM_SCRIPT = '''
+#!/bin/bash
 # Job name:
 #SBATCH --job-name={jobname}
 #
@@ -40,16 +39,15 @@ SLURM_SCRIPT = '''
 #SBATCH --requeue
 {dependencies}
 {output}
-'''
+'''.strip()
 
-SLURM_MULTI_SCRIPT = (SCRIPT_START + '''
+SLURM_MULTI_SCRIPT = SLURM_SCRIPT + '''
+#
+#SBATCH --array=0-{maxnodes}
 
 # set up directories
 mkdir -p {logdir}
 mkdir -p locks
-
-''' + SLURM_SCRIPT + '''#
-#SBATCH --array=0-{maxnodes}
 
 ## Run command
 
@@ -62,9 +60,9 @@ done
 
 python {filepath} wait --job_name {jobname} \
 --job_id {uniqueid} --num_jobs {numjobs} {flags}
-''')
+'''
 
-SLURM_SINGLE_SCRIPT = SCRIPT_START + SLURM_SCRIPT + '''
+SLURM_SINGLE_SCRIPT = SLURM_SCRIPT + '''
 
 ## Run command
 python {filepath} {flags}
@@ -299,6 +297,9 @@ def slurm_runner(filepath, job_spec, run_job, onfinish=None):
             maxnodes=100,
             logdir='log',
             uniqueid='"${SLURM_ARRAY_JOB_ID}"'):
+
+        if not os.path.isdir(logdir):
+            os.makedirs(logdir)
 
         slurm_id = run_slurm(
             filepath=filepath,
