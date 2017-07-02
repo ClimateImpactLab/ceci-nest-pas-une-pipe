@@ -41,13 +41,14 @@ SLURM_SCRIPT = '''
 {output}
 '''.strip()
 
-SLURM_MULTI_SCRIPT = SLURM_SCRIPT + '''
-#
-#SBATCH --array=0-{maxnodes}
+SLURM_MULTI_SCRIPT = ('''
 
 # set up directories
 mkdir -p {logdir}
 mkdir -p locks
+
+''' + SLURM_SCRIPT + '''#
+#SBATCH --array=0-{maxnodes}
 
 ## Run command
 
@@ -60,7 +61,7 @@ done
 
 python {filepath} wait --job_name {jobname} \
 --job_id {uniqueid} --num_jobs {numjobs} {flags}
-'''
+''')
 
 SLURM_SINGLE_SCRIPT = SLURM_SCRIPT + '''
 
