@@ -17,8 +17,9 @@ logger.setLevel('DEBUG')
 
 formatter = logging.Formatter(FORMAT)
 
+SCRIPT_START = '''#!/bin/bash'''
+
 SLURM_SCRIPT = '''
-#!/bin/bash
 # Job name:
 #SBATCH --job-name={jobname}
 #
@@ -39,9 +40,9 @@ SLURM_SCRIPT = '''
 #SBATCH --requeue
 {dependencies}
 {output}
-'''.strip()
+'''
 
-SLURM_MULTI_SCRIPT = ('''
+SLURM_MULTI_SCRIPT = (SCRIPT_START + '''
 
 # set up directories
 mkdir -p {logdir}
@@ -63,7 +64,7 @@ python {filepath} wait --job_name {jobname} \
 --job_id {uniqueid} --num_jobs {numjobs} {flags}
 ''')
 
-SLURM_SINGLE_SCRIPT = SLURM_SCRIPT + '''
+SLURM_SINGLE_SCRIPT = SCRIPT_START + SLURM_SCRIPT + '''
 
 ## Run command
 python {filepath} {flags}
