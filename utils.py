@@ -7,6 +7,7 @@ import logging
 import itertools
 import functools
 import subprocess
+import numpy as np
 
 from _compat import exclusive_open
 
@@ -95,6 +96,10 @@ def generate_jobs(job_spec):
         yield _unpack_job(specs)
 
 
+def count_jobs(job_spec):
+    return _product(map(len, job_spec))
+
+
 def _prep_slurm(
         filepath,
         jobname='slurm_job',
@@ -126,7 +131,7 @@ def _prep_slurm(
 
 
     if job_spec:
-        n = len(list(generate_jobs(job_spec)))
+        n = count_jobs(job_spec)
 
         if limit is not None:
             n = min(limit, n)
@@ -404,6 +409,28 @@ def slurm_runner(filepath, job_spec, run_job, onfinish=None):
                     pass
 
             logger.removeHandler(handler)
+
+
+    @slurm.command()
+    @click.option('--job_name', required=True)
+    @click.option('--job_id', required=True)
+    def status(job_name, job_id, num_jobs=None, logdir='log'):
+        n = count_jobs(job_spec)
+        locks = os.listdir('locks')
+
+        count = int(np.log10(n)//1 + 1)
+
+        locked = len([
+            i for i in range(n)
+                if '{}-{}-{}.lck'.format(job_name, job_id, i) in locks])
+
+        done = len([
+            i for i in range(n)
+                if '{}-{}-{}.done'.format(job_name, job_id, i) in locks])
+
+        print(
+            ("\n".join(["{{:<15}}{{:{}d}}".format(count) for _ in range(3)]))
+                .format('jobs:', n, 'done:', done, 'in progress:', locked))
 
 
     @slurm.command()
