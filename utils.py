@@ -122,13 +122,12 @@ def _prep_slurm(
 
             depstr += (
                 '#\n#SBATCH --dependency={}:{}'
-                    .format(status, ','.join(map(str, deps))))
+                .format(status, ','.join(map(str, deps))))
 
     if flags:
         flagstr = ' '.join(map(str, flags))
     else:
         flagstr = ''
-
 
     if job_spec:
         n = count_jobs(job_spec)
@@ -138,15 +137,17 @@ def _prep_slurm(
 
         numjobs = n
 
-        output = ('#\n#SBATCH --output {logdir}/slurm-{jobname}-%A_%a.out'
-                    .format(jobname=jobname, logdir=logdir))
+        output = (
+                '#\n#SBATCH --output {logdir}/slurm-{jobname}-%A_%a.out'
+                .format(jobname=jobname, logdir=logdir))
 
         template = SLURM_MULTI_SCRIPT
 
     else:
         numjobs = 1
-        output = ('#\n#SBATCH --output {logdir}/slurm-{jobname}-%A.out'
-                    .format(jobname=jobname, logdir=logdir))
+        output = (
+                '#\n#SBATCH --output {logdir}/slurm-{jobname}-%A.out'
+                .format(jobname=jobname, logdir=logdir))
 
         template = SLURM_SINGLE_SCRIPT
 
@@ -232,7 +233,7 @@ def get_job_by_index(job_spec, index):
 
     return _unpack_job([
         job_spec[i][
-            (index//(_product(map(len, job_spec[i+1:])))%len(job_spec[i]))]
+            (index//(_product(map(len, job_spec[i+1:]))) % len(job_spec[i]))]
         for i in range(len(job_spec))])
 
 
@@ -340,15 +341,15 @@ def slurm_runner(filepath, job_spec, run_job, onfinish=None):
 
         print('run job: {}\non-finish job: {}'.format(slurm_id, finish_id))
 
-
     @slurm.command()
     @click.argument('slurm_id')
     def cleanup(slurm_id):
         proc = subprocess.Popen(
-            ['sacct', '-j', slurm_id,
-                    '--format=JobID,JobName,MaxRSS,Elapsed,State'],
-            stdout = subprocess.PIPE,
-            stderr = subprocess.PIPE)
+            [
+                'sacct', '-j', slurm_id,
+                '--format=JobID,JobName,MaxRSS,Elapsed,State'],
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE)
 
         out, err = proc.communicate()
 
@@ -382,7 +383,7 @@ def slurm_runner(filepath, job_spec, run_job, onfinish=None):
                 with exclusive_open(
                             'locks/{}-{}-{}.lck'
                             .format(job_name, job_id, task_id)
-                        ) as f:
+                        ):
                     pass
 
                 # Check for race conditions
@@ -422,7 +423,7 @@ def slurm_runner(filepath, job_spec, run_job, onfinish=None):
             except Exception as e:
                 logger.error(
                     'Error encountered in job {} {} {}'
-                        .format(job_name, job_id, task_id),
+                    .format(job_name, job_id, task_id),
                     exc_info=e)
 
             finally:
@@ -434,12 +435,11 @@ def slurm_runner(filepath, job_spec, run_job, onfinish=None):
 
                 with open(
                         'locks/{}-{}-{}.done'
-                            .format(job_name, job_id, task_id),
-                        'w+') as f:
+                        .format(job_name, job_id, task_id),
+                        'w+'):
                     pass
 
             logger.removeHandler(handler)
-
 
     @slurm.command()
     @click.option('--job_name', required=True)
@@ -452,16 +452,15 @@ def slurm_runner(filepath, job_spec, run_job, onfinish=None):
 
         locked = len([
             i for i in range(n)
-                if '{}-{}-{}.lck'.format(job_name, job_id, i) in locks])
+            if '{}-{}-{}.lck'.format(job_name, job_id, i) in locks])
 
         done = len([
             i for i in range(n)
-                if '{}-{}-{}.done'.format(job_name, job_id, i) in locks])
+            if '{}-{}-{}.done'.format(job_name, job_id, i) in locks])
 
         print(
             ("\n".join(["{{:<15}}{{:{}d}}".format(count) for _ in range(3)]))
-                .format('jobs:', n, 'done:', done, 'in progress:', locked))
-
+            .format('jobs:', n, 'done:', done, 'in progress:', locked))
 
     @slurm.command()
     @click.option('--job_name', required=True)
