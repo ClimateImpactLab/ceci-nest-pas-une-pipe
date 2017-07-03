@@ -8,16 +8,8 @@ calendar (leap years excluded) in the format YYYYDDD.
 '''
 
 import os
-import pprint
-import logging
 
 import utils
-
-FORMAT = '%(asctime)-15s %(message)s'
-logging.basicConfig(format=FORMAT)
-
-logger = logging.getLogger('uploader')
-logger.setLevel('DEBUG')
 
 __author__ = 'Michael Delgado'
 __contact__ = 'mdelgado@rhg.com'
@@ -178,6 +170,7 @@ INCLUDED_METADATA = [
 
 
 def run_job(
+        logger,
         metadata,
         variable,
         transformation,
@@ -202,9 +195,6 @@ def run_job(
     metadata.update(ADDITIONAL_METADATA)
 
     file_dependencies = {}
-
-    logger.debug('Beginning job:\n\tkwargs:\t{}'.format(
-        pprint.pformat(metadata, indent=2)))
 
     read_file = BCSD_orig_files.format(**metadata)
     write_file = WRITE_PATH.format(**metadata)

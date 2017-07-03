@@ -8,16 +8,7 @@ calendar (leap years excluded).
 '''
 
 import os
-import pprint
-import logging
-
 import utils
-
-FORMAT = '%(asctime)-15s %(message)s'
-logging.basicConfig(format=FORMAT)
-
-logger = logging.getLogger('uploader')
-logger.setLevel('DEBUG')
 
 __author__ = 'Michael Delgado'
 __contact__ = 'mdelgado@rhg.com'
@@ -187,6 +178,7 @@ INCLUDED_METADATA = [
 
 
 def run_job(
+        logger,
         metadata,
         variable,
         source_variable,
@@ -207,9 +199,6 @@ def run_job(
         load_bcsd,
         load_baseline,
         weighted_aggregate_grid_to_regions)
-
-    logger.debug('Beginning job\nkwargs:\t{}'.format(
-        pprint.pformat(metadata, indent=2)))
 
     # Add to job metadata
     metadata.update(ADDITIONAL_METADATA)

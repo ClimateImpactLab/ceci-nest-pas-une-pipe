@@ -11,6 +11,8 @@ import subprocess
 
 from _compat import exclusive_open
 
+from locking import JobLocker, JobSkipped
+
 FORMAT = '%(asctime)-15s %(message)s'
 
 logger = logging.getLogger('uploader')
@@ -52,15 +54,15 @@ mkdir -p locks
 
 ## Run command
 
-for i in {{1..{jobs_per_node}}}
+for i in {{1..{tasks_per_node}}}
 do
-    nohup python {filepath} do_job --job_name {jobname} \
---job_id {uniqueid} --num_jobs {numjobs} --logdir "{logdir}" {flags} \
+    nohup python {filepath} do_job --jobname {jobname} \
+--uniqueid {uniqueid} --num_tasks {num_tasks} --logdir "{logdir}" {flags} \
 > {logdir}/nohup-{jobname}-{uniqueid}-${{SLURM_ARRAY_TASK_ID}}-$i.out &
 done
 
-python {filepath} wait --job_name {jobname} \
---job_id {uniqueid} --num_jobs {numjobs} {flags}
+python {filepath} wait --jobname {jobname} \
+--uniqueid {uniqueid} --num_tasks {num_tasks} {flags}
 '''
 
 SLURM_SINGLE_SCRIPT = SLURM_SCRIPT + '''
@@ -107,7 +109,7 @@ def _prep_slurm(
         job_spec=None,
         limit=None,
         uniqueid='"${SLURM_ARRAY_JOB_ID}"',
-        jobs_per_node=24,
+        tasks_per_node=24,
         maxnodes=100,
         dependencies=None,
         logdir='log',
@@ -135,7 +137,7 @@ def _prep_slurm(
         if limit is not None:
             n = min(limit, n)
 
-        numjobs = n
+        num_tasks = n
 
         output = (
                 '#\n#SBATCH --output {logdir}/slurm-{jobname}-%A_%a.out'
@@ -144,7 +146,7 @@ def _prep_slurm(
         template = SLURM_MULTI_SCRIPT
 
     else:
-        numjobs = 1
+        num_tasks = 1
         output = (
                 '#\n#SBATCH --output {logdir}/slurm-{jobname}-%A.out'
                 .format(jobname=jobname, logdir=logdir))
@@ -155,8 +157,8 @@ def _prep_slurm(
         f.write(template.format(
             jobname=jobname,
             partition=partition,
-            numjobs=numjobs,
-            jobs_per_node=jobs_per_node,
+            num_tasks=num_tasks,
+            tasks_per_node=tasks_per_node,
             maxnodes=maxnodes,
             uniqueid=uniqueid,
             filepath=filepath.replace(os.sep, '/'),
@@ -173,7 +175,7 @@ def run_slurm(
         job_spec=None,
         limit=None,
         uniqueid='"${SLURM_ARRAY_JOB_ID}"',
-        jobs_per_node=24,
+        tasks_per_node=24,
         maxnodes=100,
         dependencies=None,
         logdir='log',
@@ -186,7 +188,7 @@ def run_slurm(
         job_spec=job_spec,
         limit=limit,
         uniqueid=uniqueid,
-        jobs_per_node=jobs_per_node,
+        tasks_per_node=tasks_per_node,
         maxnodes=maxnodes,
         dependencies=dependencies,
         logdir=logdir,
@@ -248,7 +250,7 @@ def slurm_runner(filepath, job_spec, run_job, onfinish=None):
         '--limit', '-l', type=int, required=False, default=None,
         help='Number of iterations to run')
     @click.option(
-        '--jobs_per_node', '-n', type=int, required=False, default=24,
+        '--tasks_per_node', '-n', type=int, required=False, default=24,
         help='Number of jobs to run per node')
     @click.option(
         '--maxnodes', '-x', type=int, required=False, default=100,
@@ -265,7 +267,7 @@ def slurm_runner(filepath, job_spec, run_job, onfinish=None):
         help='Unique job pool id')
     def prep(
             limit=None,
-            jobs_per_node=24,
+            tasks_per_node=24,
             jobname='slurm_job',
             dependency=None,
             partition='savio2',
@@ -278,7 +280,7 @@ def slurm_runner(filepath, job_spec, run_job, onfinish=None):
             jobname=jobname,
             partition=partition,
             job_spec=job_spec,
-            jobs_per_node=jobs_per_node,
+            tasks_per_node=tasks_per_node,
             maxnodes=maxnodes,
             limit=limit,
             uniqueid=uniqueid,
@@ -290,13 +292,13 @@ def slurm_runner(filepath, job_spec, run_job, onfinish=None):
         '--limit', '-l', type=int, required=False, default=None,
         help='Number of iterations to run')
     @click.option(
-        '--jobs_per_node', '-n', type=int, required=False, default=24,
+        '--tasks_per_node', '-n', type=int, required=False, default=24,
         help='Number of jobs to run per node')
     @click.option(
         '--maxnodes', '-x', type=int, required=False, default=100,
         help='Number of nodes to request for this job')
     @click.option(
-        '--jobname', '-j', default='test', help='name of the job')
+        '--jobname', '-j', default='slurm_job', help='name of the job')
     @click.option(
         '--partition', '-p', default='savio2', help='resource on which to run')
     @click.option(
@@ -308,13 +310,73 @@ def slurm_runner(filepath, job_spec, run_job, onfinish=None):
         help='Unique job pool id')
     def run(
             limit=None,
-            jobs_per_node=24,
+            tasks_per_node=24,
             jobname='slurm_job',
             dependency=None,
             partition='savio2',
             maxnodes=100,
             logdir='log',
             uniqueid='"${SLURM_ARRAY_JOB_ID}"'):
+
+        '''
+        Dispatch a multi-node x multi-core run with SLURM
+
+        This function requests nodes from SLURM. Each node will provision
+        multiple workers which will be charged with completing individual
+        tasks.
+
+        To add multiple partition types to the same task pool, specify
+        identical ``jobname`` and ``uniqueid`` parameters.
+
+        .. warning::
+
+            Each worker reads the calling file at runtime. Changes to this file
+            will therefore be reflected in subsequent runs without warning.
+
+        Parameters
+        ----------
+        limit : int, optional
+            Maximum number of tasks to run. Useful for debugging - should not
+            be used if all tasks are desired. Default behavior is to run all
+            tasks.
+
+        tasks_per_node : int, optional
+            Number of worker threads to create on each node. This value should
+            be less than or equal to the number of cores on each machine
+            divided by the number of cores used by each task. Default 24.
+
+        jobname : str, optional
+            Name of the job. This value is used for log file naming and for
+            task completion tracking. Specify the same name and ``uniqueid``
+            across ``run`` calls to provision multiple worker pools with the
+            same set of tasks (e.g. to utilize multiple partition types for the
+            same job). Default ``slurm_job``.
+
+        dependency : int, optional
+            ``SLURM_JOB_ID`` job. Dependency is interpreted as an ``afterany``
+            dependency, so inputs/job completion should be checked before
+            continuing an operation. (default None)
+
+        partition : str, optional
+            Node partition to request from SLURM (default ``savio2``)
+
+        maxnodes : int, optional
+            Maximum number of nodes to request (default 100)
+
+        logdir : str, optional
+            Logging directory. Default is to create a directory ``log`` at the
+            current location. Note that if the ``logdir`` is in the home
+            directory, this could create a storage allowance problem with
+            significant logging or a large number of tasks.
+
+        uniqueid : str, optional
+            Unique job ID to use (alongside the ``jobname``) to create a worker
+            pool. If creating a pool of workers with multiple SLURM tasks for
+            any reason (e.g. using multiple partition types) specify the same
+            ``jobname`` and ``uniqueid`` to instruct worker processes to share
+            tasks.
+
+        '''
 
         if not os.path.isdir(logdir):
             os.makedirs(logdir)
@@ -324,7 +386,7 @@ def slurm_runner(filepath, job_spec, run_job, onfinish=None):
             jobname=jobname,
             partition=partition,
             job_spec=job_spec,
-            jobs_per_node=jobs_per_node,
+            tasks_per_node=tasks_per_node,
             maxnodes=maxnodes,
             limit=limit,
             uniqueid=uniqueid,
@@ -344,6 +406,10 @@ def slurm_runner(filepath, job_spec, run_job, onfinish=None):
     @slurm.command()
     @click.argument('slurm_id')
     def cleanup(slurm_id):
+        '''
+        On-finish "worker" process
+        '''
+
         proc = subprocess.Popen(
             [
                 'sacct', '-j', slurm_id,
@@ -359,98 +425,103 @@ def slurm_runner(filepath, job_spec, run_job, onfinish=None):
             onfinish()
 
     @slurm.command()
-    @click.option('--job_name', required=True)
-    @click.option('--job_id', required=True)
-    @click.option('--num_jobs', required=True, type=int)
+    @click.option('--jobname', required=True)
+    @click.option('--uniqueid', required=True)
+    @click.option('--num_tasks', required=True, type=int)
     @click.option(
         '--logdir', '-L', default='log', help='Directory to write log files')
-    def do_job(job_name, job_id, num_jobs=None, logdir='log'):
+    def do_job(jobname, uniqueid, num_tasks=None, logdir='log'):
+        '''
+        Worker process - do not call directly
 
-        if not os.path.isdir('locks'):
-            os.makedirs('locks')
+        This option should be called by SLURM nodes as part of a ``run`` job.
+
+        Iterates through tasks, finding tasks in need of completion. For each
+        job, creates a logging file handler, prepares metadata, and calls
+        ``run_job(logger, metadata, **job)``.
+
+        Job dispatch is controlled by :py:class:`locking.JobLocker` objects.
+        '''
+
+        locker = JobLocker(jobname, uniqueid)
 
         if not os.path.isdir(logdir):
             os.makedirs(logdir)
 
-        for task_id in range(num_jobs):
-
-            lock_file = (
-                'locks/{}-{}-{}.{{}}'
-                .format(job_name, job_id, task_id))
-
-            if os.path.exists(lock_file.format('done')):
-                print('{} already done. skipping'.format(task_id))
-                continue
-                
-            elif os.path.exists(lock_file.format('err')):
-                print('{} previously errored. skipping'.format(task_id))
-                continue
+        for task_id in range(num_tasks):
 
             try:
-                with exclusive_open(lock_file.format('lck')):
-                    pass
+                locker.acquire(task_id)
 
-                # Check for race conditions
-                if os.path.exists(lock_file.format('done')):
-                    print('{} already done. skipping'.format(task_id))
-                    if os.path.exists(lock_file.format('lck')):
-                        os.remove(lock_file.format('lck'))
-                
-                elif os.path.exists(lock_file.format('err')):
-                    print('{} previously errored. skipping'.format(task_id))
-                    if os.path.exists(lock_file.format('lck')):
-                        os.remove(lock_file.format('lck'))
-
-            except OSError:
-                print('{} already in progress. skipping'.format(task_id))
+            except JobSkipped as e:
+                print(e)
                 continue
-
-            handler = logging.FileHandler(os.path.join(
-                logdir,
-                'run-{}-{}-{}.log'.format(job_name, job_id, task_id)))
-            handler.setFormatter(formatter)
-            handler.setLevel(logging.DEBUG)
-
-            logger.addHandler(handler)
-
-            try:
-
-                job = get_job_by_index(job_spec, task_id)
-
-                metadata = {}
-                metadata.update({k: str(v) for k, v in job.items()})
-
-                logger.debug('Beginning job\nkwargs:\t{}'.format(
-                    pprint.pformat(metadata, indent=2)))
-
-                run_job(metadata=metadata, **job)
-
-            except (KeyboardInterrupt, SystemExit):
-                raise
-
-            except Exception as e:
-                logger.error(
-                    'Error encountered in job {} {} {}'
-                    .format(job_name, job_id, task_id),
-                    exc_info=e)
-
-                with open(lock_file.format('err'), 'w+'):
-                    pass
 
             else:
-                with open(lock_file.format('done'), 'w+'):
-                    pass
+
+                handler = logging.FileHandler(os.path.join(
+                    logdir,
+                    'run-{}-{}-{}.log'.format(jobname, uniqueid, task_id)))
+                handler.setFormatter(formatter)
+                handler.setLevel(logging.DEBUG)
+
+                logger.addHandler(handler)
+
+                try:
+
+                    job = get_job_by_index(job_spec, task_id)
+
+                    metadata = {}
+                    metadata.update({k: str(v) for k, v in job.items()})
+
+                    logger.debug('Beginning job\nkwargs:\t{}'.format(
+                        pprint.pformat(metadata, indent=2)))
+
+                    run_job(logger=logger, metadata=metadata, **job)
+
+                except (KeyboardInterrupt, SystemExit):
+                    raise
+
+                except Exception as e:
+
+                    # report error
+                    logger.error(
+                        'Error encountered in job {} {} {}'
+                        .format(jobname, uniqueid, task_id),
+                        exc_info=e)
+
+                    locker.error(task_id)
+
+                else:
+
+                    # report successful job completion
+                    locker.done(task_id)
 
             finally:
-                if os.path.exists(lock_file.format('lck')):
-                    os.remove(lock_file.format('lck'))
 
                 logger.removeHandler(handler)
+                locker.release(task_id)
 
     @slurm.command()
-    @click.option('--job_name', '-j', required=True)
-    @click.option('--job_id', '-u', required=True)
-    def status(job_name, job_id, num_jobs=None, logdir='log'):
+    @click.option('--jobname', '-j', required=True)
+    @click.option('--uniqueid', '-u', required=True)
+    def status(jobname, uniqueid):
+        '''
+        Get the status of a running job
+
+        Parameters
+        ----------
+
+        jobname : str
+            Name of the job to check status. If no jobname was provided at run
+            creation, this is ``slurm_job``
+
+        uniqueid : str
+            Unique ID of the job to check status. If no uniqueid was provided
+            at run creation, this is the ``SLURM_JOB_ID``.
+
+        '''
+
         n = count_jobs(job_spec)
         locks = os.listdir('locks')
 
@@ -458,26 +529,51 @@ def slurm_runner(filepath, job_spec, run_job, onfinish=None):
 
         locked = len([
             i for i in range(n)
-            if '{}-{}-{}.lck'.format(job_name, job_id, i) in locks])
+            if '{}-{}-{}.lck'.format(jobname, uniqueid, i) in locks])
 
         done = len([
             i for i in range(n)
-            if '{}-{}-{}.done'.format(job_name, job_id, i) in locks])
+            if '{}-{}-{}.done'.format(jobname, uniqueid, i) in locks])
 
         print(
             ("\n".join(["{{:<15}}{{:{}d}}".format(count) for _ in range(3)]))
             .format('jobs:', n, 'done:', done, 'in progress:', locked))
 
     @slurm.command()
-    @click.option('--job_name', required=True)
-    @click.option('--job_id', required=True)
-    @click.option('--num_jobs', required=True, type=int)
-    def wait(job_name, job_id, num_jobs=None):
+    @click.option('--jobname', required=True)
+    @click.option('--uniqueid', required=True)
+    @click.option('--num_tasks', required=True, type=int)
+    def wait(jobname, uniqueid, num_tasks=None):
+        '''
+        Worker process - do not call directly
 
-        for task_id in range(num_jobs):
-            while not os.path.exists(
-                        'locks/{}-{}-{}.done'
-                        .format(job_name, job_id, task_id)):
-                time.sleep(10)
+        This option should be called by SLURM nodes as part of a ``run`` job.
+
+        Waits for all tasks to complete. This process blocks a node from
+        exiting until all tasks have either errored or completed.
+
+        '''
+
+        locker = JobLocker(jobname, uniqueid)
+
+        once_more = True
+
+        while True:
+
+            tasks_in_progress = False
+            for task_id in range(num_tasks):
+                if locker.is_locked(task_id):
+                    time.sleep(10)
+                    tasks_in_progress = True
+                    break
+
+            if not tasks_in_progress:
+
+                if once_more:
+                    time.sleep(10)
+                    once_more = False
+                    continue
+
+                return
 
     return slurm
