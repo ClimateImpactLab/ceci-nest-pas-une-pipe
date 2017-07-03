@@ -8,7 +8,7 @@ if py2:
 
     @contextmanager
     def exclusive_open(fp):
-        fd = os.open(fp, os.O_RDWR|os.O_CREAT|os.O_EXCL)
+        fd = os.open(fp, os.O_RDWR | os.O_CREAT | os.O_EXCL)
         with os.fdopen(fd, 'w+') as f:
             yield f
 

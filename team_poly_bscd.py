@@ -8,7 +8,6 @@ calendar (leap years excluded) in the format YYYYDDD.
 '''
 
 import os
-import click
 import pprint
 import logging
 
@@ -26,7 +25,8 @@ __version__ = '1.1'
 
 
 BCSD_orig_files = (
-    '/global/scratch/{read_acct}/nasa_bcsd/raw_data/{scenario}/{model}/{source_variable}/' +
+    '/global/scratch/{read_acct}/nasa_bcsd/raw_data/{scenario}/{model}/' +
+    '{source_variable}/' +
     '{source_variable}_day_BCSD_{scenario}_r1i1p1_{model}_{year}.nc')
 
 WRITE_PATH = (
@@ -55,8 +55,13 @@ ADDITIONAL_METADATA = dict(
     frequency='daily',
     dependencies='climate-tas-NASA_BCSD-originals.1.0')
 
-ordinal = lambda n: "%d%s" % (n,"tsnrhtdd"[(n//10%10!=1)*(n%10<4)*n%10::4])
-''' converts numbers into ordinal strings '''
+
+def ordinal(n):
+    ''' converts numbers into ordinal strings '''
+
+    return (
+        "%d%s" %
+        (n, "tsnrhtdd"[(n // 10 % 10 != 1) * (n % 10 < 4) * n % 10::4]))
 
 
 def format_docstr(docstr):
@@ -83,7 +88,7 @@ def create_polynomial_transformation(power=2):
             '''.format(
                 raised='' if power == 1 else (
                     ' raised to the {powername} power'
-                        .format(powername=powername)))).strip())
+                    .format(powername=powername)))).strip())
 
     varname = 'tas-poly-{}'.format(power) if power > 1 else 'tas'
 
@@ -131,10 +136,13 @@ def create_polynomial_transformation(power=2):
 
 JOBS = [create_polynomial_transformation(i) for i in range(1, 10)]
 
+hist = range(1981, 2006)
+proj = range(2006, 2100)
+
 PERIODS = (
-    [dict(scenario='historical', read_acct='jiacany', year=y) for y in range(1981, 2006)] +
-    [dict(scenario='rcp45', read_acct='jiacany', year=y) for y in range(2006, 2100)] +
-    [dict(scenario='rcp85', read_acct='jiacany', year=y) for y in range(2006, 2100)])
+    [dict(scenario='historical', read_acct='jiacany', year=y) for y in hist] +
+    [dict(scenario='rcp45', read_acct='jiacany', year=y) for y in proj] +
+    [dict(scenario='rcp85', read_acct='jiacany', year=y) for y in proj])
 
 MODELS = list(map(lambda x: dict(model=x), [
     'ACCESS1-0',
@@ -215,8 +223,9 @@ def run_job(
         str(ds.attrs.get('version', '1.0')))
 
     logger.debug('year {} - attempting to read file "{}"'.format(year, fp))
-    ds = (load_bcsd(ds, source_variable, broadcast_dims=('time',))
-                .pipe(transformation))
+    ds = (
+            load_bcsd(ds, source_variable, broadcast_dims=('time',))
+            .pipe(transformation))
 
     varattrs = {var: dict(ds[var].attrs) for var in ds.data_vars.keys()}
 
@@ -227,13 +236,14 @@ def run_job(
                 ds, variable, aggwt, agglev, weights=weights)
 
     # Update netCDF metadata
-    ds.attrs.update(**{k: str(v)
-        for k, v in metadata.items() if k in INCLUDED_METADATA})
+    ds.attrs.update(**{
+        k: str(v) for k, v in metadata.items() if k in INCLUDED_METADATA})
     ds.attrs.update(ADDITIONAL_METADATA)
 
     # Write output
     if not os.path.isdir(os.path.dirname(write_file)):
-        logger.debug('attempting to create_directory "{}"'
+        logger.debug(
+            'attempting to create_directory "{}"'
             .format(os.path.dirname(write_file)))
 
         os.makedirs(os.path.dirname(write_file))

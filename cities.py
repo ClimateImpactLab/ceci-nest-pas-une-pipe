@@ -13,11 +13,15 @@ outpaths = (
 
 cities = [
     ('India-NewDelhi', 'IND.10.121.371'),
-    ('USA-WashingtonDC', 'USA.9.317'), 
+    ('USA-WashingtonDC', 'USA.9.317'),
     ('USA-PhoenixAZ', 'USA.3.101'),
     ('Egypt-Cairo', 'EGY.11'),
     ('Spain-Madrid', 'ESP.8.33.235.5912'),
-    ('China-Beijing', 'CHN.2.18.78'), #Includes (XiCheng, DongCheng, Chaoyang, HaiDian, FengTai and ShiJingShan districts)
+
+    # Includes (XiCheng, DongCheng, Chaoyang, HaiDian, FengTai
+    # and ShiJingShan districts)
+    ('China-Beijing', 'CHN.2.18.78'),
+
     ('USA-Houston', 'USA.44.2640'),
     ('USA-Dallas', 'USA.1.24'),
     ('India-Bangalore', 'IND.17.218.765'),
@@ -29,7 +33,7 @@ cities = [
     # ('Japan-Tokyo', 'JPN.41'),
     ('Somalia-Mogadishu', 'SOM.3.10'),
     ('Brazil-Brasilia', 'BRA.7.804.1862'),
-    ('Mexico-Mexico City','MEX.9.264'),
+    ('Mexico-Mexico City', 'MEX.9.264'),
     ]
 
 rcps = ['rcp45', 'rcp85']
