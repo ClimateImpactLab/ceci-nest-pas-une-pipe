@@ -54,7 +54,7 @@ ADDITIONAL_METADATA = dict(
     repo='https://github.com/ClimateImpactLab/ceci-nest-pas-une-pipe',
     file='/web_temp_extremes.py',
     execute='python web_temp_extremes.py --run',
-    project='gcp', 
+    project='gcp',
     team='climate',
     geography='hierid',
     weighting='areawt',
@@ -190,9 +190,9 @@ def run_job(
     # Get transformed data
     annual = []
     for y in years:
-        
+
         fp = read_file.format(year=y)
-        
+
         logging.debug('year {} - attempting to read file "{}"'.format(y, fp))
         annual.append(
             load_bcsd(fp, variable, broadcast_dims=('time',))
@@ -202,7 +202,7 @@ def run_job(
     ds = xr.Dataset({
         variable: xr.concat(annual, dim=pd.Index(years, name='year'))
                         .mean(dim='year')})
-    
+
     # Reshape to regions
     if not agglev.startswith('grid'):
         logger.debug('aggregating to "{}" using "{}"'.format(agglev, aggwt))

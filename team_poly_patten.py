@@ -60,7 +60,7 @@ ADDITIONAL_METADATA = dict(
     repo='https://github.com/ClimateImpactLab/ceci-nest-pas-une-pipe',
     file='/annual_average_tas_pattern.py',
     execute='python annual_average_tas_pattern.py --run',
-    project='gcp', 
+    project='gcp',
     team='climate',
     probability_method='SMME',
     frequency='daily')
@@ -88,8 +88,8 @@ def create_polynomial_transformation(power=2):
     description = format_docstr('''
         Daily average temperature (degrees C) raised to the {powername} power
 
-        Leap years are removed before counting days (uses a 365 day 
-        calendar). 
+        Leap years are removed before counting days (uses a 365 day
+        calendar).
         '''.format(powername=powername))
 
     varname = 'tas-poly-{}'.format(power)
@@ -101,7 +101,7 @@ def create_polynomial_transformation(power=2):
         # remove leap years
         ds = ds.loc[{
             'time': ~((ds['time.month'] == 2) & (ds['time.day'] == 29))}]
-        
+
         # do transformation
         ds1[varname] = (ds.tasmin - 237.15)**power
 
@@ -130,7 +130,7 @@ PERIODS = (
     [dict(scenario='rcp85', read_acct='jiacany', year=y) for y in range(1982, 2100)])
 
 rcp_models = {
-    'rcp45': 
+    'rcp45':
         list(map(lambda x: dict(model=x[0], baseline_model=x[1]), [
             ('pattern1','MRI-CGCM3'),
             ('pattern2','GFDL-ESM2G'),
@@ -141,8 +141,8 @@ rcp_models = {
             ('pattern27','GFDL-CM3'),
             ('pattern28','CanESM2'),
             ('pattern29','GFDL-CM3'),
-            ('pattern30','CanESM2'), 
-            ('pattern31','GFDL-CM3'), 
+            ('pattern30','CanESM2'),
+            ('pattern31','GFDL-CM3'),
             ('pattern32','CanESM2')])),
 
     'rcp85':
@@ -156,8 +156,8 @@ rcp_models = {
             ('pattern28','GFDL-CM3'),
             ('pattern29','CanESM2'),
             ('pattern30','GFDL-CM3'),
-            ('pattern31','CanESM2'), 
-            ('pattern32','GFDL-CM3'), 
+            ('pattern31','CanESM2'),
+            ('pattern32','GFDL-CM3'),
             ('pattern33','CanESM2')]))}
 
 MODELS = []
@@ -208,11 +208,11 @@ def run_job(
     baseline_file = BASELINE_FILE.format(**metadata)
     pattern_file = BCSD_pattern_files.format(**metadata)
     write_file = WRITE_PATH.format(**metadata)
-    
+
     # do not duplicate
     if os.path.isfile(write_file):
         return
-    
+
     # Get transformed data
     total = None
 
@@ -254,7 +254,7 @@ def run_job(
                 model, year, season))
 
         seasonal.append(patt + seasonal_baselines[season])
-        
+
     logger.debug((
         '{} {} - concatenating seasonal data and ' +
         'applying transform').format(model, year))

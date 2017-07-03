@@ -50,7 +50,7 @@ ADDITIONAL_METADATA = dict(
     repo='https://github.com/ClimateImpactLab/ceci-nest-pas-une-pipe',
     file='/web_temp_extremes.py',
     execute='python web_temp_extremes.py --run',
-    project='gcp', 
+    project='gcp',
     team='climate',
     geography='hierid',
     weighting='areawt',
@@ -95,12 +95,12 @@ JOBS = [
     #     unit='days-over-118F',
     #     variable='tasmax',
     #     transformation=tasmax_over_118F_365day),
-    
+
     dict(transformation_name='tasmax-over-95F',
         unit='days-over-95F',
         variable='tasmax',
         transformation=tasmax_over_95F_365day),
-    
+
     # dict(transformation_name='tasmin-under-32F',
     #     unit='days-under-32F',
     #     variable='tasmin',
@@ -178,7 +178,7 @@ def run_job(
     annual = []
     for y in years:
         fp = read_file.format(year=y)
-        
+
         logger.debug('attempting to load BCSD file: {}'.format(fp))
         annual.append(
             load_bcsd(fp, variable, broadcast_dims=('time',))
@@ -189,7 +189,7 @@ def run_job(
     ds = xr.Dataset({
         variable: xr.concat(annual, dim=pd.Index(years, name='year'))
                         .mean(dim='year')})
-    
+
     # Reshape to regions
     logger.debug('{} reshaping to regions'.format(model))
     if not agglev.startswith('grid'):

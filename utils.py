@@ -285,14 +285,26 @@ def slurm_runner(filepath, job_spec, run_job, onfinish=None):
             dependencies=('afterany', list(dependency)))
 
     @slurm.command()
-    @click.option('--limit', '-l', type=int, required=False, default=None, help='Number of iterations to run')
-    @click.option('--jobs_per_node', '-n', type=int, required=False, default=24, help='Number of jobs to run per node')
-    @click.option('--maxnodes', '-x', type=int, required=False, default=100, help='Number of nodes to request for this job')
-    @click.option('--jobname', '-j', default='test', help='name of the job')
-    @click.option('--partition', '-p', default='savio2', help='resource on which to run')
-    @click.option('--dependency', '-d', type=int, multiple=True)
-    @click.option('--logdir', '-L', default='log', help='Directory to write log files')
-    @click.option('--uniqueid', '-u', default='"${SLURM_ARRAY_JOB_ID}"', help='Unique job pool id')
+    @click.option(
+        '--limit', '-l', type=int, required=False, default=None,
+        help='Number of iterations to run')
+    @click.option(
+        '--jobs_per_node', '-n', type=int, required=False, default=24,
+        help='Number of jobs to run per node')
+    @click.option(
+        '--maxnodes', '-x', type=int, required=False, default=100,
+        help='Number of nodes to request for this job')
+    @click.option(
+        '--jobname', '-j', default='test', help='name of the job')
+    @click.option(
+        '--partition', '-p', default='savio2', help='resource on which to run')
+    @click.option(
+        '--dependency', '-d', type=int, multiple=True)
+    @click.option(
+        '--logdir', '-L', default='log', help='Directory to write log files')
+    @click.option(
+        '--uniqueid', '-u', default='"${SLURM_ARRAY_JOB_ID}"',
+        help='Unique job pool id')
     def run(
             limit=None,
             jobs_per_node=24,
@@ -333,7 +345,8 @@ def slurm_runner(filepath, job_spec, run_job, onfinish=None):
     @click.argument('slurm_id')
     def cleanup(slurm_id):
         proc = subprocess.Popen(
-            ['sacct', '-j', slurm_id, '--format=JobID,JobName,MaxRSS,Elapsed,State'],
+            ['sacct', '-j', slurm_id,
+                    '--format=JobID,JobName,MaxRSS,Elapsed,State'],
             stdout = subprocess.PIPE,
             stderr = subprocess.PIPE)
 
@@ -348,7 +361,8 @@ def slurm_runner(filepath, job_spec, run_job, onfinish=None):
     @click.option('--job_name', required=True)
     @click.option('--job_id', required=True)
     @click.option('--num_jobs', required=True, type=int)
-    @click.option('--logdir', '-L', default='log', help='Directory to write log files')
+    @click.option(
+        '--logdir', '-L', default='log', help='Directory to write log files')
     def do_job(job_name, job_id, num_jobs=None, logdir='log'):
 
         if not os.path.isdir('locks'):
@@ -359,14 +373,24 @@ def slurm_runner(filepath, job_spec, run_job, onfinish=None):
 
         for task_id in range(num_jobs):
 
-            if os.path.exists('locks/{}-{}-{}.done'.format(job_name, job_id, task_id)):
+            if os.path.exists(
+                    'locks/{}-{}-{}.done'.format(job_name, job_id, task_id)):
                 print('{} already done. skipping'.format(task_id))
                 continue
 
             try:
                 with exclusive_open(
-                        'locks/{}-{}-{}.lck'.format(job_name, job_id, task_id)) as f:
+                            'locks/{}-{}-{}.lck'
+                            .format(job_name, job_id, task_id)
+                        ) as f:
                     pass
+
+                # Check for race conditions
+                if os.path.exists(
+                        'locks/{}-{}-{}.done'
+                        .format(job_name, job_id, task_id)):
+                    print('{} already done. skipping'.format(task_id))
+                    continue
 
             except OSError:
                 print('{} already in progress. skipping'.format(task_id))
@@ -402,10 +426,16 @@ def slurm_runner(filepath, job_spec, run_job, onfinish=None):
                     exc_info=e)
 
             finally:
-                if os.path.exists('locks/{}-{}-{}.lck'.format(job_name, job_id, task_id)):
-                    os.remove('locks/{}-{}-{}.lck'.format(job_name, job_id, task_id))
+                if os.path.exists(
+                            'locks/{}-{}-{}.lck'
+                            .format(job_name, job_id, task_id)):
+                    os.remove(
+                        'locks/{}-{}-{}.lck'.format(job_name, job_id, task_id))
 
-                with open('locks/{}-{}-{}.done'.format(job_name, job_id, task_id), 'w+') as f:
+                with open(
+                        'locks/{}-{}-{}.done'
+                            .format(job_name, job_id, task_id),
+                        'w+') as f:
                     pass
 
             logger.removeHandler(handler)
@@ -441,7 +471,8 @@ def slurm_runner(filepath, job_spec, run_job, onfinish=None):
 
         for task_id in range(num_jobs):
             while not os.path.exists(
-                        'locks/{}-{}-{}.done'.format(job_name, job_id, task_id)):
+                        'locks/{}-{}-{}.done'
+                        .format(job_name, job_id, task_id)):
                 time.sleep(10)
 
     return slurm

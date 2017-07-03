@@ -57,7 +57,7 @@ ADDITIONAL_METADATA = dict(
     repo='https://github.com/ClimateImpactLab/ceci-nest-pas-une-pipe',
     file='/web_temp_extremes.py',
     execute='python web_temp_extremes.py --run',
-    project='gcp', 
+    project='gcp',
     team='climate',
     geography='hierid',
     weighting='areawt',
@@ -95,12 +95,12 @@ JOBS = [
         unit='days-over-118F',
         variable='tasmax',
         transformation=tasmax_over_118F),
-    
+
     # dict(transformation_name='tasmax-over-95F',
     #     unit='days-over-95F',
     #     variable='tasmax',
     #     transformation=tasmax_over_95F),
-    
+
     # dict(transformation_name='tasmin-under-32F',
     #     unit='days-under-32F',
     #     variable='tasmin',
@@ -125,7 +125,7 @@ PERIODS = [
     ]
 
 rcp_models = {
-    'rcp45': 
+    'rcp45':
         list(map(lambda x: dict(model=x[0], baseline_model=x[1]), [
             ('pattern1','MRI-CGCM3'),
             ('pattern2','GFDL-ESM2G'),
@@ -136,8 +136,8 @@ rcp_models = {
             ('pattern27','GFDL-CM3'),
             ('pattern28','CanESM2'),
             ('pattern29','GFDL-CM3'),
-            ('pattern30','CanESM2'), 
-            ('pattern31','GFDL-CM3'), 
+            ('pattern30','CanESM2'),
+            ('pattern31','GFDL-CM3'),
             ('pattern32','CanESM2')])),
 
     'rcp85':
@@ -151,8 +151,8 @@ rcp_models = {
             ('pattern28','GFDL-CM3'),
             ('pattern29','CanESM2'),
             ('pattern30','GFDL-CM3'),
-            ('pattern31','CanESM2'), 
-            ('pattern32','GFDL-CM3'), 
+            ('pattern31','CanESM2'),
+            ('pattern32','GFDL-CM3'),
             ('pattern33','CanESM2')]))}
 
 MODELS = []
@@ -197,7 +197,7 @@ def run_job(
     baseline_file = BASELINE_FILE.format(**metadata)
     pattern_file = BCSD_pattern_files.format(**metadata)
     write_file = WRITE_PATH.format(**metadata)
-    
+
     # do not duplicate
     if os.path.isfile(write_file):
         return
@@ -244,7 +244,7 @@ def run_job(
                     model, year, season))
 
             seasonal.append(patt + seasonal_baselines[season])
-            
+
         logger.debug((
             '{} {} - concatenating seasonal data and ' +
             'applying transform').format(model, year))

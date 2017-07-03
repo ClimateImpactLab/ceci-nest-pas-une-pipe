@@ -1,7 +1,7 @@
 '''
 Powers of daily average temperature
 
-Values are daily mean temperature raised to various powers for use in 
+Values are daily mean temperature raised to various powers for use in
 polynomial response functions, aggregated to impact regions/hierids using
 population weights. Data is reported at the daily level using a 365-day
 calendar (leap years excluded) in the format YYYYDDD.
@@ -49,7 +49,7 @@ ADDITIONAL_METADATA = dict(
     repo='https://github.com/ClimateImpactLab/ceci-nest-pas-une-pipe',
     file='/team_poly_bcsd.py',
     execute='python team_poly_bcsd.py run',
-    project='gcp', 
+    project='gcp',
     team='climate',
     probability_method='SMME',
     frequency='daily',
@@ -77,9 +77,9 @@ def create_polynomial_transformation(power=2):
 
     description = format_docstr(('''
             Daily average temperature (degrees C){raised}
-    
-            Leap years are removed before counting days (uses a 365 day 
-            calendar). 
+
+            Leap years are removed before counting days (uses a 365 day
+            calendar).
             '''.format(
                 raised='' if power == 1 else (
                     ' raised to the {powername} power'
@@ -97,7 +97,7 @@ def create_polynomial_transformation(power=2):
         # remove leap years
         ds = ds.loc[{
             'time': ~((ds['time.month'] == 2) & (ds['time.day'] == 29))}]
-        
+
         # do transformation
         ds1[varname] = (ds.tas - 237.15)**power
 
@@ -185,7 +185,7 @@ def run_job(
 
     import xarray as xr
     import metacsv
-    
+
     from climate_toolbox import (
         load_bcsd,
         weighted_aggregate_grid_to_regions)
@@ -200,14 +200,14 @@ def run_job(
 
     read_file = BCSD_orig_files.format(**metadata)
     write_file = WRITE_PATH.format(**metadata)
-    
+
     # do not duplicate
     if os.path.isfile(write_file):
         return
 
     # Get transformed data
     fp = read_file.format(year=year)
-    
+
     with xr.open_dataset(fp) as ds:
         ds.load()
 
@@ -242,12 +242,12 @@ def run_job(
 
     attrs = dict(ds.attrs)
     attrs['file_dependencies'] = file_dependencies
-    
+
     for var, vattrs in varattrs.items():
         ds[var].attrs.update(vattrs)
 
     ds.to_netcdf(write_file)
-    
+
     metacsv.to_header(
         write_file.replace('.nc', '.fgh'),
         attrs=dict(attrs),
