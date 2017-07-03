@@ -18,8 +18,8 @@ import datafs
 
 import utils
 from impact_toolbox import (
-        do_socio_thing,
-        do_gdp_thing,
+        compute_gdp_covariates,
+        compute_climate_covariates,
         get_gammas,
         pval_thing,
         rebase1,
@@ -91,7 +91,9 @@ PERIODS = [dict(scenario='rcp45', year=y) for y in range(1982, 2100)]
 #we want to do a realization of all models for the periods at a given set of periods
 JOB_SPEC = [pvals, PERIODS]
 
-def mortality(gammas, climate_data, gdp_data, mortality_flags):
+
+
+def mortality(gammas, climate_data_path, gdp_data_path, mortality_flags):
     '''
     Calculates the IR level daily/annual effect of temperature on Mortality Rates
 
@@ -118,6 +120,9 @@ def mortality(gammas, climate_data, gdp_data, mortality_flags):
 
 
     '''
+
+
+    
 
     age1 = gammas[0:12]
     age2 = gammas[12:24]
@@ -160,12 +165,6 @@ def run_job(metadata,
         return
 
 
-    gammas = et_gammas(gamma_file, pval)
-    gdp_data = do_gdp_thing(gdp_file)
-    climate_data = xr.open_dataset(climate_file)
-
-
-
     logger.debug('calculating impact for {} {} {}'.format(scenario,model, year))
     impact_ds = mortality(gammas, climate_data, gdp_data, mortality_flags)
 
@@ -196,6 +195,7 @@ main = utils.slurm_runner(
 
 if __name__ == '__main__':
     main()
+    
 
 
 
