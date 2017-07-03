@@ -562,9 +562,11 @@ def slurm_runner(filepath, job_spec, run_job, onfinish=None):
 
             tasks_in_progress = False
             for task_id in range(num_tasks):
-                if locker.is_locked(task_id):
+                status = locker.get_status(task_id)
+                if (status == 'locked') or (status is None):
                     time.sleep(10)
                     tasks_in_progress = True
+                    once_more = True
                     break
 
             if not tasks_in_progress:

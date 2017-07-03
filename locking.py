@@ -82,10 +82,38 @@ class JobLocker(object):
 
         try:
             with exclusive_read(lock_file.format('lck')):
-                return False
+                pass
+
+            # We only get here if the run has been terminated abruptly
+            # and has left its lock object "unlocked"
+            try:
+                os.remove(lock_file.format('lck'))
+            except OSError:
+                pass
+                
+            return False
 
         except IOError:
+            # We get here if a run is in progress
             return True
 
         except OSError:
+            # We get here if a run has not started or is complete
             return False
+
+    def get_status(self, task_id):
+        lock_file = (os.path.join(
+            self.lock_dir,
+            '{}-{}-{}.{{}}'.format(self.job_name, self.job_id, task_id)))
+
+        if self.is_locked(task_id):
+            return 'locked'
+
+        if os.path.isfile(lock_file.format('done')):
+            return 'done'
+
+        if os.path.isfile(lock_file.format('err')):
+            return 'err'
+
+        else:
+            return None
