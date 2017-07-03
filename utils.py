@@ -442,8 +442,8 @@ def slurm_runner(filepath, job_spec, run_job, onfinish=None):
             logger.removeHandler(handler)
 
     @slurm.command()
-    @click.option('--job_name', required=True)
-    @click.option('--job_id', required=True)
+    @click.option('--job_name', '-j', required=True)
+    @click.option('--job_id', '-u', required=True)
     def status(job_name, job_id, num_jobs=None, logdir='log'):
         n = count_jobs(job_spec)
         locks = os.listdir('locks')
