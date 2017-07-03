@@ -11,16 +11,8 @@ import os
 import click
 import pprint
 import logging
-import xarray as xr
-import pandas as pd
-import numpy as np
 
 import utils
-import metacsv
-from climate_toolbox import (
-    load_bcsd,
-    load_baseline,
-    weighted_aggregate_grid_to_regions)
 
 FORMAT = '%(asctime)-15s %(message)s'
 logging.basicConfig(format=FORMAT)
@@ -96,6 +88,9 @@ def create_polynomial_transformation(power=2):
     varname = 'tas-poly-{}'.format(power) if power > 1 else 'tas'
 
     def tas_poly(ds):
+
+        import xarray as xr
+        import numpy as np
 
         ds1 = xr.Dataset()
 
@@ -187,6 +182,13 @@ def run_job(
         agglev,
         aggwt,
         weights=None):
+
+    import xarray as xr
+    import metacsv
+    
+    from climate_toolbox import (
+        load_bcsd,
+        weighted_aggregate_grid_to_regions)
 
     # Add to job metadata
     metadata.update(ADDITIONAL_METADATA)

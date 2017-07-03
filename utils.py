@@ -1,13 +1,13 @@
 import re
 import os
 import time
+import math
 import click
 import pprint
 import logging
 import itertools
 import functools
 import subprocess
-import numpy as np
 
 from _compat import exclusive_open
 
@@ -418,7 +418,7 @@ def slurm_runner(filepath, job_spec, run_job, onfinish=None):
         n = count_jobs(job_spec)
         locks = os.listdir('locks')
 
-        count = int(np.log10(n)//1 + 1)
+        count = int(math.log10(n)//1 + 1)
 
         locked = len([
             i for i in range(n)
