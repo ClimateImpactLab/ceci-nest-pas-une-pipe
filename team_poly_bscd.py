@@ -203,9 +203,6 @@ def run_job(
 
     file_dependencies = {}
 
-    logger.debug('Beginning job:\n\tkwargs:\t{}'.format(
-        pprint.pformat(metadata, indent=2)))
-
     read_file = BCSD_orig_files.format(**metadata)
     write_file = WRITE_PATH.format(**metadata)
 
