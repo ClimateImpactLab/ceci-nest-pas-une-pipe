@@ -1,4 +1,4 @@
-from contextlib import contextmanager
+import contextlib
 import os
 import sys
 
