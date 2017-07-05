@@ -153,8 +153,8 @@ proj3 = range(2080, 2100)
 
 PERIODS = (
     # [dict(scenario='historical', read_acct='jiacany', year=y) for y in hist] +
-    [dict(scenario='rcp45', read_acct='jiacany', year=y) for y in proj1] +
-    # [dict(scenario='rcp45', read_acct='jiacany', year=y) for y in proj2] +
+    # [dict(scenario='rcp45', read_acct='jiacany', year=y) for y in proj1] +
+    [dict(scenario='rcp45', read_acct='jiacany', year=y) for y in proj2] +
     # [dict(scenario='rcp45', read_acct='jiacany', year=y) for y in proj3] +
     # [dict(scenario='rcp85', read_acct='jiacany', year=y) for y in proj1] +
     # [dict(scenario='rcp85', read_acct='jiacany', year=y) for y in proj2] +
