@@ -134,7 +134,17 @@ def create_polynomial_transformation(power=2):
     return transformation_spec
 
 
-JOBS = [create_polynomial_transformation(i) for i in range(1, 10)]
+JOBS = [
+    create_polynomial_transformation(1),
+    # create_polynomial_transformation(2),
+    # create_polynomial_transformation(3),
+    # create_polynomial_transformation(4),
+    # create_polynomial_transformation(5),
+    # create_polynomial_transformation(6),
+    # create_polynomial_transformation(7),
+    # create_polynomial_transformation(8),
+    # create_polynomial_transformation(9),
+    ]
 
 hist = range(1981, 2006)
 proj = range(2006, 2100)
