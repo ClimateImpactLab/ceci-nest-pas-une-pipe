@@ -151,8 +151,9 @@ proj = range(2006, 2100)
 
 PERIODS = (
     [dict(scenario='historical', read_acct='jiacany', year=y) for y in hist] +
-    [dict(scenario='rcp45', read_acct='jiacany', year=y) for y in proj] +
-    [dict(scenario='rcp85', read_acct='jiacany', year=y) for y in proj])
+    # [dict(scenario='rcp45', read_acct='jiacany', year=y) for y in proj] +
+    # [dict(scenario='rcp85', read_acct='jiacany', year=y) for y in proj] +
+    [])
 
 MODELS = list(map(lambda x: dict(model=x), [
     'ACCESS1-0',
