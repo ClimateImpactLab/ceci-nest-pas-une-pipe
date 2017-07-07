@@ -38,6 +38,8 @@ def validate(ds, jiacan):
     for k in jiacan.data_vars.values()[0].attrs.keys():
         assert k in ds[var].attrs, k
 
+    assert ds[ds.data_vars.keys()[0]].dims == ('time', 'hierid')
+
 
 def postprocess(f, jiacan):
 

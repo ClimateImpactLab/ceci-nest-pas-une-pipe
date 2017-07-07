@@ -113,10 +113,13 @@ def create_polynomial_transformation(power=2):
         ds1.coords['day'] = ds['time.year']*1000 + np.arange(1, len(ds.time)+1)
         ds1 = ds1.swap_dims({'time': 'day'})
         ds1 = ds1.drop('time')
+        ds1 = ds1.rename({'day': 'time'})
+
+        ds1 = ds1.transpose('time', 'hierid')
 
         # document variable
-        ds1[varname].attrs['unit'] = 'C^{}'.format(power) if power > 1 else 'C'
-        ds1[varname].attrs['oneline'] = description.splitlines()[0]
+        ds1[varname].attrs['units'] = 'C^{}'.format(power) if power > 1 else 'C'
+        ds1[varname].attrs['long_title'] = description.splitlines()[0]
         ds1[varname].attrs['description'] = description
         ds1[varname].attrs['variable'] = varname
 
@@ -128,7 +131,7 @@ def create_polynomial_transformation(power=2):
         'variable': varname,
         'source_variable': 'tas',
         'transformation': tas_poly,
-        'unit': 'C^{}'.format(power) if power > 1 else 'C'
+        'units': 'C^{}'.format(power) if power > 1 else 'C'
     }
 
     return transformation_spec
@@ -147,35 +150,37 @@ JOBS = [
     ]
 
 hist = range(1981, 2006)
-proj = range(2006, 2100)
+# proj = range(2006, 2100)
+proj = [2055]
 
 PERIODS = (
-    [dict(scenario='historical', read_acct='jiacany', year=y) for y in hist] +
-    [dict(scenario='rcp45', read_acct='jiacany', year=y) for y in proj] +
+    # [dict(scenario='historical', read_acct='jiacany', year=y) for y in hist] +
+    # [dict(scenario='rcp45', read_acct='jiacany', year=y) for y in proj] +
     [dict(scenario='rcp85', read_acct='jiacany', year=y) for y in proj])
 
 MODELS = list(map(lambda x: dict(model=x), [
-    'ACCESS1-0',
-    'bcc-csm1-1',
-    'BNU-ESM',
-    'CanESM2',
+    # 'ACCESS1-0',
+    # 'bcc-csm1-1',
+    # 'BNU-ESM',
+    # 'CanESM2',
     'CCSM4',
-    'CESM1-BGC',
-    'CNRM-CM5',
-    'CSIRO-Mk3-6-0',
-    'GFDL-CM3',
-    'GFDL-ESM2G',
-    'GFDL-ESM2M',
-    'IPSL-CM5A-LR',
-    'IPSL-CM5A-MR',
-    'MIROC-ESM-CHEM',
-    'MIROC-ESM',
-    'MIROC5',
-    'MPI-ESM-LR',
-    'MPI-ESM-MR',
-    'MRI-CGCM3',
-    'inmcm4',
-    'NorESM1-M']))
+    # 'CESM1-BGC',
+    # 'CNRM-CM5',
+    # 'CSIRO-Mk3-6-0',
+    # 'GFDL-CM3',
+    # 'GFDL-ESM2G',
+    # 'GFDL-ESM2M',
+    # 'IPSL-CM5A-LR',
+    # 'IPSL-CM5A-MR',
+    # 'MIROC-ESM-CHEM',
+    # 'MIROC-ESM',
+    # 'MIROC5',
+    # 'MPI-ESM-LR',
+    # 'MPI-ESM-MR',
+    # 'MRI-CGCM3',
+    # 'inmcm4',
+    # 'NorESM1-M'
+    ]))
 
 AGGREGATIONS = [
     {'agglev': 'hierid', 'aggwt': 'popwt'}]
