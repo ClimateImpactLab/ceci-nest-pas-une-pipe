@@ -5,11 +5,11 @@ import pandas as pd
 
 inpaths = (
     '../playground/csv3/global-quants-v2.3/hierid/' +
-    'global_tasmax-over-95F_{rcp}_{per}_{rel}_days-over-95F_percentiles.csv')
+    'global_{var}_{rcp}_{per}_{rel}_{unit}_percentiles.csv')
 
 outpaths = (
-    '../playground/csv3/cities-v2.3/' +
-    'city-summary_tasmax-over-95F-{city}.csv')
+    '../playground/csv3/cities-v2.3/{var}/' +
+    'city-summary_{var}-{city}.csv')
 
 cities = [
     ('India-NewDelhi', 'IND.10.121.371'),
@@ -42,15 +42,16 @@ index_names = ['rcp', 'per', 'rel']
 keys = list(itertools.product(rcps, pers, rels))
 formatters = list(map(lambda val: dict(zip(index_names, val)), keys))
 
-bigdf = pd.concat([
-    pd.read_csv(inpaths.format(**val), index_col=0) for val in formatters],
-    keys=pd.MultiIndex.from_tuples(keys, names=['rcp', 'per', 'rel']),
-    axis=0)
+for var, unit in [('tasmax-over-118F', 'days-over-118F')]:
+    bigdf = pd.concat([
+        pd.read_csv(inpaths.format(var=var, unit=unit, **val), index_col=0) for val in formatters],
+        keys=pd.MultiIndex.from_tuples(keys, names=['rcp', 'per', 'rel']),
+        axis=0)
 
 
-for city, hierid in cities:
-    fp = outpaths.format(city=city)
-    if not os.path.isdir(os.path.dirname(fp)):
-        os.makedirs(os.path.dirname(fp))
+    for city, hierid in cities:
+        fp = outpaths.format(city=city, var=var)
+        if not os.path.isdir(os.path.dirname(fp)):
+            os.makedirs(os.path.dirname(fp))
 
-    bigdf.xs(hierid, level='hierid').to_csv(fp)
+        bigdf.xs(hierid, level='hierid').to_csv(fp)

@@ -368,8 +368,12 @@ def load_bcsd(fp, varname, lon_name='lon', broadcast_dims=('time',)):
     if lon_name is not None:
         lon_names = [lon_name]
 
-    with xr.open_dataset(fp) as ds:
-        ds.load()
+    if hasattr(fp, 'sel_points'):
+        ds = fp
+
+    else:
+        with xr.open_dataset(fp) as ds:
+            ds.load()
 
     _fill_holes_xr(ds, varname, broadcast_dims=broadcast_dims)
     return _standardize_longitude_dimension(ds, lon_names=lon_names)
