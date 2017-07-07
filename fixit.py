@@ -2,6 +2,7 @@
 import xarray as xr
 import numpy as np
 import glob
+import tqdm
 
 pattern_f = '/shares/gcp/climate/BCSD/Mortality/polynomial-fix/hierid/popwt/daily/*/*/*/*/1.1.nc4'
 sample_f = '/shares/gcp/climate/BCSD/Mortality/polynomial-fix/hierid/popwt/daily/tas/rcp85/BNU-ESM/2024/1.1.nc4'
@@ -41,6 +42,12 @@ def validate(ds, jiacan):
 def postprocess(f, jiacan):
 
     with xr.open_dataset(f) as ds:
+        try:
+            validate(ds, jiacan)
+            return
+        except AssertionError:
+            pass
+
         ds.load()
 
     ds = fix_dataset(ds)
@@ -54,8 +61,7 @@ def main():
         '/shares/gcp/climate/BCSD/Mortality/degree_days/tas/' +
         'rcp85/inmcm4/tas_exceedance_degree_days_r1i1p1_inmcm4_2032.nc')
 
-    for f in glob.iglob(pattern_f):
-        print(f)
+    for f in tqdm.tqdm(glob.glob(pattern_f)):
         try:
             postprocess(f, jiacan)
         except AssertionError as e:
