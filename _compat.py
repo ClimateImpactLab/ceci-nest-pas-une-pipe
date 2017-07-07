@@ -1,6 +1,7 @@
-import contextlib
 import os
 import sys
+import fcntl
+import contextlib
 
 py2 = (sys.version_info[0] < 3)
 

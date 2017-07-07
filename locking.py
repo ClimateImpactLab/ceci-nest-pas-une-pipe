@@ -28,6 +28,10 @@ class JobLocker(object):
         self.job_id = job_id
         self.lock_dir = lock_dir
 
+        self.lock_file = (os.path.join(
+            self.lock_dir,
+            '{}-{}-{{}}.{{}}'.format(self.job_name, self.job_id)))
+
     def initialize(self):
 
         if not os.path.isdir(self.lock_dir):
@@ -35,44 +39,43 @@ class JobLocker(object):
 
     def acquire(self, task_id):
 
-        lock_file = (os.path.join(
-            self.lock_dir,
-            '{}-{}-{}.{{}}'.format(self.job_name, self.job_id, task_id)))
-
-        if os.path.exists(lock_file.format('done')):
+        if os.path.exists(self.lock_file.format(task_id, 'done')):
             raise JobAlreadyDone(task_id)
             
-        elif os.path.exists(lock_file.format('err')):
+        elif os.path.exists(self.lock_file.format(task_id, 'err')):
             raise JobPreviouslyErrored(task_id)
 
         try:
-            with exclusive_open(lock_file.format('lck')):
+            with exclusive_open(self.lock_file.format(task_id, 'lck')):
                 pass
 
             # Check for race conditions
-            if os.path.exists(lock_file.format('done')):
-                if os.path.exists(lock_file.format('lck')):
-                    os.remove(lock_file.format('lck'))
+            if os.path.exists(self.lock_file.format(task_id, 'done')):
+                if os.path.exists(self.lock_file.format(task_id, 'lck')):
+                    os.remove(self.lock_file.format(task_id, 'lck'))
                 raise JobAlreadyDone(task_id)
             
-            elif os.path.exists(lock_file.format('err')):
-                if os.path.exists(lock_file.format('lck')):
-                    os.remove(lock_file.format('lck'))
+            elif os.path.exists(self.lock_file.format(task_id, 'err')):
+                if os.path.exists(self.lock_file.format(task_id, 'lck')):
+                    os.remove(self.lock_file.format(task_id, 'lck'))
                 raise JobPreviouslyErrored(task_id)
+        
+        except IOError:
+            raise JobInProgress(task_id)
 
     def error(self, task_id):
 
-        with open(lock_file.format('err'), 'w+'):
+        with open(self.lock_file.format(task_id, 'err'), 'w+'):
             pass
 
     def done(self, task_id):
 
-        with open(lock_file.format('done'), 'w+'):
+        with open(self.lock_file.format(task_id, 'done'), 'w+'):
             pass
 
     def release(self, task_id):
-        if os.path.exists(lock_file.format('lck')):
-            os.remove(lock_file.format('lck'))
+        if os.path.exists(self.lock_file.format(task_id, 'lck')):
+            os.remove(self.lock_file.format(task_id, 'lck'))
 
     def is_locked(self, task_id):
 
@@ -81,13 +84,13 @@ class JobLocker(object):
             '{}-{}-{}.{{}}'.format(self.job_name, self.job_id, task_id)))
 
         try:
-            with exclusive_read(lock_file.format('lck')):
+            with exclusive_read(self.lock_file.format(task_id, 'lck')):
                 pass
 
             # We only get here if the run has been terminated abruptly
             # and has left its lock object "unlocked"
             try:
-                os.remove(lock_file.format('lck'))
+                os.remove(self.lock_file.format(task_id, 'lck'))
             except OSError:
                 pass
                 
@@ -109,10 +112,10 @@ class JobLocker(object):
         if self.is_locked(task_id):
             return 'locked'
 
-        if os.path.isfile(lock_file.format('done')):
+        if os.path.isfile(self.lock_file.format(task_id, 'done')):
             return 'done'
 
-        if os.path.isfile(lock_file.format('err')):
+        if os.path.isfile(self.lock_file.format(task_id, 'err')):
             return 'err'
 
         else:

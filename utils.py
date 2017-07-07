@@ -497,9 +497,10 @@ def slurm_runner(filepath, job_spec, run_job, onfinish=None):
                     # report successful job completion
                     locker.done(task_id)
 
-            finally:
+                finally:
+                    logger.removeHandler(handler)
 
-                logger.removeHandler(handler)
+            finally:
                 locker.release(task_id)
 
     @slurm.command()
