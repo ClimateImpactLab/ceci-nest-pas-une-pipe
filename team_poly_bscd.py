@@ -403,7 +403,7 @@ JOB_SPEC = [
     ]
 
 INCLUDED_METADATA = [
-    'variable', 'source_variable', 'unit', 'scenario',
+    'variable', 'source_variable', 'units', 'scenario',
     'year', 'model', 'agglev', 'aggwt']
 
 
@@ -412,7 +412,7 @@ def run_job(
         variable,
         transformation,
         source_variable,
-        unit,
+        units,
         scenario,
         read_acct,
         year,
