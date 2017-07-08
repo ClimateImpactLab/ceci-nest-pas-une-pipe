@@ -189,211 +189,211 @@ JOB_SPEC = [
         create_polynomial_transformation(3),
         {'scenario': 'rcp85', 'read_acct': 'jiacany', 'year': 2099},
         {'model': 'bcc-csm1-1'},
-        {'agglev': 'hierid', 'aggwt': 'popwt'})
+        {'agglev': 'hierid', 'aggwt': 'popwt'}),
 
     combine(
         create_polynomial_transformation(4),
         {'scenario': 'rcp45', 'read_acct': 'jiacany', 'year': 2060},
         {'model': 'MIROC-ESM-CHEM'},
-        {'agglev': 'hierid', 'aggwt': 'popwt'})
+        {'agglev': 'hierid', 'aggwt': 'popwt'}),
 
     combine(
         create_polynomial_transformation(4),
         {'scenario': 'rcp85', 'read_acct': 'jiacany', 'year': 2059},
         {'model': 'MRI-CGCM3'},
-        {'agglev': 'hierid', 'aggwt': 'popwt'})
+        {'agglev': 'hierid', 'aggwt': 'popwt'}),
 
     combine(
         create_polynomial_transformation(4),
         {'scenario': 'rcp85', 'read_acct': 'jiacany', 'year': 2099},
         {'model': 'bcc-csm1-1'},
-        {'agglev': 'hierid', 'aggwt': 'popwt'})
+        {'agglev': 'hierid', 'aggwt': 'popwt'}),
 
     combine(
         create_polynomial_transformation(2),
         {'scenario': 'rcp85', 'read_acct': 'jiacany', 'year': 2022},
         {'model': 'MIROC-ESM'},
-        {'agglev': 'hierid', 'aggwt': 'popwt'})
+        {'agglev': 'hierid', 'aggwt': 'popwt'}),
 
     combine(
         create_polynomial_transformation(2),
         {'scenario': 'rcp85', 'read_acct': 'jiacany', 'year': 2099},
         {'model': 'bcc-csm1-1'},
-        {'agglev': 'hierid', 'aggwt': 'popwt'})
+        {'agglev': 'hierid', 'aggwt': 'popwt'}),
 
     combine(
         create_polynomial_transformation(7),
         {'scenario': 'rcp45', 'read_acct': 'jiacany', 'year': 2099},
         {'model': 'ACCESS1-0'},
-        {'agglev': 'hierid', 'aggwt': 'popwt'})
+        {'agglev': 'hierid', 'aggwt': 'popwt'}),
 
     combine(
         create_polynomial_transformation(7),
         {'scenario': 'rcp85', 'read_acct': 'jiacany', 'year': 2099},
         {'model': 'bcc-csm1-1'},
-        {'agglev': 'hierid', 'aggwt': 'popwt'})
+        {'agglev': 'hierid', 'aggwt': 'popwt'}),
 
     combine(
         create_polynomial_transformation(6),
         {'scenario': 'rcp85', 'read_acct': 'jiacany', 'year': 2099},
         {'model': 'bcc-csm1-1'},
-        {'agglev': 'hierid', 'aggwt': 'popwt'})
+        {'agglev': 'hierid', 'aggwt': 'popwt'}),
 
     combine(
         create_polynomial_transformation(6),
         {'scenario': 'historical', 'read_acct': 'jiacany', 'year': 1994},
         {'model': 'bcc-csm1-1'},
-        {'agglev': 'hierid', 'aggwt': 'popwt'})
+        {'agglev': 'hierid', 'aggwt': 'popwt'}),
 
     combine(
         create_polynomial_transformation(9),
         {'scenario': 'rcp85', 'read_acct': 'jiacany', 'year': 2037},
         {'model': 'NorESM1-M'},
-        {'agglev': 'hierid', 'aggwt': 'popwt'})
+        {'agglev': 'hierid', 'aggwt': 'popwt'}),
 
     combine(
         create_polynomial_transformation(9),
         {'scenario': 'rcp85', 'read_acct': 'jiacany', 'year': 2099},
         {'model': 'bcc-csm1-1'},
-        {'agglev': 'hierid', 'aggwt': 'popwt'})
+        {'agglev': 'hierid', 'aggwt': 'popwt'}),
 
     combine(
         create_polynomial_transformation(5),
         {'scenario': 'rcp45', 'read_acct': 'jiacany', 'year': 2066},
         {'model': 'bcc-csm1-1'},
-        {'agglev': 'hierid', 'aggwt': 'popwt'})
+        {'agglev': 'hierid', 'aggwt': 'popwt'}),
 
     combine(
         create_polynomial_transformation(5),
         {'scenario': 'rcp85', 'read_acct': 'jiacany', 'year': 2099},
         {'model': 'bcc-csm1-1'},
-        {'agglev': 'hierid', 'aggwt': 'popwt'})
+        {'agglev': 'hierid', 'aggwt': 'popwt'}),
 
     combine(
         create_polynomial_transformation(1),
         {'scenario': 'rcp45', 'read_acct': 'jiacany', 'year': 2029},
         {'model': 'IPSL-CM5A-MR'},
-        {'agglev': 'hierid', 'aggwt': 'popwt'})
+        {'agglev': 'hierid', 'aggwt': 'popwt'}),
 
     combine(
         create_polynomial_transformation(1),
         {'scenario': 'rcp85', 'read_acct': 'jiacany', 'year': 2046},
         {'model': 'MRI-CGCM3'},
-        {'agglev': 'hierid', 'aggwt': 'popwt'})
+        {'agglev': 'hierid', 'aggwt': 'popwt'}),
 
     combine(
         create_polynomial_transformation(1),
         {'scenario': 'rcp85', 'read_acct': 'jiacany', 'year': 2084},
         {'model': 'CCSM4'},
-        {'agglev': 'hierid', 'aggwt': 'popwt'})
+        {'agglev': 'hierid', 'aggwt': 'popwt'}),
 
     combine(
         create_polynomial_transformation(1),
         {'scenario': 'rcp85', 'read_acct': 'jiacany', 'year': 2055},
         {'model': 'CCSM4'},
-        {'agglev': 'hierid', 'aggwt': 'popwt'})
+        {'agglev': 'hierid', 'aggwt': 'popwt'}),
 
     combine(
         create_polynomial_transformation(1),
         {'scenario': 'rcp85', 'read_acct': 'jiacany', 'year': 2048},
         {'model': 'IPSL-CM5A-MR'},
-        {'agglev': 'hierid', 'aggwt': 'popwt'})
+        {'agglev': 'hierid', 'aggwt': 'popwt'}),
 
     combine(
         create_polynomial_transformation(1),
         {'scenario': 'rcp85', 'read_acct': 'jiacany', 'year': 2049},
         {'model': 'MPI-ESM-MR'},
-        {'agglev': 'hierid', 'aggwt': 'popwt'})
+        {'agglev': 'hierid', 'aggwt': 'popwt'}),
 
     combine(
         create_polynomial_transformation(1),
         {'scenario': 'rcp85', 'read_acct': 'jiacany', 'year': 2041},
         {'model': 'IPSL-CM5A-LR'},
-        {'agglev': 'hierid', 'aggwt': 'popwt'})
+        {'agglev': 'hierid', 'aggwt': 'popwt'}),
 
     combine(
         create_polynomial_transformation(1),
         {'scenario': 'rcp85', 'read_acct': 'jiacany', 'year': 2010},
         {'model': 'IPSL-CM5A-LR'},
-        {'agglev': 'hierid', 'aggwt': 'popwt'})
+        {'agglev': 'hierid', 'aggwt': 'popwt'}),
 
     combine(
         create_polynomial_transformation(1),
         {'scenario': 'rcp85', 'read_acct': 'jiacany', 'year': 2043},
         {'model': 'MPI-ESM-LR'},
-        {'agglev': 'hierid', 'aggwt': 'popwt'})
+        {'agglev': 'hierid', 'aggwt': 'popwt'}),
 
     combine(
         create_polynomial_transformation(1),
         {'scenario': 'rcp85', 'read_acct': 'jiacany', 'year': 2056},
         {'model': 'MIROC-ESM'},
-        {'agglev': 'hierid', 'aggwt': 'popwt'})
+        {'agglev': 'hierid', 'aggwt': 'popwt'}),
 
     combine(
         create_polynomial_transformation(1),
         {'scenario': 'rcp85', 'read_acct': 'jiacany', 'year': 2080},
         {'model': 'CanESM2'},
-        {'agglev': 'hierid', 'aggwt': 'popwt'})
+        {'agglev': 'hierid', 'aggwt': 'popwt'}),
 
     combine(
         create_polynomial_transformation(1),
         {'scenario': 'rcp85', 'read_acct': 'jiacany', 'year': 2077},
         {'model': 'MIROC5'},
-        {'agglev': 'hierid', 'aggwt': 'popwt'})
+        {'agglev': 'hierid', 'aggwt': 'popwt'}),
 
     combine(
         create_polynomial_transformation(1),
         {'scenario': 'rcp85', 'read_acct': 'jiacany', 'year': 2044},
         {'model': 'MIROC5'},
-        {'agglev': 'hierid', 'aggwt': 'popwt'})
+        {'agglev': 'hierid', 'aggwt': 'popwt'}),
 
     combine(
         create_polynomial_transformation(1),
         {'scenario': 'rcp85', 'read_acct': 'jiacany', 'year': 2052},
         {'model': 'MIROC5'},
-        {'agglev': 'hierid', 'aggwt': 'popwt'})
+        {'agglev': 'hierid', 'aggwt': 'popwt'}),
 
     combine(
         create_polynomial_transformation(1),
         {'scenario': 'rcp85', 'read_acct': 'jiacany', 'year': 2042},
         {'model': 'CNRM-CM5'},
-        {'agglev': 'hierid', 'aggwt': 'popwt'})
+        {'agglev': 'hierid', 'aggwt': 'popwt'}),
 
     combine(
         create_polynomial_transformation(1),
         {'scenario': 'rcp85', 'read_acct': 'jiacany', 'year': 2051},
         {'model': 'BNU-ESM'},
-        {'agglev': 'hierid', 'aggwt': 'popwt'})
+        {'agglev': 'hierid', 'aggwt': 'popwt'}),
 
     combine(
         create_polynomial_transformation(1),
         {'scenario': 'rcp85', 'read_acct': 'jiacany', 'year': 2053},
         {'model': 'NorESM1-M'},
-        {'agglev': 'hierid', 'aggwt': 'popwt'})
+        {'agglev': 'hierid', 'aggwt': 'popwt'}),
 
     combine(
         create_polynomial_transformation(1),
         {'scenario': 'rcp85', 'read_acct': 'jiacany', 'year': 2045},
         {'model': 'GFDL-CM3'},
-        {'agglev': 'hierid', 'aggwt': 'popwt'})
+        {'agglev': 'hierid', 'aggwt': 'popwt'}),
 
     combine(
         create_polynomial_transformation(1),
         {'scenario': 'rcp85', 'read_acct': 'jiacany', 'year': 2099},
         {'model': 'bcc-csm1-1'},
-        {'agglev': 'hierid', 'aggwt': 'popwt'})
+        {'agglev': 'hierid', 'aggwt': 'popwt'}),
 
     combine(
         create_polynomial_transformation(8),
         {'scenario': 'rcp45', 'read_acct': 'jiacany', 'year': 2026},
         {'model': 'NorESM1-M'},
-        {'agglev': 'hierid', 'aggwt': 'popwt'})
+        {'agglev': 'hierid', 'aggwt': 'popwt'}),
 
     combine(
         create_polynomial_transformation(8),
         {'scenario': 'rcp85', 'read_acct': 'jiacany', 'year': 2062},
         {'model': 'MPI-ESM-MR'},
-        {'agglev': 'hierid', 'aggwt': 'popwt'})
+        {'agglev': 'hierid', 'aggwt': 'popwt'}),
 
     combine(
         create_polynomial_transformation(8),
