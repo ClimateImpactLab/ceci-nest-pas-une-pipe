@@ -116,8 +116,6 @@ def create_polynomial_transformation(power=2):
 
         ds1 = ds1.rename({'day': 'time'})
 
-        ds1 = ds1.transpose('time', 'hierid')
-
         # document variable
         ds1[varname].attrs['units'] = 'C^{}'.format(power) if power > 1 else 'C'
         ds1[varname].attrs['long_title'] = description.splitlines()[0]
@@ -482,6 +480,9 @@ def run_job(
 
     for var, vattrs in varattrs.items():
         ds[var].attrs.update(vattrs)
+
+        if ds[var].dims == ('hierid', 'time'):
+            ds[var] = ds[var].transpose('time', 'hierid')
 
     ds.to_netcdf(write_file)
 
