@@ -21,7 +21,7 @@ logger.setLevel('DEBUG')
 
 __author__ = 'Michael Delgado'
 __contact__ = 'mdelgado@rhg.com'
-__version__ = '1.1'
+__version__ = '1.2'
 
 
 BCSD_orig_files = (
@@ -139,11 +139,11 @@ def create_polynomial_transformation(power=2):
 
 
 # JOBS = [create_polynomial_transformation(i) for i in range(1, 10)]
-JOBS = [create_polynomial_transformation(1)]
+JOBS = [create_polynomial_transformation(3)]
 
 # hist = range(1981, 2006)
 # proj = range(2006, 2100)
-proj = [2055]
+proj = [2099]
 
 PERIODS = (
     # [dict(scenario='historical', read_acct='jiacany', year=y) for y in hist] +
@@ -152,10 +152,10 @@ PERIODS = (
 
 MODELS = list(map(lambda x: dict(model=x), [
     # 'ACCESS1-0',
-    # 'bcc-csm1-1',
+    'bcc-csm1-1',
     # 'BNU-ESM',
     # 'CanESM2',
-    'CCSM4',
+    # 'CCSM4',
     # 'CESM1-BGC',
     # 'CNRM-CM5',
     # 'CSIRO-Mk3-6-0',
