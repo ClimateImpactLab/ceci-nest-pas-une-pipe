@@ -179,7 +179,7 @@ def combine(*args):
     things = {}
     for arg in args:
         things.update(arg)
-    return [things]
+    return [[things]]
 
 
 JOB_SPEC = [
