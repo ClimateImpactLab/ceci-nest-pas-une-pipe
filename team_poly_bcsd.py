@@ -179,10 +179,10 @@ def combine(*args):
     things = {}
     for arg in args:
         things.update(arg)
-    return [[things]]
+    return things
 
 
-JOB_SPEC = [
+JOB_SPEC = ([
     combine(
         create_polynomial_transformation(3),
         {'scenario': 'rcp85', 'read_acct': 'jiacany', 'year': 2099},
@@ -398,7 +398,7 @@ JOB_SPEC = [
         {'scenario': 'rcp85', 'read_acct': 'jiacany', 'year': 2099},
         {'model': 'bcc-csm1-1'},
         {'agglev': 'hierid', 'aggwt': 'popwt'})
-    ]
+    ], )
 
 INCLUDED_METADATA = [
     'variable', 'source_variable', 'units', 'scenario',
