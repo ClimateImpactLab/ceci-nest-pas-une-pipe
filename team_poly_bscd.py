@@ -104,7 +104,7 @@ def create_polynomial_transformation(power=2):
             'time': ~((ds['time.month'] == 2) & (ds['time.day'] == 29))}]
 
         # do transformation
-        ds1[varname] = (ds.tas - 237.15)**power
+        ds1[varname] = (ds.tas - 273.15)**power
 
         # Replace datetime64[ns] 'time' with YYYYDDD int 'day'
         if ds.dims['time'] > 365:
@@ -256,7 +256,7 @@ def run_job(
     ds.to_netcdf(write_file)
 
     metacsv.to_header(
-        write_file.replace('.nc', '.fgh'),
+        write_file.replace('.nc4', '.fgh'),
         attrs=dict(attrs),
         variables=varattrs)
 
