@@ -1,7 +1,8 @@
 '''
 This file is an interface for a set of functions needed in impact forecasting
 
-
+------------------
+My notes and questions 
 
 1. Mortality: Steps below do not represent order
     A. Get covariate values for GDP and Temp
@@ -43,12 +44,6 @@ This file is an interface for a set of functions needed in impact forecasting
 
     J. Do something that compares the results from income/weather updates 
     (farm_curvegen) and the climtas_effect (whatever that is)?
-
-
-
-
-
-
 '''
 import xarray as xr
 import numpy as np
@@ -57,11 +52,13 @@ import metacsv
 from six import string_types
 import itertools
 import toolz
+import time
 import datafs
 import csv
+import os
 
 
-def compute_climate_covariates(path,base_year,rolling_window):
+def compute_climate_covariates(path,base_year=None, rolling_window=None):
     ''' 
     Method to calculate climate covariate
 
@@ -76,11 +73,15 @@ def compute_climate_covariates(path,base_year,rolling_window):
     rolling_window: int
         num years to calculate the rolling covariate average
 
+
+    .. note: Rolling window only used for full adaptation, otherwise None
+
     Returns
     -------
     Xarray Dataset
         daily/annual climate values 
     '''
+
 
     #compute baseline
     #load datasets up through baseline year
@@ -93,13 +94,19 @@ def compute_climate_covariates(path,base_year,rolling_window):
     #for a given time period is the rolling mean temp. 
     #is there a way to do this without looping?
 
+    #baseyear_path = path.format(year=base_year)
 
 
-    #return ds
+    
+    ds = xr.open_dataset(path)
+    #print(ds)
+    
+    return ds['tas'] .groupby('hierid').mean()
 
 
 
-def compute_gdp_covariates(path, base_year,rolling_window):
+
+def compute_gdp_covariates(path, model, scenario, base_year=None, rolling_window=None):
     '''
     Method to calculate climate covariate
 
@@ -114,6 +121,10 @@ def compute_gdp_covariates(path, base_year,rolling_window):
     rolling_window: int
         num years to calculate the rolling covariate average
 
+    year: int
+        baseline year 
+
+
     Returns
     -------
     Xarray Dataset
@@ -122,18 +133,57 @@ def compute_gdp_covariates(path, base_year,rolling_window):
     '''
 
     #compute baseline
+    df = pd.read_csv(path, skiprows=10)
+    if not rolling_window:
+        df = df.loc[(df['model']==model) & (df['scenario'] == scenario) & (df['year'] == 2015)]
+        df['value'] = np.log(df['value'])
+        df = df[['hierid', 'value']]
+    return df
 
 
-    #compute rolling mean after baseline value
+def gen_gdp_covariates_file(inpath, rolling_window):
+    # new_df = pd.DataFrame()
+    # df = pd.read_csv(inpath, skiprows=10)
+    # df = df.loc[(df['model']=='low') & (df['scenario'] == 'SSP1')]
+    # for year in range(2010, 2100):
+    #     #get a baseline
+    #     # if (year >= 2010) & (year < 2015):
+    #     #     #print(year)
+    #     #     df = df.loc[(df['year'] >= 2010) & (df['year'] <= 2015)]
+    #     #     value = df.groupby('hierid').mean()['value']
+    #     #     value= pd.DataFrame(value).reset_index()
+    #     #     df1 = pd.DataFrame(value, columns=['hierid', 'value'])
+    #     #     df1['year'] = year
+    #     #     new_df = new_df.append(df1)
+    #     #     #print(new_df.head())
 
+    #     # # # for years in rolling window
+    #     # # #For years after 2014 
+    #     # if ((year - 2015) >= 0) & ((year - 2015) <= rolling_window):
+    #     #     #print(year)
+    #     #     df = df.loc[(df['year'] >= 2015) & (df['year'] <= year)]
+    #     #     value = df.groupby('hierid').mean()['value']
+    #     #     value= pd.DataFrame(value).reset_index()
+    #     #     df1 = pd.DataFrame(value, columns=['hierid', 'value'])
+    #     #     df1['year'] = year
+    #     #     new_df = new_df.append(df1)
+    #     #     #print(len(new_df))
+    #     #     #print(new_df.head())
 
-def compute_gdp_baseline(path):
-    '''
+    #     if year > 2030:
+    #         gap = year-rolling_window
+    #         print(year, gap)
 
-    '''
-    #if value is zero what do you actually do
-    df = pd.read_csv(path)
-
+    #         df = df.loc[(df['year'] >= gap) & (df['year'] <= year)]
+    #         print(df['year'].min(), df['year'].max())
+    #         value = df.groupby('hierid').mean()['value']
+    #         value= pd.DataFrame(value).reset_index()
+    #         df1 = pd.DataFrame(value, columns=['hierid', 'value'])
+    #         df1['year'] = year
+    #         new_df = new_df.append(df1)
+    #             #print(new_df.head())
+    #         print(len(new_df))
+    pass
 
 
 
@@ -146,19 +196,23 @@ def read_csvv(path):
     dict 
     '''
 
-    with open(path) as f:
     data = {}
-    reader = csv.reader(f)
-    for row in reader:
-        if row[0] == 'gamma':
-            data['gamma'] = reader.next()
-        if row[0] == 'gammavcv':
-            data['gammavcv'] = reader.next()
-        if row[0] == 'residvcv':
-            data['residvcv'] == reader.next()
-    return data
 
-def get_gammas(path, seed):
+    #constant, climtas, gdp
+
+    with open(path) as file:
+        reader = csv.reader(file)
+        for row in reader:
+            if row[0] == 'gamma':
+                data['gamma'] = reader.next()
+            if row[0] == 'gammavcv':
+                data['gammavcv'] = reader.next()
+            if row[0] == 'residvcv':
+                data['residvcv'] = reader.next()
+
+    return data['gamma']
+
+def prep_gammas(path):
     '''
     Randomly draws gammas from a multivariate distribution
 
@@ -174,19 +228,112 @@ def get_gammas(path, seed):
     -------
     dict
     '''
+    indices = {'age_cohorts': pd.Index(['infant', 'mid', 'advanced'], name='age')}
 
-    data = read_csvv(path)
-    np.random.seed(seed)
-
-    data['gamma'] = multivariate_normal.rvs(data['gamma'], data['gammavcv'])
-
-    return data
+    data = [float(num) for num in read_csvv(path)]
+    gammas = xr.Dataset()
 
 
-def get_weather(path):
+    for pwr in range(1,5):
+            gammas['beta0_pow{}'.format(pwr)] = xr.DataArray(
+                data[pwr-1::12], dims=('age',), coords={'age':indices['age_cohorts']})
+            gammas['gdp_pow{}'.format(pwr)] = xr.DataArray(
+                data[pwr::12], dims=('age',), coords={'age': indices['age_cohorts']})
+                gammas['tavg_pow{}'.format(pwr)] = xr.DataArray(
+                data[pwr+1::12], dims=('age',), coords={'age': indices['age_cohorts']})
+
+    return gammas
+    
+
+def prep_covars(gdp_path, clim_path):
+
+    covars = xr.Dataset()
+
+    gdp = compute_gdp_covariates(gdp_path, 'low', 'SSP1', base_year=2015)
+    tas_avg = compute_climate_covariates(clim_path)
+    covars['gdp'] = xr.DataArray(gdp['value'], dims=('hierid'), coords={'hierid':gdp['hierid']})
+    covars['tavg'] = tas_avg
+    return covars
+
+
+
+def compute_betas(clim_path, gdp_path, gammas_path, base_year=None,rolling_window=None):
     '''
-    Precompute the values for the weather covariates
+    Computes the matrices beta*gamma x IR for each covariates 
+
+    1. Calls method to get gammas at given p-value
+    2. Calls method toompute gdp covariate
+    3. Calls method to compute tas covariate
+    4. Computes outer product of 
+
+    Parameters
+    ----------
+
+
+    Returns
+    -------
+
+    3 arrays representing 
+
+
     '''
+
+    covars = prep_covars(gdp_path, clim_path)
+    gammas = prep_gammas(gammas_path)
+
+
+
+    betas = xr.Dataset()
+
+    betas['tas'] = (gammas['beta0_pow1'] + gammas['gdp_pow1'] * covars['gdp'] + gammas['tavg_pow1']*covars['tavg'])
+    betas['tas-poly-2'] = (gammas['beta0_pow2'] + gammas['gdp_pow2'] * covars['gdp'] + gammas['tavg_pow2']*covars['tavg'])
+    betas['tas-poly-3'] = (gammas['beta0_pow3'] + gammas['gdp_pow3'] * covars['gdp'] + gammas['tavg_pow3']*covars['tavg'])
+    betas['tas-poly-4'] = (gammas['beta0_pow4'] + gammas['gdp_pow4'] * covars['gdp'] + gammas['tavg_pow4']*covars['tavg'])
+
+
+    return betas
+
+def get_annual_climate(model_path, year, polynomial):
+    '''
+
+
+    '''
+
+    climate = [xr.open_dataset(model_path.format(polynomial='tas', year=year))]
+
+    for power in range(2,polynomial+1):
+        climate.append(xr.open_dataset(model_path.format(year=year,polynomial='tas-poly-{}'.format(power))))
+
+
+    ds = xr.concat(climate)
+
+    return ds
+
+
+
+
+
+
+
+def compute_annuals(clim_path,
+                    gdp_path,
+                    gammas_path,
+                    model_path, 
+                    outpath, 
+                    base_year=None, 
+                    rolling_window=None):
+    '''
+    Computes annual impact
+
+    '''
+
+    climate = get_annual_climate(model_path)
+   
+    betas = compute_betas(clim_path, gdp_path,gammas_path)
+    mortality['no_adaptation'] = (
+        climate['tas'] * betas['tas'] +
+        climate['tas-poly-2'] * betas['tas-poly-2'] +
+        climate['tas-poly-3'] * betas['tas-poly-3'])
 
 
 
@@ -197,21 +344,6 @@ def pval_thing():
     Generate a list of pvals
     '''
 
-    
-
-
-def rebase1(ds, baseline):
-    '''
-    
-    
-    '''
-
-
-def clipping(ds, clip_limit):
-    '''
-
-    '''
-
 
 def goodmoney(ds):
     '''
@@ -219,26 +351,11 @@ def goodmoney(ds):
     '''
 
 
-
-def adaptation(ds, adaptation=None):
-    ''''
-    Some methods to update calcuation according to some inputs
-    '''
-
-def rescale(ds, scaling=None):
-    '''
-    Some methods to rescale the data
-    '''
-
-def rebase2(ds, baseline):
-    '''
-    Some method to rebase along dim2
-    '''
-
 def combine(ds):
     '''
-    Not sure what this does
+    If we are doing age cohorts, sums the damages for each IR across age cohorts
     '''
+    pass
 
 
 def costs(ds, *args):
@@ -246,10 +363,13 @@ def costs(ds, *args):
     Some methods to account for costs
     '''
 
-def aggregate(ds, level=None):
-    '''
-    Some level of resolution to aggregate to
-    '''
 
 
+# if __name__ == '__main__':
+
+    # gen_gdp_covariates_file('~/data/gcp_stuff/gdppc-merged.csv', 15)
+    # compute_gdp_covariates('~/data/gcp_stuff/gdppc-merged.csv', 'low', 'SSP1', year=2015)
+    #read_csvv('/Users/rhodiumgroup/data/gcp_stuff/global_interaction_Tmean-POLY-4-AgeSpec.csvv')
+    # compute_climate_covariates('~/data/gcp_stuff/tas_daily_2015.nc4')
+    #compute_betas('~/data/gcp_stuff/tas_daily_2015.nc4', '~/data/gcp_stuff/gdppc-merged.csv', '/Users/rhodiumgroup/data/gcp_stuff/global_interaction_Tmean-POLY-4-AgeSpec.csvv', base_year=2015)
 
