@@ -266,7 +266,7 @@ def run_job(
     ds.to_netcdf(write_file)
 
     metacsv.to_header(
-        write_file.replace('.nc', '.fgh'),
+        write_file.replace('.nc4', '.fgh'),
         attrs=dict(attrs),
         variables=varattrs)
 
