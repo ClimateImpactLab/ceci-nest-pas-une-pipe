@@ -37,9 +37,7 @@ BCSD_orig_files = (
     '{source_variable}_day_BCSD_{scenario}_r1i1p1_{model}_{year}.nc')
 
 WRITE_PATH = (
-    '/global/scratch/mdelgado/web/gcp/climate/{scenario}/{agglev}/' +
-    '{variable}/' +
-    '{variable}_{frequency}_{unit}_{scenario}_{agglev}_{aggwt}_{model}_{year}.nc')
+    '/global/scratch/jsimcock/gcp/mortality/{scenario}/mortality_impacts_{model}_{year}.nc')
 
 description = '\n\n'.join(
         map(lambda s: ' '.join(s.split('\n')),
