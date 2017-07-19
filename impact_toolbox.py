@@ -105,25 +105,25 @@ def compute_climate_covariates(path,base_year=None, rolling_window=None):
 
 
 
-
-def compute_gdp_covariates(path, model, scenario, base_year=None, rolling_window=None):
+def compute_gdp_covariates(growth_path, model, scenario, basline_path=None, year=None):
     '''
-    Method to calculate climate covariate
+    Method to calculate gdp covariate
 
     Paramaters
     ----------
-    path: str
-        glob of paths to GDP data
+    growth_path: str
+        file representing growth rates between 5 year intervals
 
-    baseline_year: int
-        year from which to generate baseline value
+   model: str
+        representing high or low 
 
-    rolling_window: int
-        num years to calculate the rolling covariate average
+    scenario: str
+        representing SSP's
 
+    baseline_path: str
+        if not None, used to calculate the baseline value for gdp
     year: int
         baseline year 
-
 
     Returns
     -------
@@ -132,13 +132,50 @@ def compute_gdp_covariates(path, model, scenario, base_year=None, rolling_window
 
     '''
 
+    ssps = ['SSP1', 'SSP2', 'SSP3', 'SSP4', 'SSP5']
+    mods = ['low', 'high']
+    #compute_baseline_gdp
+    baseline_df = pd.read_csv(baseline_path, skiprows=10)
+    nightlites_df = pd.read_csv(nightlites_path, skiprows=10)
+    for spec in itertools.product(mods, ssps):
+        df = baseline_df.loc[baseline_df['model'] == spec[0] & baseline_df['scenario'] == spec[1]]
+        df.merge(nightlites_df, on='hierid')
+        #set the zero values to something for now. We can find out what the real value is later
+        df[df['gdppc_ratio'] <= 0.0, 'gdppc_ratio'] = 0.75 
+        df['gdp_adjusted'] = df['gdppc_ratio']*df['value']
+        
+
+
+
+
+    df = pd.read_csv(growth_path, skiprows=10)
+    df = df.loc[(df['model']==model) & (df['scenario'] == scenario) & (df['year'] == year)]
+    df['value'] = np.log(df['value'])
+    df = df[['hierid', 'value']]
+
+
+
     #compute baseline
-    df = pd.read_csv(path, skiprows=10)
-    if not rolling_window:
-        df = df.loc[(df['model']==model) & (df['scenario'] == scenario) & (df['year'] == 2015)]
-        df['value'] = np.log(df['value'])
-        df = df[['hierid', 'value']]
+    
     return df
+
+
+def gen_random_clim_data():
+    '''
+    Generate fake climate data to do tests on
+    '''
+    np.random.seed(42)
+    temp = np.random.rand(720, 1440,365)*100
+    lat = np.arange(-89.875,90,0.25)
+    lon = np.arange(0.125, 360., .25)
+    temp[38] = np.nan
+    time = pd.date_range(start=pd.datetime(2000, 1, 1), periods=365)
+    ds = xr.Dataset({'temperature': (['lat', 'lon', 'time'],  temp)}, 
+                    coords={'lon':  lon,
+                            'lat':  lat,
+                            'time':time})
+
+    return ds
 
 
 def gen_gdp_covariates_file(inpath, rolling_window):

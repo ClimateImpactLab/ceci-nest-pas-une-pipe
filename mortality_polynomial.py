@@ -42,9 +42,9 @@ BCSD_orig_files = (
     '/global/scratch/jiacany/nasa_bcsd/raw_data/{scenario}/{model}/tas/' +
     'tas_day_BCSD_{scenario}_r1i1p1_{model}_{year}.nc')
 
-GDP_FILE = ('/global/scratch/jsimcock/...')
+GDP_FILE = ('/global/scratch/jsimcock/data_files/covars/gdppc-merged-baseline.csv')
 
-GAMMAS_FILE = ('/global/scratch/jsimcock/...')
+GAMMAS_FILE = ('/global/scratch/jsimcock/data_files/covars/global_interaction_Tmean-POLY-4-AgeSpec.csvv')
 
 baseline_climate_path = ('/global/scratch/jiacany/nasa_bcsd/raw_data/{scenario}/{model}/tas/' +
     'tas_day_BCSD_{scenario}_r1i1p1_{model}_2015.nc')
