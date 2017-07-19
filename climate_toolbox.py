@@ -320,7 +320,7 @@ def _aggregate_reindexed_data_to_regions(
                 weights[aggwt].values,
                 dims={'reshape_index': weights.index.values})
 
-    ds[aggwt].where(ds[aggwt] > 0).fillna(weights[backup_aggwt].values)
+    ds[aggwt] = ds[aggwt].where(ds[aggwt] > 0).fillna(weights[backup_aggwt].values)
 
     weighted = xr.Dataset({
         variable: (
