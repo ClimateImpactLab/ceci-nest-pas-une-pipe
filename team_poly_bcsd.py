@@ -5,6 +5,10 @@ Values are daily mean temperature raised to various powers for use in
 polynomial response functions, aggregated to impact regions/hierids using
 population weights. Data is reported at the daily level using a 365-day
 calendar (leap years excluded) in the format YYYYDDD.
+
+version 1.3 updated with correct K --> C conversion (273.15, not 237.15). Kudos
+   to @jrising for the catch.
+
 '''
 
 import os
@@ -21,7 +25,7 @@ logger.setLevel('DEBUG')
 
 __author__ = 'Michael Delgado'
 __contact__ = 'mdelgado@rhg.com'
-__version__ = '1.1'
+__version__ = '1.3'
 
 
 BCSD_orig_files = (
@@ -104,7 +108,7 @@ def create_polynomial_transformation(power=2):
             'time': ~((ds['time.month'] == 2) & (ds['time.day'] == 29))}]
 
         # do transformation
-        ds1[varname] = (ds.tas - 237.15)**power
+        ds1[varname] = (ds.tas - 273.15)**power
 
         # Replace datetime64[ns] 'time' with YYYYDDD int 'day'
         if ds.dims['time'] > 365:
@@ -114,9 +118,11 @@ def create_polynomial_transformation(power=2):
         ds1 = ds1.swap_dims({'time': 'day'})
         ds1 = ds1.drop('time')
 
+        ds1 = ds1.rename({'day': 'time'})
+
         # document variable
-        ds1[varname].attrs['unit'] = 'C^{}'.format(power) if power > 1 else 'C'
-        ds1[varname].attrs['oneline'] = description.splitlines()[0]
+        ds1[varname].attrs['units'] = 'C^{}'.format(power) if power > 1 else 'C'
+        ds1[varname].attrs['long_title'] = description.splitlines()[0]
         ds1[varname].attrs['description'] = description
         ds1[varname].attrs['variable'] = varname
 
@@ -128,7 +134,7 @@ def create_polynomial_transformation(power=2):
         'variable': varname,
         'source_variable': 'tas',
         'transformation': tas_poly,
-        'unit': 'C^{}'.format(power) if power > 1 else 'C'
+        'units': 'C^{}'.format(power) if power > 1 else 'C'
     }
 
     return transformation_spec
@@ -165,15 +171,16 @@ MODELS = list(map(lambda x: dict(model=x), [
     'MPI-ESM-MR',
     'MRI-CGCM3',
     'inmcm4',
-    'NorESM1-M']))
+    'NorESM1-M'
+    ]))
 
 AGGREGATIONS = [
     {'agglev': 'hierid', 'aggwt': 'popwt'}]
 
-JOB_SPEC = [JOBS, PERIODS, MODELS, AGGREGATIONS]
+JOB_SPEC = (JOBS, PERIODS, MODELS, AGGREGATIONS)
 
 INCLUDED_METADATA = [
-    'variable', 'source_variable', 'unit', 'scenario',
+    'variable', 'source_variable', 'units', 'scenario',
     'year', 'model', 'agglev', 'aggwt']
 
 
@@ -182,7 +189,7 @@ def run_job(
         variable,
         transformation,
         source_variable,
-        unit,
+        units,
         scenario,
         read_acct,
         year,
@@ -202,9 +209,6 @@ def run_job(
     metadata.update(ADDITIONAL_METADATA)
 
     file_dependencies = {}
-
-    logger.debug('Beginning job:\n\tkwargs:\t{}'.format(
-        pprint.pformat(metadata, indent=2)))
 
     read_file = BCSD_orig_files.format(**metadata)
     write_file = WRITE_PATH.format(**metadata)
@@ -255,6 +259,9 @@ def run_job(
 
     for var, vattrs in varattrs.items():
         ds[var].attrs.update(vattrs)
+
+        if ds[var].dims == ('hierid', 'time'):
+            ds[var] = ds[var].transpose('time', 'hierid')
 
     ds.to_netcdf(write_file)
 

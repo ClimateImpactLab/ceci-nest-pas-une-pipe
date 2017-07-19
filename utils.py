@@ -374,24 +374,32 @@ def slurm_runner(filepath, job_spec, run_job, onfinish=None):
 
         for task_id in range(num_jobs):
 
-            if os.path.exists(
-                    'locks/{}-{}-{}.done'.format(job_name, job_id, task_id)):
+            lock_file = (
+                'locks/{}-{}-{}.{{}}'
+                .format(job_name, job_id, task_id))
+
+            if os.path.exists(lock_file.format('done')):
                 print('{} already done. skipping'.format(task_id))
+                continue
+                
+            elif os.path.exists(lock_file.format('err')):
+                print('{} previously errored. skipping'.format(task_id))
                 continue
 
             try:
-                with exclusive_open(
-                            'locks/{}-{}-{}.lck'
-                            .format(job_name, job_id, task_id)
-                        ):
+                with exclusive_open(lock_file.format('lck')):
                     pass
 
                 # Check for race conditions
-                if os.path.exists(
-                        'locks/{}-{}-{}.done'
-                        .format(job_name, job_id, task_id)):
+                if os.path.exists(lock_file.format('done')):
                     print('{} already done. skipping'.format(task_id))
-                    continue
+                    if os.path.exists(lock_file.format('lck')):
+                        os.remove(lock_file.format('lck'))
+                
+                elif os.path.exists(lock_file.format('err')):
+                    print('{} previously errored. skipping'.format(task_id))
+                    if os.path.exists(lock_file.format('lck')):
+                        os.remove(lock_file.format('lck'))
 
             except OSError:
                 print('{} already in progress. skipping'.format(task_id))
@@ -426,20 +434,18 @@ def slurm_runner(filepath, job_spec, run_job, onfinish=None):
                     .format(job_name, job_id, task_id),
                     exc_info=e)
 
-            finally:
-                if os.path.exists(
-                            'locks/{}-{}-{}.lck'
-                            .format(job_name, job_id, task_id)):
-                    os.remove(
-                        'locks/{}-{}-{}.lck'.format(job_name, job_id, task_id))
-
-                with open(
-                        'locks/{}-{}-{}.done'
-                        .format(job_name, job_id, task_id),
-                        'w+'):
+                with open(lock_file.format('err'), 'w+'):
                     pass
 
-            logger.removeHandler(handler)
+            else:
+                with open(lock_file.format('done'), 'w+'):
+                    pass
+
+            finally:
+                if os.path.exists(lock_file.format('lck')):
+                    os.remove(lock_file.format('lck'))
+
+                logger.removeHandler(handler)
 
     @slurm.command()
     @click.option('--job_name', '-j', required=True)
