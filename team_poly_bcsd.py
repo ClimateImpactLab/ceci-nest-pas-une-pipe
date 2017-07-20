@@ -6,6 +6,10 @@ polynomial response functions, aggregated to impact regions/hierids using
 population weights. Data is reported at the daily level using a 365-day
 calendar (leap years excluded) in the format YYYYDDD.
 
+version 1.5 fixes another bug in which grid cells with zero population were
+    replaced with backup (area) weights. This is incorrect - only NaN values
+    should be replaced.
+
 version 1.4 fixes a bug which dropped regions with no population. Now, these
     regions draw on gridded data using backup (area) weights.
 
@@ -32,7 +36,7 @@ logger.setLevel('DEBUG')
 
 __author__ = 'Michael Delgado'
 __contact__ = 'mdelgado@rhg.com'
-__version__ = '1.4'
+__version__ = '1.5'
 
 
 BCSD_orig_files = (
