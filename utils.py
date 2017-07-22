@@ -157,7 +157,7 @@ def _prep_slurm(
             partition=partition,
             numjobs=numjobs,
             jobs_per_node=jobs_per_node,
-            maxnodes=maxnodes,
+            maxnodes=(maxnodes-1),
             uniqueid=uniqueid,
             filepath=filepath.replace(os.sep, '/'),
             dependencies=depstr,
