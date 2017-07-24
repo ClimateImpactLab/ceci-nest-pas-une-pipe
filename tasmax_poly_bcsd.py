@@ -1,22 +1,10 @@
 '''
-Powers of daily average temperature
+Powers of daily maximum temperature
 
-Values are daily mean temperature raised to various powers for use in
+Values are daily max temperature raised to various powers for use in
 polynomial response functions, aggregated to impact regions/hierids using
 population weights. Data is reported at the daily level using a 365-day
 calendar (leap years excluded) in the format YYYYDDD.
-
-version 1.5 fixes another bug in which grid cells with zero population were
-    replaced with backup (area) weights. This is incorrect - only NaN values
-    should be replaced.
-
-version 1.4 fixes a bug which dropped regions with no population. Now, these
-    regions draw on gridded data using backup (area) weights.
-
-version 1.3 updated with correct K --> C conversion (273.15, not 237.15). Kudos
-   to @jrising for the catch.
-
-version 1.1 and 1.2 updated metadata to conform to @jrising's spec
 
 version 1.0 - initial release
 
@@ -36,7 +24,7 @@ logger.setLevel('DEBUG')
 
 __author__ = 'Michael Delgado'
 __contact__ = 'mdelgado@rhg.com'
-__version__ = '1.5'
+__version__ = '1.0'
 
 
 BCSD_orig_files = (
@@ -96,7 +84,7 @@ def create_polynomial_transformation(power=2):
     powername = ordinal(power)
 
     description = format_docstr(('''
-            Daily average temperature (degrees C){raised}
+            Daily maximum temperature (degrees C){raised}
 
             Leap years are removed before counting days (uses a 365 day
             calendar).
