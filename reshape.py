@@ -4,6 +4,9 @@ import numpy as np
 import pandas as pd
 import xarray as xr
 
+
+from climate_toolbox import load_baseline
+
 BASELINE_FILE = (
     '/global/scratch/jiacany/nasa_bcsd/pattern/baseline/' +
     '{baseline_model}/{source_variable}/' +
@@ -17,6 +20,51 @@ BCSD_pattern_files = (
 
 season_month_start = {'DJF': 12, 'MAM': 3, 'JJA': 6, 'SON': 9}
 
+years = range(1982, 2100)
+
+PERIODS = (
+    [dict(scenario='rcp45', read_acct='mdelgado', year=y) for y in years] +
+    [dict(scenario='rcp85', read_acct='jiacany', year=y) for y in years])
+
+rcp_models = {
+    'rcp45':
+        list(map(lambda x: dict(model=x[0], baseline_model=x[1]), [
+            ('pattern1', 'MRI-CGCM3'),
+            ('pattern2', 'GFDL-ESM2G'),
+            ('pattern3', 'MRI-CGCM3'),
+            ('pattern4', 'GFDL-ESM2G'),
+            ('pattern5', 'MRI-CGCM3'),
+            ('pattern6', 'GFDL-ESM2G'),
+            ('pattern27', 'GFDL-CM3'),
+            ('pattern28', 'CanESM2'),
+            ('pattern29', 'GFDL-CM3'),
+            ('pattern30', 'CanESM2'),
+            ('pattern31', 'GFDL-CM3'),
+            ('pattern32', 'CanESM2')])),
+
+    'rcp85':
+        list(map(lambda x: dict(model=x[0], baseline_model=x[1]), [
+            ('pattern1', 'MRI-CGCM3'),
+            ('pattern2', 'GFDL-ESM2G'),
+            ('pattern3', 'MRI-CGCM3'),
+            ('pattern4', 'GFDL-ESM2G'),
+            ('pattern5', 'MRI-CGCM3'),
+            ('pattern6', 'GFDL-ESM2G'),
+            ('pattern28', 'GFDL-CM3'),
+            ('pattern29', 'CanESM2'),
+            ('pattern30', 'GFDL-CM3'),
+            ('pattern31', 'CanESM2'),
+            ('pattern32', 'GFDL-CM3'),
+            ('pattern33', 'CanESM2')]))}
+
+MODELS = []
+
+for spec in PERIODS:
+    for model in rcp_models[spec['scenario']]:
+        job = {}
+        job.update(spec)
+        job.update(model)
+        MODELS.append(job)
 
 def reshape_days_to_datetime(surrogate, year, season):
     return (
@@ -35,6 +83,18 @@ def reshape_days_to_datetime(surrogate, year, season):
 
 
 def get_annual_data(year, **kwargs):
+
+    source_variable = kwargs['source_variable']
+    
+    baseline_file = BASELINE_FILE.format(**metadata)
+
+    seasonal_baselines = {}
+    for season in SEASONS:
+        basef = baseline_file.format(season=season)
+        seasonal_baselines[season] = load_baseline(
+            basef,
+            source_variable)
+
     seasonal_data = []
 
     for i, season in enumerate(['DJF', 'MAM', 'JJA', 'SON', 'DJF']):
@@ -43,15 +103,22 @@ def get_annual_data(year, **kwargs):
                     .format(season=season))
 
         if not os.path.isfile(fp):
-            print(fp)
+            print('skipping {}'.format(fp))
+            continue
 
         with xr.open_dataset(fp) as ds:
-
             ds.load()
-            seasonal_data.append(reshape_days_to_datetime(ds, year+(i//4), season))
-
-
+            
+        patt = reshape_days_to_datetime(ds, year+(i//4), season)            
+        seasonal_data.append(patt + seasonal_baselines[season])
 
     ds = xr.concat(seasonal_data, 'time')
 
-    return ds.sel(time=ds['time.year'] == year)
+    ds = ds.sel(time=ds['time.year'] == year)
+
+
+    # this needs fixing!!!!!
+    # also - why does this happen?!?
+    ds = ds[source_variable].where(ds[source_variable] < 1e10)
+
+    return ds
