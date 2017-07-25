@@ -120,6 +120,6 @@ def get_annual_data(year, **kwargs):
 
     # this needs fixing!!!!!
     # also - why does this happen?!?
-    ds = ds[source_variable].where(ds[source_variable] < 1e10)
+    ds[source_variable] = ds[source_variable].where(ds[source_variable] < 1e10)
 
     return ds
