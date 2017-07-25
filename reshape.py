@@ -85,11 +85,12 @@ def reshape_days_to_datetime(surrogate, year, season):
 def get_annual_data(year, **kwargs):
 
     source_variable = kwargs['source_variable']
+    baseline_model = [i for i in rcp_models[kwargs['scenario']] if i['model'] == kwargs['model']][0]['baseline_model']
     
-    baseline_file = BASELINE_FILE.format(**metadata)
+    baseline_file = BASELINE_FILE.format(baseline_model=baseline_model, **kwargs)
 
     seasonal_baselines = {}
-    for season in SEASONS:
+    for season in ['DJF', 'MAM', 'JJA', 'SON']:
         basef = baseline_file.format(season=season)
         seasonal_baselines[season] = load_baseline(
             basef,
