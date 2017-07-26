@@ -38,19 +38,20 @@ __version__ = '0.1.0'
 
 
 
-BCSD_orig_files = (
-    '/global/scratch/jiacany/nasa_bcsd/raw_data/{scenario}/{model}/tas/' +
-    'tas_day_BCSD_{scenario}_r1i1p1_{model}_{year}.nc')
+CLIMATE_FILE = (
+    '/global/scratch/mdelgado/projection/gcp/climate/hierid/popwt/daily/' +
+    'tas{poly}/{scenario}/{model}/{year}/1.5.nc4')
 
-GDP_FILE = ('/global/scratch/jsimcock/...')
+GDP_FILE = ('/global/scratch/jsimcock/data_files/covars/gdppc-merged-baseline.csv')
 
-GAMMAS_FILE = ('/global/scratch/jsimcock/...')
+GAMMAS_FILE = ('/global/scratch/jsimcock/data_files/covars/' + 
+                'global_interaction_Tmean-POLY-4-AgeSpec.csvv')
 
-baseline_climate_path = ('/global/scratch/jiacany/nasa_bcsd/raw_data/{scenario}/{model}/tas/' +
-    'tas_day_BCSD_{scenario}_r1i1p1_{model}_2015.nc')
+BASELINE_CLIMATE = ('/global/scratch/mdelgado/projection/gcp/climate/hierid/popwt/daily/' +
+    'tas/historical/{model}/2015/1.5.nc4')
 
 WRITE_PATH = (
-    '/global/scratch/jsimcock/gcp/mortality/{scenario}/mortality_impacts_{model}_{year}.nc')
+    '/global/scratch/jsimcock/gcp/mortality/{scenario}/impacts/{econ_model}/{ssp}/{model}/{year}/1.0.nc')
 
 
 
@@ -66,79 +67,81 @@ ADDITIONAL_METADATA = dict(
     project='gcp', 
     team='impacts-mortality',
     frequency='daily',
-    variable='',
-    dependencies= [GDP_FILE, GAMMAS_FILE],
-    pvale= [0.5]
+    variable='mortality-daily',
+    dependencies= [GDP_FILE, GAMMAS_FILE, CLIMATE_FILE, baseline_climate_path],
+    pval= [0.5]
     )
 
 
 MODELS = list(map(lambda x: dict(model=x), [
     'ACCESS1-0',
-    # 'bcc-csm1-1',
-    # 'BNU-ESM',
-    # 'CanESM2',
-    # 'CCSM4',
-    # 'CESM1-BGC',
-    # 'CNRM-CM5',
-    # 'CSIRO-Mk3-6-0',
-    # 'GFDL-CM3',
-    # 'GFDL-ESM2G',
-    # 'GFDL-ESM2M',
-    # 'IPSL-CM5A-LR',
-    # 'IPSL-CM5A-MR',
-    # 'MIROC-ESM-CHEM',
-    # 'MIROC-ESM',
-    # 'MIROC5',
-    # 'MPI-ESM-LR',
-    # 'MPI-ESM-MR',
-    # 'MRI-CGCM3',
-    # 'inmcm4',
-    # 'NorESM1-M'
+    'bcc-csm1-1',
+    'BNU-ESM',
+    'CanESM2',
+    'CCSM4',
+    'CESM1-BGC',
+    'CNRM-CM5',
+    'CSIRO-Mk3-6-0',
+    'GFDL-CM3',
+    'GFDL-ESM2G',
+    'GFDL-ESM2M',
+    'IPSL-CM5A-LR',
+    'IPSL-CM5A-MR',
+    'MIROC-ESM-CHEM',
+    'MIROC-ESM',
+    'MIROC5',
+    'MPI-ESM-LR',
+    'MPI-ESM-MR',
+    'MRI-CGCM3',
+    'inmcm4',
+    'NorESM1-M'
     ]))
 
 
 
-PERIODS = [dict(scenario='historical', year=y) for y in range(1981, 2006)] + 
-            [dict(scenario='rcp85', year=y) for y in range(2006, 2100)]
+PERIODS = [dict(scenario='historical', year=y) for y in range(1981, 2006)] + [dict(scenario='rcp85', year=y) for y in range(2006, 2100)]
 
-ADAPTATION_SCENARIO = [dict(full=False, climate_adaptation=False, no_adaptation=True)]
+SSP = [dict(ssp='SSP' + str(i)) for i in range(1,6)]
+
+ECONMODEL = [dict(econ_model='low'), dict(econ_model='high')]
+
 
 #we want to do a realization of all models for the periods at a given set of periods
-JOB_SPEC = [PERIODS, MODELS]
+JOB_SPEC = [PERIODS, MODELS, SSP, ECONMODEL]
 
 
 
-def mortality_annual(gammas_path, baseline_climate_path, gdp_data_path, annual_climate_paths, year=None):
+def mortality_annual(gammas_path, baseline_climate_path, gdp_data_path, ssp, econ_model,annual_climate_paths, write_path, year=None):
     '''
     Calculates the IR level daily/annual effect of temperature on Mortality Rates
 
     Paramaters
     ----------
+
+    climate_covar: str
+        path to climate covar
+
     gammas_path: str
         path to csvv
 
-    climate_data: str
-        path to baseline year climate dataset
+    annual_climate_path: str
+        path for a given year
 
     gdp_data: str
-        path to gdp_dataset
+        path to gdp data
 
-    annual_climate_paths: list
-        list of paths for climate data sets
-
-    mortality_flags: dit
-        set of methods optionally applied to adjust final impact 
-
+    year: int
+        year of impacts to compute
 
     Returns
     -------
 
     Xarray Dataset 
 
-
     '''
 
-    betas = compute_betas(baseline_climate_path,gdp_data_path, gammas_path)
+
+    betas = compute_betas(baseline_climate_path,gdp_data_path, gammas_path, ssp, econ_model)
     climate = get_annual_climate(annual_climate_paths,year, 4)
 
     impact = xr.Dataset()
@@ -146,30 +149,28 @@ def mortality_annual(gammas_path, baseline_climate_path, gdp_data_path, annual_c
     impact['mortality_impact'] = (betas['tas']*climate['tas'] + betas['tas-poly-2']*climate['tas-poly-2'] + 
             betas['tas-poly-3']*climate['tas-poly-3'] + betas['tas-poly-3']*climate['tas-poly-3'])
 
-
     return impact
 
-def run_job(metadata, 
-            model
+  
+def run_job(model
             year, 
             scenario,
-            WRITE_PATH,
-            gamma_file,
-            baseline_climate_path, 
-            baseline_gdp_path,
-
-            ):
+            econ_model, 
+            ssp):
 
 
     
     write_file = WRITE_PATH.format(scenario=scenario, model=model, year=year)
+    annual_climate_path = CLIMATE_FILE.format(poly=poly, scenario=scenario, model=model, year=year)
+    baseline_climate_path = BASELINE_CLIMATE.format(model=model)
+
 
     if os.path.isfile(write_file):
         return
 
 
-    logger.debug('calculating impact for {} {} {}'.format(scenario,model, year))
-    impact_ds = mortality_annual(gamma_file, climate_data, gdp_data, year)
+    logger.debug('calculating impact for {} {} {} {} {} '.format(scenario, model, ssp, econ_model, year))
+    impact_ds = mortality_annual(GAMMAS_FILE, baseline_climate_path, annual_climate_path, GDP_FILE, year)
 
     logger.debug('udpate metadata for impact calculation {} {} {} '.format(scenario,model, year))
     impact_ds.attrs.update(ADDITIONAL_METADATA)

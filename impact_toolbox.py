@@ -48,7 +48,7 @@ My notes and questions
 import xarray as xr
 import numpy as np
 import pandas as pd
-import metacsv
+#import metacsv
 from six import string_types
 import itertools
 import toolz
@@ -56,6 +56,8 @@ import time
 import datafs
 import csv
 import os
+
+
 
 
 def compute_climate_covariates(path,base_year=None, rolling_window=None):
@@ -97,16 +99,19 @@ def compute_climate_covariates(path,base_year=None, rolling_window=None):
     #baseyear_path = path.format(year=base_year)
 
 
-    
+
+    t1 = time.time()
     ds = xr.open_dataset(path)
     #print(ds)
-    
-    return ds['tas'] .groupby('hierid').mean()
+    ds = ds['tas'] .groupby('hierid').mean()
+    t2 = time.time()
+    print('Finishing compute_climate_covariates: {}'.format(t2-t1))
+    return ds
 
 
 
 
-def compute_gdp_covariates(path, model, scenario, base_year=None, rolling_window=None):
+def compute_gdp_covariates(path, model, ssp, base_year=None):
     '''
     Method to calculate climate covariate
 
@@ -133,11 +138,15 @@ def compute_gdp_covariates(path, model, scenario, base_year=None, rolling_window
     '''
 
     #compute baseline
+    t1 = time.time()
     df = pd.read_csv(path, skiprows=10)
     if not rolling_window:
-        df = df.loc[(df['model']==model) & (df['scenario'] == scenario) & (df['year'] == 2015)]
+        df = df.loc[(df['model']==model) & (df['scenario'] == ssp) & (df['year'] == base_year)]
         df['value'] = np.log(df['value'])
         df = df[['hierid', 'value']]
+    t2 = time.time()
+    print('Completing compute_gdp_covariates: {}'.format(t2 - t1))
+
     return df
 
 
@@ -196,11 +205,13 @@ def read_csvv(path):
     dict 
     '''
 
+    t1 = time.time()
     data = {}
 
     #constant, climtas, gdp
 
-    with open(path) as file:
+
+    with open(path, 'r') as file:
         reader = csv.reader(file)
         for row in reader:
             if row[0] == 'gamma':
@@ -210,6 +221,8 @@ def read_csvv(path):
             if row[0] == 'residvcv':
                 data['residvcv'] = reader.next()
 
+    t2 = time.time()
+    print('Completing read_csvv:{}'.format(t2 - t1))
     return data['gamma']
 
 def prep_gammas(path):
@@ -228,6 +241,7 @@ def prep_gammas(path):
     -------
     dict
     '''
+    t1 = time.time()
     indices = {'age_cohorts': pd.Index(['infant', 'mid', 'advanced'], name='age')}
 
     data = [float(num) for num in read_csvv(path)]
@@ -239,20 +253,25 @@ def prep_gammas(path):
                 data[pwr-1::12], dims=('age',), coords={'age':indices['age_cohorts']})
             gammas['gdp_pow{}'.format(pwr)] = xr.DataArray(
                 data[pwr::12], dims=('age',), coords={'age': indices['age_cohorts']})
-                gammas['tavg_pow{}'.format(pwr)] = xr.DataArray(
+            gammas['tavg_pow{}'.format(pwr)] = xr.DataArray(
                 data[pwr+1::12], dims=('age',), coords={'age': indices['age_cohorts']})
 
+    t2 = time.time()
+    print('completing prep_gammas: {}'.format(t2- t1))
     return gammas
     
 
-def prep_covars(gdp_path, clim_path):
+def prep_covars(gdp_path, clim_path, econ_model, ssp, base_year=None):
 
+    t1 = time.time()
     covars = xr.Dataset()
 
-    gdp = compute_gdp_covariates(gdp_path, 'low', 'SSP1', base_year=2015)
+    gdp = compute_gdp_covariates(gdp_path, econ_model, ssp, base_year=2010)
     tas_avg = compute_climate_covariates(clim_path)
     covars['gdp'] = xr.DataArray(gdp['value'], dims=('hierid'), coords={'hierid':gdp['hierid']})
     covars['tavg'] = tas_avg
+    t2 = time.time()
+    print('completing prep_covars:{}'.format(t2- t1))
     return covars
 
 
@@ -278,6 +297,7 @@ def compute_betas(clim_path, gdp_path, gammas_path, base_year=None,rolling_windo
 
     '''
 
+    t1 = time.time()
     covars = prep_covars(gdp_path, clim_path)
     gammas = prep_gammas(gammas_path)
 
@@ -290,7 +310,8 @@ def compute_betas(clim_path, gdp_path, gammas_path, base_year=None,rolling_windo
     betas['tas-poly-3'] = (gammas['beta0_pow3'] + gammas['gdp_pow3'] * covars['gdp'] + gammas['tavg_pow3']*covars['tavg'])
     betas['tas-poly-4'] = (gammas['beta0_pow4'] + gammas['gdp_pow4'] * covars['gdp'] + gammas['tavg_pow4']*covars['tavg'])
 
-
+    t2 = time.time()
+    print('Completing compute_betas: {}'.format(t2 - t1))
     return betas
 
 def get_annual_climate(model_path, year, polymomial):
@@ -318,28 +339,57 @@ def get_annual_climate(model_path, year, polymomial):
     print('get_climate_paths: {}'.format(t2 -t1))
     return ds
 
+# def mortality_annual(gammas_path, baseline_climate_path, gdp_data_path, annual_climate_paths, write_path, year=None):
+#     '''
+#     Calculates the IR level daily/annual effect of temperature on Mortality Rates
+
+#     Paramaters
+#     ----------
+#     gammas_path: str
+#         path to csvv
+
+#     climate_data: str
+#         path to baseline year climate dataset
+
+#     gdp_data: str
+#         path to gdp_dataset
+
+#     annual_climate_paths: list
+#         list of paths for climate data sets
+
+#     mortality_flags: dit
+#         set of methods optionally applied to adjust final impact 
 
 
-def compute_annuals(clim_path,
-                    gdp_path,
-                    gammas_path,
-                    model_path, 
-                    outpath, 
-                    base_year=None, 
-                    rolling_window=None):
-    '''
-    Computes annual impact
+#     Returns
+#     -------
 
-    '''
+#     Xarray Dataset 
 
-    climate = get_annual_climate(model_path)
-   
-    betas = compute_betas(clim_path, gdp_path,gammas_path)
-    mortality['no_adaptation'] = (
-        climate['tas'] * betas['tas'] +
-        climate['tas-poly-2'] * betas['tas-poly-2'] +
-        climate['tas-poly-3'] * betas['tas-poly-3'])
 
+#     '''
+#     metadata = dict(
+#             dependencies = [gammas_path, baseline_climate_path, gdp_data_path],
+#             description ='median mortality run on ACCESS1-0 model',
+#             year=year
+#             )
+
+#     betas = compute_betas(baseline_climate_path,gdp_data_path, gammas_path)
+#     climate = get_annual_climate(annual_climate_paths,year, 4)
+#     write_path = write_path.format(year=year)
+
+#     impact = xr.Dataset()
+    
+#     impact['mortality_impact'] = (betas['tas']*climate['tas'] + betas['tas-poly-2']*climate['tas-poly-2'] + 
+#             betas['tas-poly-3']*climate['tas-poly-3'] + betas['tas-poly-3']*climate['tas-poly-3'])
+
+#     impact.attrs.update(metadata)
+#     if not os.path.isdir(os.path.dirname(write_path)):
+#         os.makedirs(os.path.dirname(write_path))
+
+#     impact.to_netcdf(write_path)
+    
+#     print('Writing {}'.format(year))
 
 
 
@@ -367,14 +417,4 @@ def costs(ds, *args):
     '''
     Some methods to account for costs
     '''
-
-
-
-# if __name__ == '__main__':
-
-    # gen_gdp_covariates_file('~/data/gcp_stuff/gdppc-merged.csv', 15)
-    # compute_gdp_covariates('~/data/gcp_stuff/gdppc-merged.csv', 'low', 'SSP1', year=2015)
-    #read_csvv('/Users/rhodiumgroup/data/gcp_stuff/global_interaction_Tmean-POLY-4-AgeSpec.csvv')
-    # compute_climate_covariates('~/data/gcp_stuff/tas_daily_2015.nc4')
-    #compute_betas('~/data/gcp_stuff/tas_daily_2015.nc4', '~/data/gcp_stuff/gdppc-merged.csv', '/Users/rhodiumgroup/data/gcp_stuff/global_interaction_Tmean-POLY-4-AgeSpec.csvv', base_year=2015)
-
+    pass
