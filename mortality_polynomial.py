@@ -17,11 +17,8 @@ import datafs
 
 import utils
 from impact_toolbox import (
-        compute_gdp_covariates,
-        compute_climate_covariates,
         compute_betas,
         get_annual_climate,
-        get_gammas,
         )
 
 
@@ -51,8 +48,13 @@ BASELINE_CLIMATE = ('/global/scratch/mdelgado/projection/gcp/climate/hierid/popw
     'tas/historical/{model}/2015/1.5.nc4')
 
 WRITE_PATH = (
-    '/global/scratch/jsimcock/gcp/mortality/{scenario}/impacts/{econ_model}/{ssp}/{model}/{year}/1.0.nc')
+    '/global/scratch/jsimcock/gcp/impacts/mortality/{scenario}/{econ_model}/{ssp}/{model}/{year}/1.0.nc')
 
+description = '\n\n'.join(
+        map(lambda s: ' '.join(s.split('\n')),
+            __doc__.strip().split('\n\n')))
+
+oneline = description.split('\n')[0]
 
 
 ADDITIONAL_METADATA = dict(    
@@ -63,12 +65,12 @@ ADDITIONAL_METADATA = dict(
     version=__version__,
     repo='https://github.com/ClimateImpactLab/ceci-nest-pas-une-pipe',
     file='/mortality_polynomial.py',
-    execute='python mortality_polynomial.py --run',
+    execute='python mortality_polynomial.py run',
     project='gcp', 
     team='impacts-mortality',
     frequency='daily',
     variable='mortality-daily',
-    dependencies= [GDP_FILE, GAMMAS_FILE, CLIMATE_FILE, baseline_climate_path],
+    dependencies= [GDP_FILE, GAMMAS_FILE],
     pval= [0.5]
     )
 
@@ -152,7 +154,7 @@ def mortality_annual(gammas_path, baseline_climate_path, gdp_data_path, ssp, eco
     return impact
 
   
-def run_job(model
+def run_job(model,
             year, 
             scenario,
             econ_model, 
