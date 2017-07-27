@@ -111,7 +111,7 @@ def compute_climate_covariates(path,base_year=None, rolling_window=None):
 
 
 
-def compute_gdp_covariates(path, model, ssp, base_year=None):
+def compute_gdp_covariates(path, ssp, econ_model,base_year=None):
     '''
     Method to calculate climate covariate
 
@@ -140,7 +140,7 @@ def compute_gdp_covariates(path, model, ssp, base_year=None):
     #compute baseline
     t1 = time.time()
     df = pd.read_csv(path, skiprows=10)
-    df = df.loc[(df['model']==model) & (df['scenario'] == ssp) & (df['year'] == base_year)]
+    df = df.loc[(df['model']==econ_model) & (df['scenario'] == ssp) & (df['year'] == base_year)]
     df['value'] = np.log(df['value'])
     df = df[['hierid', 'value']]
     t2 = time.time()
@@ -260,12 +260,12 @@ def prep_gammas(path):
     return gammas
     
 
-def prep_covars(gdp_path, clim_path, econ_model, ssp, base_year=None):
+def prep_covars(gdp_path, clim_path, ssp, econ_model, base_year=None):
 
     t1 = time.time()
     covars = xr.Dataset()
 
-    gdp = compute_gdp_covariates(gdp_path, econ_model, ssp, base_year=2010)
+    gdp = compute_gdp_covariates(gdp_path, ssp, econ_model, base_year=2010)
     tas_avg = compute_climate_covariates(clim_path)
     covars['gdp'] = xr.DataArray(gdp['value'], dims=('hierid'), coords={'hierid':gdp['hierid']})
     covars['tavg'] = tas_avg
