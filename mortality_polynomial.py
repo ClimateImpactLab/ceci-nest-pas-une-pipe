@@ -45,7 +45,7 @@ GAMMAS_FILE = ('/global/scratch/jsimcock/data_files/covars/' +
                 'global_interaction_Tmean-POLY-4-AgeSpec.csvv')
 
 BASELINE_CLIMATE = ('/global/scratch/mdelgado/projection/gcp/climate/hierid/popwt/daily/' +
-    'tas/historical/{model}/2015/1.5.nc4')
+    'tas/rcp85/{model}/2015/1.5.nc4')
 
 WRITE_PATH = (
     '/global/scratch/jsimcock/gcp/impacts/mortality/{scenario}/{econ_model}/{ssp}/{model}/{year}/1.0.nc')
