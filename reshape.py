@@ -223,11 +223,11 @@ def reshape_to_annual(
     logger.debug('combining data sets')
     ds = xr.concat(seasonal_data, 'time')
 
-    # correct for pandas 20.0 + PeriodIndex incompatability
-    ds['time'].values = ds.time.values.astype(np.dtype('datetime64[ns]'))
-
     # pandas 20.0 compatible 
     ds = ds.sel(time=(np.vectorize(lambda t: t.year)(ds.time) == year))
+
+    # correct for pandas 20.0 + PeriodIndex incompatability
+    ds['time'].values = ds.time.values.astype(np.dtype('datetime64[ns]'))
 
     # check for expected dimensions. should be missing Jan+Feb 1981, Dec 2099.
     # we also expect to be missing all leap years.
