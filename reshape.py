@@ -58,7 +58,7 @@ ADDITIONAL_METADATA = dict(
 
 # Calibration data
 season_month_start = {'DJF': 12, 'MAM': 3, 'JJA': 6, 'SON': 9}
-years = range(1982, 2100)
+years = range(1981, 2100)
 INVALID = 9.969209968386869e+36  # invalid data found in pattern data sets
 
 JOBS = [
