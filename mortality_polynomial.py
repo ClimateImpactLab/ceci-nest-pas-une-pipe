@@ -158,7 +158,6 @@ def run_job(metadata,
             year, 
             scenario,
             econ_model,
-            variable
             ssp):
 
 
