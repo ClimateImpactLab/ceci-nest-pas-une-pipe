@@ -41,18 +41,23 @@ pers = ['1986-2005', '2020-2039', '2040-2059', '2080-2099']
 rels = ['absolute', 'change-from-hist']
 
 index_names = ['rcp', 'per', 'rel']
-keys = list(itertools.product(rcps, pers, rels))
-formatters = list(map(lambda val: dict(zip(index_names, val)), keys))
 
-bigdf = pd.concat([
-    pd.read_csv(inpaths.format(**val), index_col=0) for val in formatters],
-    keys=pd.MultiIndex.from_tuples(keys, names=['rcp', 'per', 'rel']),
-    axis=0)
+def main():
+    keys = list(itertools.product(rcps, pers, rels))
+    formatters = list(map(lambda val: dict(zip(index_names, val)), keys))
+
+    bigdf = pd.concat([
+        pd.read_csv(inpaths.format(**val), index_col=0) for val in formatters],
+        keys=pd.MultiIndex.from_tuples(keys, names=['rcp', 'per', 'rel']),
+        axis=0)
 
 
-for city, hierid in cities:
-    fp = outpaths.format(city=city)
-    if not os.path.isdir(os.path.dirname(fp)):
-        os.makedirs(os.path.dirname(fp))
+    for city, hierid in cities:
+        fp = outpaths.format(city=city)
+        if not os.path.isdir(os.path.dirname(fp)):
+            os.makedirs(os.path.dirname(fp))
 
-    bigdf.xs(hierid, level='hierid').to_csv(fp)
+        bigdf.xs(hierid, level='hierid').to_csv(fp)
+
+if __name__ == '__main__':
+    main()

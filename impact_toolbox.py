@@ -140,10 +140,9 @@ def compute_gdp_covariates(path, model, ssp, base_year=None):
     #compute baseline
     t1 = time.time()
     df = pd.read_csv(path, skiprows=10)
-    if not rolling_window:
-        df = df.loc[(df['model']==model) & (df['scenario'] == ssp) & (df['year'] == base_year)]
-        df['value'] = np.log(df['value'])
-        df = df[['hierid', 'value']]
+    df = df.loc[(df['model']==model) & (df['scenario'] == ssp) & (df['year'] == base_year)]
+    df['value'] = np.log(df['value'])
+    df = df[['hierid', 'value']]
     t2 = time.time()
     print('Completing compute_gdp_covariates: {}'.format(t2 - t1))
 

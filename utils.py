@@ -2,6 +2,7 @@ import re
 import os
 import time
 import math
+import toolz
 import click
 import pprint
 import logging
@@ -221,12 +222,21 @@ def get_job_by_index(job_spec, index):
 
     .. code-block:: python
 
-        >>> get_job_by_index(
-        ...    (('a', 'b', 'c'), (1, 2, 3), ('do', 'rey', 'mi')), 5)
-        ('a', 2, 'mi')
+        >>> job = get_job_by_index(
+        ...    (
+        ...        [{'let': 'a'}, {'let': 'b'}, {'let': 'c'}],
+        ...        [{'num': 1}, {'num': 2}, {'num': 3}],
+        ...        [{'pitch': 'do'}, {'pitch': 'rey'}, {'pitch': 'mi'}]),
+        ...    5)
+        ... 
+        >>> sorted(zip(job.keys(), job.values())) # test job ordered
+        [('let', 'a'), ('num', 2), ('pitch', 'mi')]
 
-        >>> get_job_by_index(map(tuple, ['hi', 'hello', 'bye']), 10)
-        ('h', 'l', 'y')
+        >>> job = get_job_by_index(
+        ...     tuple(map(lambda x: [{x: i} for i in x], ['hi', 'hello', 'bye'])), 10)
+        ...
+        >>> sorted(zip(job.keys(), job.values())) # test job ordered
+        [('bye', 'y'), ('hello', 'l'), ('hi', 'h')]
 
 
     '''
@@ -237,7 +247,42 @@ def get_job_by_index(job_spec, index):
         for i in range(len(job_spec))])
 
 
-def slurm_runner(filepath, job_spec, run_job, onfinish=None):
+def _get_call_args(job_spec, index=0):
+    '''
+    Places stringified job parameters into `metadata` dict along with job spec
+
+    .. code-block:: python
+
+        >>> job_spec = (
+        ...     [{'ordinal': 1, 'zeroth': 0}, {'ordinal': 2, 'zeroth': 1}],
+        ...     [{'letter': 'a'}, {'letter': 'b'}],
+        ...     [{'name': 'susie', 'age': 8}, {'name': 'billy', 'age': 6}])
+        ...
+        >>> job = _get_call_args(job_spec, 2)
+        >>> job # doctest: +SKIP
+        {'age': 8, 'letter': 'b', 'name': 'susie', 'ordinal': 1, 'zeroth': 0}
+        
+        >>> notmeta = {k: v for k, v in job.items() if k != 'metadata'}
+        >>> meta = job['metadata']
+        >>> sorted(zip(notmeta.keys(), notmeta.values())) # test notmeta ordered
+        [('age', 8), ('letter', 'b'), ('name', 'susie'), ('ordinal', 1), ('zeroth', 0)]
+
+        >>> sorted(zip(meta.keys(), meta.values())) # test meta ordered
+        [('age', '8'), ('letter', 'b'), ('name', 'susie'), ('ordinal', '1'), ('zeroth', '0')]
+    '''
+
+    job = get_job_by_index(job_spec, index)
+
+    metadata = {}
+    metadata.update({k: str(v) for k, v in job.items()})
+
+    call_args = {'metadata': metadata}
+    call_args.update(job)
+
+    return call_args
+
+@toolz.curry
+def slurm_runner(run_job, filepath, job_spec, onfinish=None):
 
     @click.group()
     def slurm():
@@ -415,15 +460,12 @@ def slurm_runner(filepath, job_spec, run_job, onfinish=None):
 
             try:
 
-                job = get_job_by_index(job_spec, task_id)
-
-                metadata = {}
-                metadata.update({k: str(v) for k, v in job.items()})
+                job_kwargs = _get_call_args(job_spec, task_id)
 
                 logger.debug('Beginning job\nkwargs:\t{}'.format(
-                    pprint.pformat(metadata, indent=2)))
+                    pprint.pformat(job_kwargs['metadata'], indent=2)))
 
-                run_job(metadata=metadata, **job)
+                run_job(**job_kwargs)
 
             except (KeyboardInterrupt, SystemExit):
                 raise
@@ -483,5 +525,17 @@ def slurm_runner(filepath, job_spec, run_job, onfinish=None):
                         'locks/{}-{}-{}.done'
                         .format(job_name, job_id, task_id)):
                 time.sleep(10)
+
+    
+    def run_interactive(task_id=0):
+
+        job_kwargs = _get_call_args(job_spec, task_id)
+
+        logger.debug('Beginning job\nkwargs:\t{}'.format(
+            pprint.pformat(job_kwargs['metadata'], indent=2)))
+
+        return run_job(**job_kwargs)
+
+    slurm.run_interactive = run_interactive
 
     return slurm
