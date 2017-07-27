@@ -7,12 +7,8 @@ downscaled CMIP5 model outputs. Pattern scaling uses the SMME method.
 
 import os
 import utils
-import numpy as np
-import pandas as pd
-import xarray as xr
 import logging
 
-from climate_toolbox import (load_baseline, load_bcsd)
 
 FORMAT = '%(asctime)-15s %(message)s'
 logging.basicConfig(format=FORMAT)
@@ -36,7 +32,8 @@ BCSD_pattern_files = (
     '{source_variable}_BCSD_{model}_{scenario}_r1i1p1_{{season}}_{year}.nc')
 
 WRITE_PATH = (
-    '/global/scratch/mdelgado/nasa_bcsd/SMME_formatted/{scenario}/{model}/{source_variable}/' +
+    '/global/scratch/mdelgado/nasa_bcsd/SMME_formatted/{scenario}/{model}/' +
+    '{source_variable}/' +
     '{source_variable}_SMME-formatted_{scenario}_{model}_{year}.nc')
 
 description = '\n\n'.join(
@@ -122,6 +119,9 @@ INCLUDED_METADATA = [
 
 
 def reshape_days_to_datetime(surrogate, year, season):
+    import xarray as xr
+    import pandas as pd
+
     return (
         surrogate.assign_coords(
                 time=xr.DataArray(
@@ -146,9 +146,18 @@ def reshape_to_annual(
         year,
         model,
         read_acct,
-        baseline_model):
+        baseline_model,
+        interactive=False):
+
+    import xarray as xr
+    from climate_toolbox import (load_baseline, load_bcsd)
 
     baseline_file = BASELINE_FILE.format(**metadata)
+    write_file = WRITE_PATH.format(**metadata)
+
+    # do not duplicate
+    if os.path.isfile(write_file):
+        return
 
     seasonal_baselines = {}
     for season in ['DJF', 'MAM', 'JJA', 'SON']:
@@ -168,8 +177,13 @@ def reshape_to_annual(
     seasonal_data = []
 
     for i, season in enumerate(['DJF', 'MAM', 'JJA', 'SON', 'DJF']):
+
+        # read in values for all seasons from DJF the previous year to DJF the
+        # following year
         fp = (BCSD_pattern_files
-                    .format(year=year+(i//4), **{k: v for k, v in metadata.items() if k != 'year'})
+                    .format(
+                        year=year+(i//4),
+                        **{k: v for k, v in metadata.items() if k != 'year'})
                     .format(season=season))
 
         if not os.path.isfile(fp):
@@ -195,7 +209,22 @@ def reshape_to_annual(
 
     ds = ds.sel(time=ds['time.year'] == year)
 
-    return ds
+    # Update netCDF metadata
+    logger.debug('{} udpate metadata'.format(model))
+    ds.attrs.update(**{
+        k: str(v) for k, v in metadata.items() if k in INCLUDED_METADATA})
+
+    ds.attrs.update(ADDITIONAL_METADATA)
+
+    if interactive:
+        return ds
+
+    # Write output
+    logger.debug('attempting to write to file: {}'.format(write_file))
+    if not os.path.isdir(os.path.dirname(write_file)):
+        os.makedirs(os.path.dirname(write_file))
+
+    ds.to_netcdf(write_file)
 
 
 if __name__ == '__main__':
