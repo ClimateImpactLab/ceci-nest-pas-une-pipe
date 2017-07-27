@@ -153,9 +153,13 @@ def reshape_to_annual(
     seasonal_baselines = {}
     for season in ['DJF', 'MAM', 'JJA', 'SON']:
         basef = baseline_file.format(season=season)
-        seasonal_baselines[season] = load_baseline(
-            basef,
-            source_variable)
+        seasonal_baselines[season] = (
+            load_baseline(
+                basef,
+                source_variable)
+            .set_coords('lat')
+            .set_coords('lon')
+            .swap_dims({'nlat': 'lat', 'nlon': 'lon'}))
 
     seasonal_data = []
 
