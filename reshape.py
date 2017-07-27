@@ -33,8 +33,7 @@ BCSD_pattern_files = (
 
 WRITE_PATH = (
     '/global/scratch/mdelgado/nasa_bcsd/SMME_formatted/{scenario}/{model}/' +
-    '{source_variable}/' +
-    '{source_variable}_SMME-formatted_{scenario}_{model}_{year}.nc')
+    '{source_variable}/{year}/{version}.nc')
 
 description = '\n\n'.join(
         map(lambda s: ' '.join(s.split('\n')),
@@ -124,8 +123,9 @@ INCLUDED_METADATA = [
 def reshape_days_to_datetime(surrogate, year, season):
     import xarray as xr
     import pandas as pd
+    import numpy as np
 
-    return (
+    ds = (
         surrogate.assign_coords(
                 time=xr.DataArray(
                     pd.period_range(
@@ -138,6 +138,8 @@ def reshape_days_to_datetime(surrogate, year, season):
                     dims=('day',)))
             .swap_dims({'day': 'time'})
             .drop('day'))
+
+    return ds
 
 
 @utils.slurm_runner(filepath=__file__, job_spec=JOB_SPEC)
@@ -156,6 +158,8 @@ def reshape_to_annual(
     import xarray as xr
     import numpy as np
     from climate_toolbox import (load_baseline, load_bcsd)
+
+    metadata.update(ADDITIONAL_METADATA)
 
     baseline_file = BASELINE_FILE.format(**metadata)
     write_file = WRITE_PATH.format(**metadata)
@@ -219,6 +223,9 @@ def reshape_to_annual(
 
     logger.debug('combining data sets')
     ds = xr.concat(seasonal_data, 'time')
+
+    # correct for pandas 20.0 + PeriodIndex incompatability
+    ds['time'] = np.array(map(np.datetime64, ds.time.values))
 
     # pandas 20.0 compatible 
     ds = ds.sel(time=(np.vectorize(lambda t: t.year)(ds.time) == year))
