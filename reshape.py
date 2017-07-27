@@ -123,7 +123,6 @@ INCLUDED_METADATA = [
 def reshape_days_to_datetime(surrogate, year, season):
     import xarray as xr
     import pandas as pd
-    import numpy as np
 
     ds = (
         surrogate.assign_coords(
@@ -225,7 +224,7 @@ def reshape_to_annual(
     ds = xr.concat(seasonal_data, 'time')
 
     # correct for pandas 20.0 + PeriodIndex incompatability
-    ds['time'] = np.array(map(np.datetime64, ds.time.values))
+    ds['time'].values = ds.time.values.astype(np.dtype('datetime64[ns]'))
 
     # pandas 20.0 compatible 
     ds = ds.sel(time=(np.vectorize(lambda t: t.year)(ds.time) == year))
