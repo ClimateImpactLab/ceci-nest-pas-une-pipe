@@ -107,13 +107,12 @@ SSP = [dict(ssp='SSP' + str(i)) for i in range(1,6)]
 
 ECONMODEL = [dict(econ_model='low'), dict(econ_model='high')]
 
-
 #we want to do a realization of all models for the periods at a given set of periods
 JOB_SPEC = [PERIODS, MODELS, SSP, ECONMODEL]
 
 
 
-def mortality_annual(gammas_path, baseline_climate_path, gdp_data_path, ssp, econ_model,annual_climate_path, write_path, year=None):
+def mortality_annual(gammas_path, baseline_climate_path, gdp_data_path, ssp, econ_model,annual_climate_paths, write_path, year=None):
     '''
     Calculates the IR level daily/annual effect of temperature on Mortality Rates
 
@@ -144,7 +143,7 @@ def mortality_annual(gammas_path, baseline_climate_path, gdp_data_path, ssp, eco
 
 
     betas = compute_betas(baseline_climate_path,gdp_data_path, gammas_path, ssp, econ_model)
-    climate = get_annual_climate(annual_climate_path,year, 4)
+    climate = get_annual_climate(annual_climate_paths,year, 4)
 
     impact = xr.Dataset()
     
@@ -159,12 +158,13 @@ def run_job(metadata,
             year, 
             scenario,
             econ_model,
+            variable
             ssp):
 
 
     
     write_file = WRITE_PATH.format(scenario=scenario, econ_model=econ_model, ssp=ssp, model=model, year=year)
-    annual_climate_path = CLIMATE_FILE.format(scenario=scenario, model=model, year=year)
+    annual_climate_paths = CLIMATE_FILE.format(variable=variable, scenario=scenario, model=model, year=year)
     baseline_climate_path = BASELINE_CLIMATE.format(model=model)
 
 
@@ -173,7 +173,7 @@ def run_job(metadata,
 
 
     logger.debug('calculating impact for {} {} {} {} {} '.format(scenario, model, ssp, econ_model, year))
-    impact_ds = mortality_annual(GAMMAS_FILE, baseline_climate_path, annual_climate_path, GDP_FILE, year)
+    impact_ds = mortality_annual(GAMMAS_FILE, baseline_climate_path, annual_climate_paths, GDP_FILE, year)
 
     logger.debug('udpate metadata for impact calculation {} {} {} '.format(scenario,model, year))
     impact_ds.attrs.update(ADDITIONAL_METADATA)

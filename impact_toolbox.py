@@ -314,7 +314,7 @@ def compute_betas(clim_path, gdp_path, gammas_path, base_year=None,rolling_windo
     print('Completing compute_betas: {}'.format(t2 - t1))
     return betas
 
-def get_annual_climate(model_path, year, polymomial):
+def get_annual_climate(model_paths, year, polymomial):
     '''
     models_paths: list
         list of strings to temperature variables for that year
@@ -323,15 +323,15 @@ def get_annual_climate(model_path, year, polymomial):
 
     '''
     t1 =time.time()
-    print(model_path.format(poly='',year=year))
+    print(model_paths.format(poly='',year=year))
 
-    dataset = [xr.open_dataset(model_path.format(poly='',year=year))]
+    dataset = [xr.open_dataset(model_paths.format(poly='',year=year))]
     
 
 
 
     for poly in range(2, polymomial+1):
-        dataset.append(xr.open_dataset(model_path.format(poly='-poly-{}'.format(poly),year=year)))
+        dataset.append(xr.open_dataset(model_paths.format(poly='-poly-{}'.format(poly),year=year)))
 
     ds = xr.merge(dataset)
 
