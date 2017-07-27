@@ -150,6 +150,7 @@ def reshape_to_annual(
         interactive=False):
 
     import xarray as xr
+    import numpy as np
     from climate_toolbox import (load_baseline, load_bcsd)
 
     baseline_file = BASELINE_FILE.format(**metadata)
