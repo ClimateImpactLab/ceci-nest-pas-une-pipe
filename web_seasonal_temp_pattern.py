@@ -20,11 +20,7 @@ from climate_toolbox import (
     load_baseline,
     weighted_aggregate_grid_to_regions)
 
-FORMAT = '%(asctime)-15s %(message)s'
-logging.basicConfig(format=FORMAT)
-
 logger = logging.getLogger('uploader')
-logger.setLevel('DEBUG')
 
 __author__ = 'Michael Delgado'
 __contact__ = 'mdelgado@rhg.com'
@@ -56,7 +52,7 @@ ADDITIONAL_METADATA = dict(
     repo='https://github.com/ClimateImpactLab/pipelines',
     file='/pipelines/climate/jobs/impactlab_website/job_pattern_bcsd_ir_slurm.py',
     execute='job_pattern_bcsd_ir_slurm.job_pattern_bcsd_ir_slurm.run_slurm()',
-    project='gcp', 
+    project='gcp',
     team='climate',
     geography='hierid',
     weighting='areawt',
@@ -94,35 +90,35 @@ PERIODS = [
     ]
 
 rcp_models = {
-    'rcp45': 
+    'rcp45':
         list(map(lambda x: dict(model=x[0], baseline_model=x[1]), [
-            ('pattern1','MRI-CGCM3'),
-            ('pattern2','GFDL-ESM2G'),
-            ('pattern3','MRI-CGCM3'),
-            ('pattern4','GFDL-ESM2G'),
-            ('pattern5','MRI-CGCM3'),
-            ('pattern6','GFDL-ESM2G'),
-            ('pattern27','GFDL-CM3'),
-            ('pattern28','CanESM2'),
-            ('pattern29','GFDL-CM3'),
-            ('pattern30','CanESM2'), 
-            ('pattern31','GFDL-CM3'), 
-            ('pattern32','CanESM2')])),
+            ('pattern1', 'MRI-CGCM3'),
+            ('pattern2', 'GFDL-ESM2G'),
+            ('pattern3', 'MRI-CGCM3'),
+            ('pattern4', 'GFDL-ESM2G'),
+            ('pattern5', 'MRI-CGCM3'),
+            ('pattern6', 'GFDL-ESM2G'),
+            ('pattern27', 'GFDL-CM3'),
+            ('pattern28', 'CanESM2'),
+            ('pattern29', 'GFDL-CM3'),
+            ('pattern30', 'CanESM2'),
+            ('pattern31', 'GFDL-CM3'),
+            ('pattern32', 'CanESM2')])),
 
     'rcp85':
         list(map(lambda x: dict(model=x[0], baseline_model=x[1]), [
-            ('pattern1','MRI-CGCM3'),
-            ('pattern2','GFDL-ESM2G'),
-            ('pattern3','MRI-CGCM3'),
-            ('pattern4','GFDL-ESM2G'),
-            ('pattern5','MRI-CGCM3'),
-            ('pattern6','GFDL-ESM2G'),
-            ('pattern28','GFDL-CM3'),
-            ('pattern29','CanESM2'),
-            ('pattern30','GFDL-CM3'),
-            ('pattern31','CanESM2'), 
-            ('pattern32','GFDL-CM3'), 
-            ('pattern33','CanESM2')]))}
+            ('pattern1', 'MRI-CGCM3'),
+            ('pattern2', 'GFDL-ESM2G'),
+            ('pattern3', 'MRI-CGCM3'),
+            ('pattern4', 'GFDL-ESM2G'),
+            ('pattern5', 'MRI-CGCM3'),
+            ('pattern6', 'GFDL-ESM2G'),
+            ('pattern28', 'GFDL-CM3'),
+            ('pattern29', 'CanESM2'),
+            ('pattern30', 'GFDL-CM3'),
+            ('pattern31', 'CanESM2'),
+            ('pattern32', 'GFDL-CM3'),
+            ('pattern33', 'CanESM2')]))}
 
 MODELS = []
 
@@ -159,9 +155,6 @@ def run_job(
         aggwt,
         weights=None):
 
-    logger.debug('Beginning job\nkwargs:\t{}'.format(
-        pprint.pformat(metadata, indent=2)))
-
     # Add to job metadata
     metadata.update(dict(
         time_horizon='{}-{}'.format(years[0], years[-1])))
@@ -170,6 +163,10 @@ def run_job(
     pattern_file = BCSD_pattern_files.format(**metadata)
     write_file = WRITE_PATH.format(**metadata)
     
+    # do not duplicate
+    if os.path.isfile(write_file):
+        return
+
     # do not duplicate
     if os.path.isfile(write_file):
         return
@@ -183,7 +180,7 @@ def run_job(
         pattf = pattern_file.format(year=year)
         logger.debug('attempting to load pattern file: {}'.format(pattf))
         annual = load_bcsd(pattf, variable, broadcast_dims=('day',))
-        
+
         logger.debug('{} {} - applying transform'.format(model, year))
         annual = xr.Dataset({
             variable: annual.pipe(transformation)})
@@ -209,6 +206,7 @@ def run_job(
     # Update netCDF metadata
     logger.debug('{} udpate metadata'.format(model))
     ds.attrs.update(**metadata)
+    ds.attrs.update(**ADDITIONAL_METADATA)
 
     # Write output
     logger.debug('attempting to write to file: {}'.format(write_file))
@@ -225,8 +223,7 @@ main = utils.slurm_runner(
     filepath=__file__,
     job_spec=JOB_SPEC,
     run_job=run_job,
-    onfinish=onfinish,
-    additional_metadata=ADDITIONAL_METADATA)
+    onfinish=onfinish)
 
 if __name__ == '__main__':
     main()

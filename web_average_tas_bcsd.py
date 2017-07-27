@@ -24,11 +24,7 @@ from climate_toolbox import (
     load_baseline,
     weighted_aggregate_grid_to_regions)
 
-FORMAT = '%(asctime)-15s %(message)s'
-logging.basicConfig(format=FORMAT)
-
 logger = logging.getLogger('uploader')
-logger.setLevel('DEBUG')
 
 __author__ = 'Michael Delgado'
 __contact__ = 'mdelgado@rhg.com'
@@ -58,7 +54,7 @@ ADDITIONAL_METADATA = dict(
     repo='https://github.com/ClimateImpactLab/ceci-nest-pas-une-pipe',
     file='/web_temp_extremes.py',
     execute='python web_temp_extremes.py --run',
-    project='gcp', 
+    project='gcp',
     team='climate',
     geography='hierid',
     weighting='areawt',
@@ -184,9 +180,6 @@ def run_job(
     metadata.update(dict(
         time_horizon='{}-{}'.format(years[0], years[-1])))
 
-    logger.debug('Beginning job:\n\tkwargs:\t{}'.format(
-        pprint.pformat(metadata, indent=2)))
-
     read_file = BCSD_orig_files.format(**metadata)
     write_file = WRITE_PATH.format(**metadata)
     
@@ -194,12 +187,16 @@ def run_job(
     if os.path.isfile(write_file):
         return
 
+    # do not duplicate
+    if os.path.isfile(write_file):
+        return
+
     # Get transformed data
     annual = []
     for y in years:
-        
+
         fp = read_file.format(year=y)
-        
+
         logging.debug('year {} - attempting to read file "{}"'.format(y, fp))
         annual.append(
             load_bcsd(fp, variable, broadcast_dims=('time',))
@@ -209,7 +206,7 @@ def run_job(
     ds = xr.Dataset({
         variable: xr.concat(annual, dim=pd.Index(years, name='year'))
                         .mean(dim='year')})
-    
+
     # Reshape to regions
     if not agglev.startswith('grid'):
         logger.debug('aggregating to "{}" using "{}"'.format(agglev, aggwt))
@@ -218,6 +215,7 @@ def run_job(
 
     # Update netCDF metadata
     ds.attrs.update(**metadata)
+    ds.attrs.update(**ADDITIONAL_METADATA)
 
     # Write output
     if not os.path.isdir(os.path.dirname(write_file)):
@@ -237,42 +235,11 @@ def onfinish():
     logger.info('all done!')
 
 
-def job_test_filepaths(
-        metadata,
-        variable,
-        transformation_name,
-        transformation,
-        unit,
-        read_acct,
-        rcp,
-        pername,
-        years,
-        model,
-        baseline_model,
-        seasons,
-        agglev,
-        aggwt,
-        weights=None):
-
-    # make sure the input data exist
-
-    read_file = BCSD_orig_files.format(**metadata)
-
-    for y in years:
-        fp = read_file.format(year=y)
-        assert os.path.isfile(fp), "No such file: '{}'".format(fp)
-    
-    # make sure the output file has sufficient metadata
-    WRITE_PATH.format(**metadata)
-
-
 main = utils.slurm_runner(
     filepath=__file__,
     job_spec=JOB_SPEC,
     run_job=run_job,
-    test_job=job_test_filepaths,
-    onfinish=onfinish,
-    additional_metadata=ADDITIONAL_METADATA)
+    onfinish=onfinish)
 
 
 if __name__ == '__main__':
