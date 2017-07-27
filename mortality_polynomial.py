@@ -107,10 +107,9 @@ SSP = [dict(ssp='SSP' + str(i)) for i in range(1,6)]
 
 ECONMODEL = [dict(econ_model='low'), dict(econ_model='high')]
 
-poly = [dict(poly=i) for i in range(2,5)]
 
 #we want to do a realization of all models for the periods at a given set of periods
-JOB_SPEC = [PERIODS, MODELS, SSP, ECONMODEL, poly]
+JOB_SPEC = [PERIODS, MODELS, SSP, ECONMODEL]
 
 
 
