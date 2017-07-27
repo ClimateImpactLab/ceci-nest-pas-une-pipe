@@ -207,9 +207,8 @@ def reshape_to_annual(
 
     ds = xr.concat(seasonal_data, 'time')
 
-    return ds
-
-    ds = ds.sel(time=ds['time.year'] == year)
+    # pandas 20.0 compatible 
+    ds = ds.sel(time=(np.vectorize(lambda t: t.year)(ds.time) == year))
 
     # Update netCDF metadata
     logger.debug('{} udpate metadata'.format(model))
