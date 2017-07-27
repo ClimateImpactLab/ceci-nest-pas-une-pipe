@@ -172,7 +172,7 @@ def run_job(metadata,
 
 
     logger.debug('calculating impact for {} {} {} {} {} '.format(scenario, model, ssp, econ_model, year))
-    impact_ds = mortality_annual(GAMMAS_FILE, baseline_climate_path, annual_climate_paths, GDP_FILE, year)
+    impact_ds = mortality_annual(GAMMAS_FILE, baseline_climate_path, GDP_FILE, ssp, econ_model, annual_climate_paths, write_file, year)
 
     logger.debug('udpate metadata for impact calculation {} {} {} '.format(scenario,model, year))
     impact_ds.attrs.update(ADDITIONAL_METADATA)
