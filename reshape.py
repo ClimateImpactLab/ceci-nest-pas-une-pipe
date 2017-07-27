@@ -153,13 +153,17 @@ def reshape_to_annual(
     seasonal_baselines = {}
     for season in ['DJF', 'MAM', 'JJA', 'SON']:
         basef = baseline_file.format(season=season)
-        seasonal_baselines[season] = (
-            load_baseline(
-                basef,
-                source_variable)
-            .set_coords('lat')
-            .set_coords('lon')
-            .swap_dims({'nlat': 'lat', 'nlon': 'lon'}))
+
+        with xr.open_dataset(basef) as ds:
+            ds.load()
+
+        if 'nlat' in ds.dims and 'lat' in ds.data_vars:
+            ds = ds.set_coords('lat').swap_dims({'nlat': 'lat'})
+        
+        if 'nlon' in ds.dims and 'lon' in ds.data_vars:
+            ds = ds.set_coords('lon').swap_dims({'nlon': 'lon'})
+
+        seasonal_baselines[season] = load_baseline(ds, source_variable)
 
     seasonal_data = []
 
@@ -174,6 +178,8 @@ def reshape_to_annual(
 
         with xr.open_dataset(fp) as ds:
             ds.load()
+        
+        ds = load_bcsd(ds, source_variable, broadcast_dims=('day',))
 
         # drop invalid value from DataArray
         ds[source_variable] = (
