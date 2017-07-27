@@ -305,9 +305,15 @@ def compute_betas(clim_path, gdp_path, gammas_path, ssp, econ_model):
     betas = xr.Dataset()
 
     betas['tas'] = (gammas['beta0_pow1'] + gammas['gdp_pow1'] * covars['gdp'] + gammas['tavg_pow1']*covars['tavg'])
+    print(betas['tas'])
     betas['tas-poly-2'] = (gammas['beta0_pow2'] + gammas['gdp_pow2'] * covars['gdp'] + gammas['tavg_pow2']*covars['tavg'])
+    print(betas['tas-poly-2'])
     betas['tas-poly-3'] = (gammas['beta0_pow3'] + gammas['gdp_pow3'] * covars['gdp'] + gammas['tavg_pow3']*covars['tavg'])
+    print(betas['tas-poly-3'])
     betas['tas-poly-4'] = (gammas['beta0_pow4'] + gammas['gdp_pow4'] * covars['gdp'] + gammas['tavg_pow4']*covars['tavg'])
+    print(betas['tas-poly-4'])
+
+
 
     t2 = time.time()
     print('Completing compute_betas: {}'.format(t2 - t1))
