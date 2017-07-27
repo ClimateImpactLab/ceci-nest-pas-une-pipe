@@ -18,7 +18,7 @@ logger.setLevel('DEBUG')
 
 __author__ = 'Michael Delgado'
 __contact__ = 'mdelgado@rhg.com'
-__version__ = '1.5'
+__version__ = '1.0'
 
 BASELINE_FILE = (
     '/global/scratch/jiacany/nasa_bcsd/pattern/baseline/' +
@@ -54,8 +54,7 @@ ADDITIONAL_METADATA = dict(
     project='gcp',
     team='climate',
     probability_method='SMME',
-    frequency='daily',
-    dependencies='climate-tas-NASA_BCSD-originals.1.0')
+    frequency='daily')
 
 # Calibration data
 season_month_start = {'DJF': 12, 'MAM': 3, 'JJA': 6, 'SON': 9}
@@ -63,9 +62,13 @@ years = range(1982, 2100)
 INVALID = 9.969209968386869e+36  # invalid data found in pattern data sets
 
 JOBS = [
-    {'source_variable': 'tas', 'units': 'Kelvin'},
-    {'source_variable': 'tasmin', 'units': 'Kelvin'},
-    {'source_variable': 'tasmax', 'units': 'Kelvin'}]
+    {
+        'source_variable': var,
+        'units': 'Kelvin',
+        'dependencies': [
+            'climate-{}-BCSD.SMME_surrogate.2017-03-21'.format(var),
+            'climate-{}-BCSD.residual.2017-01-30'.format(var)]}
+    for var in ['tas', 'tasmin', 'tasmax']]
 
 PERIODS = (
     [dict(scenario='rcp45', read_acct='mdelgado', year=y) for y in years] +
@@ -115,7 +118,7 @@ JOB_SPEC = (JOBS, MODELS)
 
 INCLUDED_METADATA = [
     'variable', 'source_variable', 'units', 'scenario',
-    'year', 'model', 'agglev', 'aggwt']
+    'year', 'model', 'dependencies']
 
 
 def reshape_days_to_datetime(surrogate, year, season):
@@ -146,6 +149,7 @@ def reshape_to_annual(
         year,
         model,
         read_acct,
+        dependencies,
         baseline_model,
         interactive=False):
 
