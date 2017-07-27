@@ -8,7 +8,6 @@ calendar (leap years excluded).
 '''
 
 import os
-import pprint
 import logging
 
 import utils
@@ -199,7 +198,8 @@ def run_job(
         baseline_model,
         agglev,
         aggwt,
-        weights=None):
+        weights=None,
+        interactive=False):
 
     import xarray as xr
     import pandas as pd
@@ -207,9 +207,6 @@ def run_job(
         load_bcsd,
         load_baseline,
         weighted_aggregate_grid_to_regions)
-
-    logger.debug('Beginning job\nkwargs:\t{}'.format(
-        pprint.pformat(metadata, indent=2)))
 
     # Add to job metadata
     metadata.update(ADDITIONAL_METADATA)
@@ -280,6 +277,9 @@ def run_job(
         k: str(v) for k, v in metadata.items() if k in INCLUDED_METADATA})
 
     ds.attrs.update(ADDITIONAL_METADATA)
+
+    if interactive:
+        return ds
 
     # Write output
     logger.debug('attempting to write to file: {}'.format(write_file))
