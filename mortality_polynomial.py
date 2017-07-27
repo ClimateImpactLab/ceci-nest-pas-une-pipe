@@ -161,7 +161,8 @@ def run_job(metadata,
             year, 
             scenario,
             econ_model,
-            ssp):
+            ssp, 
+            interactive=False):
 
 
     
@@ -187,6 +188,8 @@ def run_job(metadata,
         os.makedirs(os.path.dirname(write_file))
     
 
+    if interactive:
+        return impact_ds
     impact_ds.to_netcdf(write_file)
 
 
