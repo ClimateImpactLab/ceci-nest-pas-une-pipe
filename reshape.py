@@ -207,6 +207,8 @@ def reshape_to_annual(
 
     ds = xr.concat(seasonal_data, 'time')
 
+    return ds
+
     ds = ds.sel(time=ds['time.year'] == year)
 
     # Update netCDF metadata
