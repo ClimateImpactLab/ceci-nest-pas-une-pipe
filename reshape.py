@@ -172,7 +172,7 @@ def reshape_to_annual(
         with xr.open_dataset(basef) as ds:
             ds.load()
 
-        logger.debug('year {} season {} - reshaping baseline'.format(year, season, fp))
+        logger.debug('year {} season {} - reshaping baseline'.format(year, season, basef))
 
         if 'nlat' in ds.dims and 'lat' in ds.data_vars:
             ds = ds.set_coords('lat').swap_dims({'nlat': 'lat'})
