@@ -39,7 +39,7 @@ CLIMATE_FILE = (
     '/global/scratch/mdelgado/projection/gcp/climate/hierid/popwt/daily/' +
     'tas{poly}/{scenario}/{model}/{year}/1.5.nc4')
 
-GDP_FILE = ('/global/scratch/jsimcock/data_files/covars/gdppc-merged-baseline.csv')
+GDP_FILE = ('/global/scratch/jsimcock/data_files/gdppc-merged-baseline.csv')
 
 GAMMAS_FILE = ('/global/scratch/jsimcock/data_files/covars/' + 
                 'global_interaction_Tmean-POLY-4-AgeSpec.csvv')
