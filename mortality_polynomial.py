@@ -163,7 +163,7 @@ def run_job(metadata,
 
 
     
-    write_file = WRITE_PATH.format(scenario=scenario, model=model, year=year)
+    write_file = WRITE_PATH.format(scenario=scenario, econ_model=econ_model, ssp=ssp, model=model, year=year)
     annual_climate_path = CLIMATE_FILE.format(poly=poly, scenario=scenario, model=model, year=year)
     baseline_climate_path = BASELINE_CLIMATE.format(model=model)
 
