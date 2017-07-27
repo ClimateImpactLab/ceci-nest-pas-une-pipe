@@ -12,7 +12,7 @@ import pandas as pd
 import xarray as xr
 import logging
 
-from climate_toolbox import load_baseline
+from climate_toolbox import (load_baseline, load_bcsd)
 
 FORMAT = '%(asctime)-15s %(message)s'
 logging.basicConfig(format=FORMAT)
