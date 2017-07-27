@@ -168,8 +168,11 @@ def reshape_to_annual(
     for season in ['DJF', 'MAM', 'JJA', 'SON']:
         basef = baseline_file.format(season=season)
 
+        logger.debug('year {} season {} - attempting to read baseline file "{}"'.format(year, season, basef))
         with xr.open_dataset(basef) as ds:
             ds.load()
+
+        logger.debug('year {} season {} - reshaping baseline'.format(year, season, fp))
 
         if 'nlat' in ds.dims and 'lat' in ds.data_vars:
             ds = ds.set_coords('lat').swap_dims({'nlat': 'lat'})
@@ -192,31 +195,50 @@ def reshape_to_annual(
                     .format(season=season))
 
         if not os.path.isfile(fp):
-            print('skipping {}'.format(fp))
+            logger.debug('year {} season {} - no pattern file "{}" found. skipping.'.format(year, season, fp))
             continue
 
+        logger.debug('year {} season {} - attempting to read pattern file "{}"'.format(year, season, fp))
         with xr.open_dataset(fp) as ds:
             ds.load()
         
+        logger.debug('year {} season {} - reshaping pattern'.format(year, season, fp))
         ds = load_bcsd(ds, source_variable, broadcast_dims=('day',))
 
         # drop invalid value from DataArray
+        logger.debug('year {} season {} - dropping invalid values in pattern'.format(year, season, fp))
         ds[source_variable] = (
             ds[source_variable].where(ds[source_variable] != INVALID))
 
         msg = "value out of bounds (100) in file {}".format(fp)
         assert (ds[source_variable].fillna(0) < 100).all(), msg
 
+        logger.debug('year {} season {} - reshaping days to datetime in pattern'.format(year, season, fp))
         patt = reshape_days_to_datetime(ds, year+(i//4), season)            
         seasonal_data.append(patt + seasonal_baselines[season])
 
+    logger.debug('combining data sets')
     ds = xr.concat(seasonal_data, 'time')
 
     # pandas 20.0 compatible 
     ds = ds.sel(time=(np.vectorize(lambda t: t.year)(ds.time) == year))
 
+    # check for expected dimensions. should be missing Jan+Feb 1981, Dec 2099.
+    # we also expect to be missing all leap years.
+    msg = 'unexpected dimensions: {}'.format(ds.dims)
+    if year > 1981 and year < 2099:
+        assert ds.dims == {'time': 365, 'lon': 1440, 'lat': 720}, msg
+    elif year == 1981:
+        assert ds.dims == {'time': 306, 'lon': 1440, 'lat': 720}, msg
+    elif year == 2099:
+        assert ds.dims == {'time': 334, 'lon': 1440, 'lat': 720}, msg
+    else:
+        raise ValueError(
+            "I didn't realize we had downscaled the 22nd century!!" +
+            "\nyear: {}\ndims:{}".format(year, ds.dims))
+
     # Update netCDF metadata
-    logger.debug('{} udpate metadata'.format(model))
+    logger.debug('udpating metadata')
     ds.attrs.update(**{
         k: str(v) for k, v in metadata.items() if k in INCLUDED_METADATA})
 
@@ -231,6 +253,8 @@ def reshape_to_annual(
         os.makedirs(os.path.dirname(write_file))
 
     ds.to_netcdf(write_file)
+
+    logger.debug('job done')
 
 
 if __name__ == '__main__':
