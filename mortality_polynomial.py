@@ -154,7 +154,8 @@ def mortality_annual(gammas_path, baseline_climate_path, gdp_data_path, ssp, eco
     return impact
 
   
-def run_job(model,
+def run_job(metadata,
+            model,
             year, 
             scenario,
             econ_model, 
