@@ -179,7 +179,7 @@ def reshape_to_annual(
         assert (ds[source_variable].fillna(0) < 100).all(), msg
 
         patt = reshape_days_to_datetime(ds, year+(i//4), season)            
-        seasonal_data.append(patt + seasonal_baselines[season] + 273.15)
+        seasonal_data.append(patt + seasonal_baselines[season])
 
     ds = xr.concat(seasonal_data, 'time')
 
