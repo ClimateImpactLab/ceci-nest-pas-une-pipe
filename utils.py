@@ -282,7 +282,7 @@ def _get_call_args(job_spec, index=0):
     return call_args
 
 @toolz.curry
-def slurm_runner(filepath, job_spec, run_job, onfinish=None):
+def slurm_runner(run_job, filepath, job_spec, onfinish=None):
 
     @click.group()
     def slurm():

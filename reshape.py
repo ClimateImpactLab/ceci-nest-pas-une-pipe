@@ -10,9 +10,19 @@ import utils
 import numpy as np
 import pandas as pd
 import xarray as xr
-
+import logging
 
 from climate_toolbox import load_baseline
+
+FORMAT = '%(asctime)-15s %(message)s'
+logging.basicConfig(format=FORMAT)
+
+logger = logging.getLogger('uploader')
+logger.setLevel('DEBUG')
+
+__author__ = 'Michael Delgado'
+__contact__ = 'mdelgado@rhg.com'
+__version__ = '1.5'
 
 BASELINE_FILE = (
     '/global/scratch/jiacany/nasa_bcsd/pattern/baseline/' +
@@ -54,6 +64,11 @@ ADDITIONAL_METADATA = dict(
 season_month_start = {'DJF': 12, 'MAM': 3, 'JJA': 6, 'SON': 9}
 years = range(1982, 2100)
 INVALID = 9.969209968386869e+36  # invalid data found in pattern data sets
+
+JOBS = [
+    {'source_variable': 'tas', 'units': 'Kelvin'},
+    {'source_variable': 'tasmin', 'units': 'Kelvin'},
+    {'source_variable': 'tasmax', 'units': 'Kelvin'}]
 
 PERIODS = (
     [dict(scenario='rcp45', read_acct='mdelgado', year=y) for y in years] +
@@ -99,7 +114,7 @@ for spec in PERIODS:
         job.update(model)
         MODELS.append(job)
 
-JOB_SPEC = (MODELS, )
+JOB_SPEC = (JOBS, MODELS)
 
 INCLUDED_METADATA = [
     'variable', 'source_variable', 'units', 'scenario',
@@ -108,37 +123,32 @@ INCLUDED_METADATA = [
 
 def reshape_days_to_datetime(surrogate, year, season):
     return (
-                surrogate.assign_coords(
-                        time=xr.DataArray(
-                            pd.period_range(
-                                '{}-{}-1'.format(
-                                    year-int(season == 'DJF'),
-                                    season_month_start[season]),
-                                periods=len(surrogate.day),
-                                freq='D'),
-                            coords={'day': surrogate.day},
-                            dims=('day',)))
-                    .swap_dims({'day': 'time'})
-                    .drop('day'))
+        surrogate.assign_coords(
+                time=xr.DataArray(
+                    pd.period_range(
+                        '{}-{}-1'.format(
+                            year-int(season == 'DJF'),
+                            season_month_start[season]),
+                        periods=len(surrogate.day),
+                        freq='D'),
+                    coords={'day': surrogate.day},
+                    dims=('day',)))
+            .swap_dims({'day': 'time'})
+            .drop('day'))
 
 
 @utils.slurm_runner(filepath=__file__, job_spec=JOB_SPEC)
 def reshape_to_annual(
         metadata,
-        variable,
         source_variable,
         units,
-        transformation,
         scenario,
         year,
         model,
         read_acct,
-        baseline_model,
-        agglev,
-        aggwt,
-        weights=None):
+        baseline_model):
 
-    baseline_file = BASELINE_FILE.format(baseline_model=baseline_model, **kwargs)
+    baseline_file = BASELINE_FILE.format(**metadata)
 
     seasonal_baselines = {}
     for season in ['DJF', 'MAM', 'JJA', 'SON']:
@@ -151,7 +161,7 @@ def reshape_to_annual(
 
     for i, season in enumerate(['DJF', 'MAM', 'JJA', 'SON', 'DJF']):
         fp = (BCSD_pattern_files
-                    .format(year=year+(i//4), **kwargs)
+                    .format(year=year+(i//4), **{k: v for k, v in metadata.items() if k != 'year'})
                     .format(season=season))
 
         if not os.path.isfile(fp):
@@ -169,7 +179,7 @@ def reshape_to_annual(
         assert (ds[source_variable].fillna(0) < 100).all(), msg
 
         patt = reshape_days_to_datetime(ds, year+(i//4), season)            
-        seasonal_data.append(patt + seasonal_baselines[season])
+        seasonal_data.append(patt + seasonal_baselines[season] + 273.15)
 
     ds = xr.concat(seasonal_data, 'time')
 
