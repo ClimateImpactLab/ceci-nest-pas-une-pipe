@@ -153,6 +153,8 @@ def mortality_annual(gammas_path, baseline_climate_path, gdp_data_path, ssp, eco
     impact['mortality_impact'] = (betas['tas']*climate['tas'] + betas['tas-poly-2']*climate['tas-poly-2'] + 
             betas['tas-poly-3']*climate['tas-poly-3'] + betas['tas-poly-4']*climate['tas-poly-4'])
 
+    impact = impact.sum(dim='time')
+
     return impact
 
   

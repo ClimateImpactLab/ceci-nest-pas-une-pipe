@@ -340,6 +340,7 @@ def get_annual_climate(model_paths, year, polymomial):
 
     ds = xr.merge(dataset)
 
+    ds.load()
     t2 = time.time()
     print('get_climate_paths: {}'.format(t2 -t1))
     return ds
