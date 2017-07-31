@@ -21,6 +21,7 @@ from impact_toolbox import (
         get_annual_climate,
         )
 
+from jrnr import slurm_runner
 
 FORMAT = '%(asctime)-15s %(message)s'
 logging.basicConfig(format=FORMAT)
@@ -111,7 +112,6 @@ ECONMODEL = [dict(econ_model='low'), dict(econ_model='high')]
 JOB_SPEC = [PERIODS, MODELS, SSP, ECONMODEL]
 
 
-
 def mortality_annual(gammas_path, baseline_climate_path, gdp_data_path, ssp, econ_model,annual_climate_paths, write_path, year=None):
     '''
     Calculates the IR level daily/annual effect of temperature on Mortality Rates
@@ -157,7 +157,7 @@ def mortality_annual(gammas_path, baseline_climate_path, gdp_data_path, ssp, eco
 
     return impact
 
-  
+@slurm_runner(filepath=__file__,job_spec=JOB_SPEC)
 def run_job(metadata,
             model,
             year, 
@@ -192,22 +192,17 @@ def run_job(metadata,
 
     if interactive:
         return impact_ds
-    impact_ds.to_netcdf(write_file)
+    impact_ds.to_netcdf(write_file + '~')
+
+    os.rename(write_file+'~', write_file)
 
 
 
-def onfinish():
-    print('done!')
 
 
-main = utils.slurm_runner(
-    filepath=__file__,
-    job_spec=JOB_SPEC,
-    run_job=run_job,
-    onfinish=onfinish)
 
 if __name__ == '__main__':
-    main()
+    run_job()
     
 
 
