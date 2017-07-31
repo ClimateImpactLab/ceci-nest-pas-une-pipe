@@ -355,7 +355,7 @@ def get_annual_climate(model_paths, year, polymomial):
         with xr.open_dataset(fp) as ds:
             ds.load()
 
-        varname = ds.data_vars()[0]
+        varname = ds.variable
         dataset[varname] = ds[varname]
     t2 = time.time()
     print('get_climate_paths: {}'.format(t2 -t1))
