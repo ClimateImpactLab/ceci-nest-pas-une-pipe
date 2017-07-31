@@ -23,7 +23,6 @@ version 1.0 - initial release
 '''
 
 import os
-import pprint
 import logging
 
 import utils
@@ -195,6 +194,11 @@ INCLUDED_METADATA = [
     'year', 'model', 'agglev', 'aggwt']
 
 
+def onfinish():
+    logger.info('all done!')
+
+
+@utils.slurm_runner(filepath=__file__, job_spec=JOB_SPEC, onfinish=onfinish)
 def run_job(
         metadata,
         variable,
@@ -207,7 +211,8 @@ def run_job(
         model,
         agglev,
         aggwt,
-        weights=None):
+        weights=None,
+        interactive=False):
 
     import xarray as xr
     import metacsv
@@ -229,15 +234,15 @@ def run_job(
         return
 
     # Get transformed data
-    fp = read_file.format(year=year)
-
-    with xr.open_dataset(fp) as ds:
+    with xr.open_dataset(read_file) as ds:
         ds.load()
 
-    file_dependencies[os.path.splitext(os.path.basename(fp))[0]] = (
+    file_dependencies[os.path.splitext(os.path.basename(read_file))[0]] = (
         str(ds.attrs.get('version', '1.0')))
 
-    logger.debug('year {} - attempting to read file "{}"'.format(year, fp))
+    logger.debug(
+        'year {} - attempting to read file "{}"'.format(year, read_file))
+
     ds = (
             load_bcsd(ds, source_variable, broadcast_dims=('time',))
             .pipe(transformation))
@@ -255,16 +260,6 @@ def run_job(
         k: str(v) for k, v in metadata.items() if k in INCLUDED_METADATA})
     ds.attrs.update(ADDITIONAL_METADATA)
 
-    # Write output
-    if not os.path.isdir(os.path.dirname(write_file)):
-        logger.debug(
-            'attempting to create_directory "{}"'
-            .format(os.path.dirname(write_file)))
-
-        os.makedirs(os.path.dirname(write_file))
-
-    logger.debug('attempting to write to file "{}"'.format(write_file))
-
     attrs = dict(ds.attrs)
     attrs['file_dependencies'] = file_dependencies
 
@@ -274,6 +269,19 @@ def run_job(
         if ds[var].dims == ('hierid', 'time'):
             ds[var] = ds[var].transpose('time', 'hierid')
 
+    if interactive:
+        return ds
+
+    # Write output
+
+    logger.debug('attempting to write to file "{}"'.format(write_file))
+    if not os.path.isdir(os.path.dirname(write_file)):
+        logger.debug(
+            'attempting to create_directory "{}"'
+            .format(os.path.dirname(write_file)))
+
+        os.makedirs(os.path.dirname(write_file))
+
     ds.to_netcdf(write_file)
 
     metacsv.to_header(
@@ -282,17 +290,6 @@ def run_job(
         variables=varattrs)
 
     logger.debug('job done')
-
-
-def onfinish():
-    logger.info('all done!')
-
-
-main = utils.slurm_runner(
-    filepath=__file__,
-    job_spec=JOB_SPEC,
-    run_job=run_job,
-    onfinish=onfinish)
 
 
 if __name__ == '__main__':
