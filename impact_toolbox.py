@@ -356,6 +356,8 @@ def get_annual_climate(model_paths, year, polymomial):
             ds.load()
 
         varname = ds.variable
+        print(varname)
+        print(ds)
         dataset[varname] = ds[varname]
     t2 = time.time()
     print('get_climate_paths: {}'.format(t2 -t1))
