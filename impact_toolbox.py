@@ -111,7 +111,7 @@ def compute_climate_covariates(path,base_year=None, rolling_window=None):
 
 
 
-def compute_gdp_covariates(path, ssp, econ_model,base_year=None):
+def compute_gdp_covariates(path, ssp, econ_model,base_year=2010):
     '''
     Method to calculate climate covariate
 
@@ -193,6 +193,16 @@ def gen_gdp_covariates_file(inpath, rolling_window):
     #         print(len(new_df))
     pass
 
+
+# def gen_gdp_baseline(nightlights, gdp_baseline_file, ssp, econ_model, base_year=2010):
+
+#     nlts = pd.read_csv(nightlights)
+#     base = pd.read_csv(gdp_baseline_file, skiprows=10)
+#     base= base.loc[(base['model']==econ_model) & (base['scenario'] == ssp) & (base['year'] == base_year)]
+
+    
+
+    
 
 
 def read_csvv(path):
@@ -330,20 +340,26 @@ def get_annual_climate(model_paths, year, polymomial):
     t1 =time.time()
     print(model_paths.format(poly='',year=year))
 
-    dataset = [xr.open_dataset(model_paths.format(poly='',year=year))]
+    dataset = xr.Dataset()
+
+    with xr.open_dataset(model_paths.format(poly='',year=year)) as ds:
+        ds.load()
+
+    varname = ds.data_vars()[0]
+    dataset[varname] = ds[varname]
     
 
-
-
     for poly in range(2, polymomial+1):
-        dataset.append(xr.open_dataset(model_paths.format(poly='-poly-{}'.format(poly),year=year)))
+        fp = model_paths.format(poly='-poly-{}'.format(poly),year=year)
 
-    ds = xr.merge(dataset)
+        with xr.open_dataset(fp) as ds:
+            ds.load()
 
-    ds.load()
+        varname = ds.data_vars()[0]
+        dataset[varname] = ds[varname]
     t2 = time.time()
     print('get_climate_paths: {}'.format(t2 -t1))
-    return ds
+    return dataset
 
 # def mortality_annual(gammas_path, baseline_climate_path, gdp_data_path, annual_climate_paths, write_path, year=None):
 #     '''
