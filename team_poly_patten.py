@@ -1,10 +1,12 @@
 '''
-Annual average temperature, calculated for pattern models
+Powers of daily average temperature, calculated for pattern models
 
-Values are expected annual average daily mean temperature for 20-year periods,
-aggregated to regions (impact regions/hierids or country/ISO) using
-spatial/area weights. Data is aggregated to annual values using a 365-day
-calendar (leap years excluded).
+Values are daily mean temperature raised to various powers for use in
+polynomial response functions, aggregated to impact regions/hierids using
+population weights. Data is reported at the daily level using a 365-day
+calendar (leap years excluded) in the format YYYYDDD.
+
+version 1.5 - initial release (corresponds to tas_poly_bcsd.py v1.5)
 '''
 
 import os
@@ -20,24 +22,20 @@ logger.setLevel('DEBUG')
 
 __author__ = 'Michael Delgado'
 __contact__ = 'mdelgado@rhg.com'
-__version__ = '0.1.0'
-
-BASELINE_FILE = (
-    '/global/scratch/jiacany/nasa_bcsd/pattern/baseline/' +
-    '{baseline_model}/{source_variable}/' +
-    '{source_variable}_baseline_1986-2005_r1i1p1_' +
-    '{baseline_model}_{{season}}.nc')
+__version__ = '1.5'
 
 BCSD_pattern_files = (
-    '/global/scratch/{read_acct}/nasa_bcsd/pattern/SMME_surrogate/' +
-    '{scenario}/{source_variable}/{model}/' +
-    '{source_variable}_BCSD_{model}_{scenario}_r1i1p1_{{season}}_{year}.nc')
+    '/global/scratch/{read_acct}/nasa_bcsd/SMME_formatted/{scenario}/{model}/' +
+    '{source_variable}/{year}/{source_version}.nc')
+
+BCSD_pattern_archive = (
+    'GCP/climate/nasa_bcsd/SMME_formatted/{scenario}/{model}/' +
+    '{source_variable}/{year}.nc')
 
 WRITE_PATH = (
-    '/global/scratch/mdelgado/web/gcp/climate/{scenario}/{agglev}/' +
-    '{variable}/' +
-    '{variable}_{frequency}_{unit}_{scenario}_{agglev}_' +
-    '{aggwt}_{model}_{year}.nc')
+    '/global/scratch/mdelgado/projection/gcp/climate/' +
+    '{agglev}/{aggwt}/{frequency}/{variable}/{scenario}/{model}/{year}/' +
+    '{version}.nc4')
 
 description = '\n\n'.join(
         map(lambda s: ' '.join(s.split('\n')),
@@ -52,12 +50,13 @@ ADDITIONAL_METADATA = dict(
     contact=__contact__,
     version=__version__,
     repo='https://github.com/ClimateImpactLab/ceci-nest-pas-une-pipe',
-    file='/annual_average_tas_pattern.py',
-    execute='python annual_average_tas_pattern.py --run',
+    file='/team_poly_pattern.py',
+    execute='python team_poly_pattern.py run',
     project='gcp',
     team='climate',
     probability_method='SMME',
-    frequency='daily')
+    frequency='daily',
+    dependencies='GCP-climate-nasa_bcsd-SMME_formatted.1.0')
 
 
 def ordinal(n):
@@ -84,18 +83,22 @@ def create_polynomial_transformation(power=2):
 
     powername = ordinal(power)
 
-    description = format_docstr('''
-        Daily average temperature (degrees C) raised to the {powername} power
+    description = format_docstr(('''
+            Daily average temperature (degrees C){raised}
 
-        Leap years are removed before counting days (uses a 365 day
-        calendar).
-        '''.format(powername=powername))
+            Leap years are removed before counting days (uses a 365 day
+            calendar).
+            '''.format(
+                raised='' if power == 1 else (
+                    ' raised to the {powername} power'
+                    .format(powername=powername)))).strip())
 
-    varname = 'tas-poly-{}'.format(power)
+    varname = 'tas-poly-{}'.format(power) if power > 1 else 'tas'
 
     def tas_poly(ds):
 
         import xarray as xr
+        import numpy as np
 
         ds1 = xr.Dataset()
 
@@ -104,13 +107,25 @@ def create_polynomial_transformation(power=2):
             'time': ~((ds['time.month'] == 2) & (ds['time.day'] == 29))}]
 
         # do transformation
-        ds1[varname] = (ds.tasmin - 237.15)**power
+        ds1[varname] = (ds.tas - 273.15)**power
+
+        # Replace datetime64[ns] 'time' with YYYYDDD int 'day'
+        if ds.dims['time'] > 365:
+            raise ValueError
+
+        ds1.coords['day'] = ds['time.year']*1000 + np.arange(1, len(ds.time)+1)
+        ds1 = ds1.swap_dims({'time': 'day'})
+        ds1 = ds1.drop('time')
+
+        ds1 = ds1.rename({'day': 'time'})
 
         # document variable
-        ds1[varname].attrs['unit'] = 'degreesC-poly{}'.format(power)
-        ds1[varname].attrs['oneline'] = description.splitlines()[0]
+        ds1[varname].attrs['units'] = 'C^{}'.format(power) if power > 1 else 'C'
+        ds1[varname].attrs['long_title'] = description.splitlines()[0]
         ds1[varname].attrs['description'] = description
         ds1[varname].attrs['variable'] = varname
+
+        return ds1
 
     tas_poly.__doc__ = description
 
@@ -118,7 +133,7 @@ def create_polynomial_transformation(power=2):
         'variable': varname,
         'source_variable': 'tas',
         'transformation': tas_poly,
-        'unit': 'degreesC-poly{}'.format(power)
+        'units': 'C^{}'.format(power) if power > 1 else 'C'
     }
 
     return transformation_spec
@@ -126,12 +141,12 @@ def create_polynomial_transformation(power=2):
 
 JOBS = [create_polynomial_transformation(i) for i in range(1, 10)]
 
-hist = range(1982, 2006)
+hist = range(1981, 2006)
 proj = range(2006, 2100)
 
-PERIODS = (
-    [dict(scenario='rcp45', read_acct='mdelgado', year=y) for y in proj] +
-    [dict(scenario='rcp85', read_acct='jiacany', year=y) for y in proj])
+PERIODS = ([
+    dict(scenario=rcp, read_acct='mdelgado', source_version='1.0', year=y)
+    for y in proj for rcp in ['rcp45', 'rcp85']])
 
 rcp_models = {
     'rcp45':
@@ -173,28 +188,32 @@ for spec in PERIODS:
         job.update(model)
         MODELS.append(job)
 
-SEASONS = ['DJF', 'MAM', 'JJA', 'SON']
-
 AGGREGATIONS = [
     {'agglev': 'hierid', 'aggwt': 'popwt'}]
 
 JOB_SPEC = [JOBS, MODELS, AGGREGATIONS]
 
 INCLUDED_METADATA = [
-    'variable', 'source_variable', 'transformation', 'unit', 'scenario',
+    'variable', 'source_variable', 'units', 'scenario',
     'year', 'model', 'agglev', 'aggwt']
 
 
+def onfinish():
+    print('all done!')
+
+
+@utils.slurm_runner(filepath=__file__, job_spec=JOB_SPEC, onfinish=onfinish)
 def run_job(
         metadata,
         variable,
-        source_variable,
-        unit,
         transformation,
+        source_variable,
+        source_version,
+        units,
         scenario,
+        read_acct,
         year,
         model,
-        read_acct,
         baseline_model,
         agglev,
         aggwt,
@@ -203,66 +222,36 @@ def run_job(
 
     import xarray as xr
     import pandas as pd
+    import metacsv
+
     from climate_toolbox import (
-        load_bcsd,
-        load_baseline,
         weighted_aggregate_grid_to_regions)
 
     # Add to job metadata
     metadata.update(ADDITIONAL_METADATA)
 
-    baseline_file = BASELINE_FILE.format(**metadata)
-    pattern_file = BCSD_pattern_files.format(**metadata)
+    file_dependencies = {}
+
+    read_file = BCSD_pattern_files.format(**metadata)
+    source_archive = BCSD_pattern_archive.format(**metadata)
     write_file = WRITE_PATH.format(**metadata)
 
     # do not duplicate
     if os.path.isfile(write_file):
         return
 
-    seasonal_baselines = {}
-    for season in SEASONS:
-        basef = baseline_file.format(season=season)
-        logger.debug('attempting to load baseline file: {}'.format(basef))
-        seasonal_baselines[season] = load_baseline(basef, source_variable)
+    # Get transformed data
+    logger.debug(
+        'year {} - attempting to read file "{}"'.format(year, read_file))
 
-    season_month_start = {'DJF': 12, 'MAM': 3, 'JJA': 6, 'SON': 9}
+    with xr.open_dataset(read_file) as ds:
+        ds.load()
 
-    seasonal = []
+    ds = transformation(ds)
 
-    for s, season in enumerate(SEASONS):
+    varattrs = {var: dict(ds[var].attrs) for var in ds.data_vars.keys()}
 
-        pattf = pattern_file.format(year=year, season=season)
-        logger.debug('attempting to load pattern file: {}'.format(pattf))
-        patt = load_bcsd(pattf, source_variable, broadcast_dims=('day',))
-
-        logger.debug(
-            '{} {} {} - reindexing coords day --> time'.format(
-                model, year, season))
-
-        patt = (
-            patt.assign_coords(
-                    time=xr.DataArray(
-                        pd.period_range(
-                            '{}-{}-1'.format(
-                                year-int(season == 'DJF'),
-                                season_month_start[season]),
-                            periods=len(patt.day),
-                            freq='D'),
-                        coords={'day': patt.day}))
-                .swap_dims({'day': 'time'})
-                .drop('day'))
-
-        logger.debug(
-            '{} {} {} - adding pattern residuals to baseline'.format(
-                model, year, season))
-
-        seasonal.append(patt + seasonal_baselines[season])
-
-    logger.debug((
-        '{} {} - concatenating seasonal data and ' +
-        'applying transform').format(model, year))
-
-    ds = xr.concat(seasonal, dim='time').pipe(transformation)
+    file_dependencies[source_archive] = source_version
 
     # Reshape to regions
 
@@ -278,6 +267,15 @@ def run_job(
 
     ds.attrs.update(ADDITIONAL_METADATA)
 
+    attrs = dict(ds.attrs)
+    attrs['file_dependencies'] = file_dependencies
+
+    for var, vattrs in varattrs.items():
+        ds[var].attrs.update(vattrs)
+
+        if ds[var].dims == ('hierid', 'time'):
+            ds[var] = ds[var].transpose('time', 'hierid')
+
     if interactive:
         return ds
 
@@ -288,16 +286,13 @@ def run_job(
 
     ds.to_netcdf(write_file)
 
+    metacsv.to_header(
+        os.path.splitext(write_file)[0] + '.fgh',
+        attrs=dict(attrs),
+        variables=varattrs)
 
-def onfinish():
-    print('all done!')
+    logger.debug('job done')
 
-
-main = utils.slurm_runner(
-    filepath=__file__,
-    job_spec=JOB_SPEC,
-    run_job=run_job,
-    onfinish=onfinish)
 
 
 if __name__ == '__main__':
