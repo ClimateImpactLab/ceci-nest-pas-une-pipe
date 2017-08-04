@@ -142,7 +142,7 @@ def reshape_days_to_datetime(surrogate, year, season):
     return ds
 
 
-@slurm_runner(filepath=__file__, job_spec=JOB_SPEC)
+# @slurm_runner(filepath=__file__, job_spec=JOB_SPEC)
 def reshape_to_annual(
         metadata,
         source_variable,
