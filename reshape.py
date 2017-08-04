@@ -6,8 +6,9 @@ downscaled CMIP5 model outputs. Pattern scaling uses the SMME method.
 '''
 
 import os
-import utils
 import logging
+
+from jrnr import slurm_runner
 
 
 FORMAT = '%(asctime)-15s %(message)s'
@@ -141,7 +142,7 @@ def reshape_days_to_datetime(surrogate, year, season):
     return ds
 
 
-@utils.slurm_runner(filepath=__file__, job_spec=JOB_SPEC)
+@slurm_runner(filepath=__file__, job_spec=JOB_SPEC)
 def reshape_to_annual(
         metadata,
         source_variable,
@@ -156,7 +157,7 @@ def reshape_to_annual(
 
     import xarray as xr
     import numpy as np
-    from climate_toolbox import (load_baseline, load_bcsd)
+    from climate_toolbox.climate_toolbox import (load_baseline, load_bcsd)
 
     metadata.update(ADDITIONAL_METADATA)
 
