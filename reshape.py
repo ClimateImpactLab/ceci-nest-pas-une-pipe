@@ -146,10 +146,10 @@ def validation(ds):
 
     # check for expected dimensions. should be missing Jan+Feb 1981, Dec 2099.
     # we also expect to be missing all leap years.
-    year = ds.attrs['year']
+    year = int(ds.attrs['year'])
 
     msg = 'unexpected dimensions: {}'.format(ds.dims)
-    if year > 1981 and year < 2099:
+    if (year > 1981) and (year < 2099):
         assert ds.dims == {'time': 365, 'lon': 1440, 'lat': 720}, msg
     elif year == 1981:
         assert ds.dims == {'time': 306, 'lon': 1440, 'lat': 720}, msg
