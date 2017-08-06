@@ -146,6 +146,8 @@ def validation(ds):
 
     # check for expected dimensions. should be missing Jan+Feb 1981, Dec 2099.
     # we also expect to be missing all leap years.
+    year = ds.attrs['year']
+
     msg = 'unexpected dimensions: {}'.format(ds.dims)
     if year > 1981 and year < 2099:
         assert ds.dims == {'time': 365, 'lon': 1440, 'lat': 720}, msg
@@ -158,6 +160,7 @@ def validation(ds):
             "I didn't realize we had downscaled the 22nd century!!" +
             "\nyear: {}\ndims:{}".format(year, ds.dims))
     
+    varname = ds.attrs['source_variable']
     assert ds[varname].mean() > 5
     assert ds[varname].mean() < 30
 
