@@ -142,7 +142,27 @@ def reshape_days_to_datetime(surrogate, year, season):
     return ds
 
 
-# @slurm_runner(filepath=__file__, job_spec=JOB_SPEC)
+def validation(ds):
+
+    # check for expected dimensions. should be missing Jan+Feb 1981, Dec 2099.
+    # we also expect to be missing all leap years.
+    msg = 'unexpected dimensions: {}'.format(ds.dims)
+    if year > 1981 and year < 2099:
+        assert ds.dims == {'time': 365, 'lon': 1440, 'lat': 720}, msg
+    elif year == 1981:
+        assert ds.dims == {'time': 306, 'lon': 1440, 'lat': 720}, msg
+    elif year == 2099:
+        assert ds.dims == {'time': 334, 'lon': 1440, 'lat': 720}, msg
+    else:
+        raise ValueError(
+            "I didn't realize we had downscaled the 22nd century!!" +
+            "\nyear: {}\ndims:{}".format(year, ds.dims))
+    
+    assert ds[varname].mean() > 5
+    assert ds[varname].mean() < 30
+
+
+@slurm_runner(filepath=__file__, job_spec=JOB_SPEC)
 def reshape_to_annual(
         metadata,
         source_variable,
@@ -230,20 +250,6 @@ def reshape_to_annual(
     # correct for pandas 20.0 + PeriodIndex incompatability
     ds['time'].values = ds.time.values.astype(np.dtype('datetime64[ns]'))
 
-    # check for expected dimensions. should be missing Jan+Feb 1981, Dec 2099.
-    # we also expect to be missing all leap years.
-    msg = 'unexpected dimensions: {}'.format(ds.dims)
-    if year > 1981 and year < 2099:
-        assert ds.dims == {'time': 365, 'lon': 1440, 'lat': 720}, msg
-    elif year == 1981:
-        assert ds.dims == {'time': 306, 'lon': 1440, 'lat': 720}, msg
-    elif year == 2099:
-        assert ds.dims == {'time': 334, 'lon': 1440, 'lat': 720}, msg
-    else:
-        raise ValueError(
-            "I didn't realize we had downscaled the 22nd century!!" +
-            "\nyear: {}\ndims:{}".format(year, ds.dims))
-
     # Update netCDF metadata
     logger.debug('udpating metadata')
     ds.attrs.update(**{
@@ -259,7 +265,13 @@ def reshape_to_annual(
     if not os.path.isdir(os.path.dirname(write_file)):
         os.makedirs(os.path.dirname(write_file))
 
-    ds.to_netcdf(write_file)
+    ds.to_netcdf(write_file+'~')
+
+    logger.debug('running validation tests')
+    with xr.open_dataset(write_file+'~') as ds:
+        validation(ds)
+
+    os.rename(write_file+'~', write_file)
 
     logger.debug('job done')
 
