@@ -189,7 +189,12 @@ def reshape_to_annual(
 
     # do not duplicate
     if os.path.isfile(write_file):
-        return
+        try:
+            with xr.open_dataset(write_file) as ds:
+                validation(ds)
+                return
+        except Exception:
+            pass
 
     seasonal_baselines = {}
     for season in ['DJF', 'MAM', 'JJA', 'SON']:
