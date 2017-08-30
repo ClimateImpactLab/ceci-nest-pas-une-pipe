@@ -277,7 +277,7 @@ def tasmax_hdd_cdd(
     import xarray as xr
     import metacsv
 
-    from climate_toolbox.climate_toolbox import (
+    from climate_toolbox import (
         weighted_aggregate_grid_to_regions)
 
     # Add to job metadata
