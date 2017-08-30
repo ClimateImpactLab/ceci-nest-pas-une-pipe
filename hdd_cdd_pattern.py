@@ -301,8 +301,7 @@ def tasmax_hdd_cdd(
         ds.load()
 
     logger.debug(
-        'running transformation "{}"'
-        .format(transformation.__doc__.split('\n')[0]))
+        'running transformation "{}"'.format(transformation))
 
     ds = transformation(ds)
 
