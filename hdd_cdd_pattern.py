@@ -346,6 +346,7 @@ def tasmax_hdd_cdd(
         os.makedirs(os.path.dirname(write_file))
 
     header_file = os.path.splitext(write_file)[0] + '.fgh'
+    print(header_file)
 
     ds.to_netcdf(write_file + '~')
     logger.debug(
@@ -361,7 +362,7 @@ def tasmax_hdd_cdd(
         validation(ds)
 
     logger.debug('moving tmp files to final output destination')
-    os.rename(header_file+'~', header_file)
+    os.rename(header_file+' ~', header_file)
     os.rename(write_file+'~', write_file)
 
     logger.debug('job done')
