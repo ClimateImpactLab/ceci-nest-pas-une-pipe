@@ -155,11 +155,11 @@ def validate_hdd_cdd(ds):
     msg = 'unexpected dimensions: {}'.format(ds.dims)
     year = int(ds.attrs['year'])
     if year > 1981 and year < 2099:
-        assert ds.dims == {'hierid': 24378, 'time': 365}, msg
+        assert ds.dims == {'hierid': 24378}, msg
     elif year == 1981:
-        assert ds.dims == {'hierid': 24378, 'time': 306}, msg
+        assert ds.dims == {'hierid': 24378}, msg
     elif year == 2099:
-        assert ds.dims == {'hierid': 24378, 'time': 334}, msg
+        assert ds.dims == {'hierid': 24378}, msg
     else:
         raise ValueError(
             "I didn't realize we had downscaled the 22nd century!!" +
