@@ -167,7 +167,7 @@ def validate_hdd_cdd(ds):
 
     # check for unexpected values, accounting for polynomial terms
     assert not ds[ds.variable].isnull().any()
-    assert ds[vds.variable].min() >= 0
+    assert ds[ds.variable].min() >= 0
         
 
 transformation_hdd10 = {
