@@ -1,7 +1,7 @@
 '''
 HDDs and CDDs for daily tasmax
 
-Values are daily HDD below 10 degrees C, and CDD above 30 degrees C. 
+Values are daily HDD below 10 degrees C, and CDD above 30 degrees C.
 
 version 1.0 - initial release (corresponds to hdd_cdd_pattern.py v1.0)
 '''
@@ -151,6 +151,7 @@ def validate_hdd_cdd(ds):
 
     # check for expected dimensions. should be missing Jan+Feb 1981, Dec 2099.
     # we also expect to be missing all leap years.
+    print(ds)
     msg = 'unexpected dimensions: {}'.format(ds.dims)
     year = int(ds.attrs['year'])
     if year > 1981 and year < 2099:
@@ -339,7 +340,6 @@ def tasmax_hdd_cdd(
     if interactive:
         return ds
 
-
     # Write output
     logger.debug('attempting to write to temp file: {}~'.format(write_file))
     if not os.path.isdir(os.path.dirname(write_file)):
@@ -347,13 +347,12 @@ def tasmax_hdd_cdd(
 
     header_file = os.path.splitext(write_file)[0] + '.fgh'
 
-    ds.to_netcdf(write_file+'~')
-
+    ds.to_netcdf(write_file + '~')
     logger.debug(
         'attempting to write to temp header file: {}~'.format(header_file))
 
     metacsv.to_header(
-        header_file+'~',
+        header_file +' ~',
         attrs=dict(attrs),
         variables=varattrs)
 
