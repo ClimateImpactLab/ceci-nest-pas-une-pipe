@@ -166,8 +166,8 @@ def validate_hdd_cdd(ds):
             "\nyear: {}\ndims:{}".format(year, ds.dims))
 
     # check for unexpected values, accounting for polynomial terms
-    assert not ds[varname].isnull().any()
-    assert ds[varname].min() >= 0
+    assert not ds[ds.variable].isnull().any()
+    assert ds[vds.variable].min() >= 0
         
 
 transformation_hdd10 = {
