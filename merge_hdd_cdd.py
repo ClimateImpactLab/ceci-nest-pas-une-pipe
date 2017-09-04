@@ -177,13 +177,13 @@ def merge_future_years(job):
   merged.rename({ds_cdd.variable: 'coldd_agg'}, inplace=True)
   merged.rename({ds_hdd.variable: 'hotdd_agg'}, inplace=True)
 
-  if not os.path.isdir(os.path.dirname(write_file)):
-        os.makedirs(os.path.dirname(write_file))
+  if not os.path.isdir(os.path.dirname(write_path)):
+        os.makedirs(os.path.dirname(write_path))
 
-  merged.to_netcdf(write_file)
+  merged.to_netcdf(write_path)
 
   logger.debug(
-        'Attempting to write to {}'.format(write_file))
+        'Attempting to write to {}'.format(write_path))
 
   header_file = write_path.splitext()[0] + '.fgh'
 
