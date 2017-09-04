@@ -176,6 +176,11 @@ def merge_future_years(job):
   #rename variables
   merged.rename({ds_cdd.variable: 'coldd_agg'}, inplace=True)
   merged.rename({ds_hdd.variable: 'hotdd_agg'}, inplace=True)
+  merged.coldd_agg.attrs.update({'variable': 'coldd_agg'})
+  merged.coldd_agg.attrs.pop('description')
+  merged.hotdd_agg.attrs.update({'variable': 'hotdd_agg'})
+  merged.hotdd_agg.attrs.pop('description')
+
 
   if not os.path.isdir(os.path.dirname(write_path)):
         os.makedirs(os.path.dirname(write_path))
