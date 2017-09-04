@@ -187,7 +187,7 @@ def merge_future_years(job):
 
   header_file = os.path.splitext(write_path)[0] + '.fgh'
 
-  attrs = merged.attrs.update(ADDITIONAL_METADATA)
+  attrs = dict(merged.attrs.update(ADDITIONAL_METADATA))
   attrs['file_dependencies'] = str([BCSD_pattern_archive.format(scenario=job['scenario'], model=job['model'], year=y)  for y in years])
 
   varattrs = {var: dict(merged[var].attrs) for var in merged.data_vars.keys()}
