@@ -126,6 +126,9 @@ for spec in SCEN:
         job.update(model)
         JOB_SPEC.append(job)
 
+def onfinish():
+    print('all done!')
+
 
 @slurm_runner(filepath=__file__, job_spec=JOB_SPEC, onfinish=onfinish)
 def merge_future_years(metadata, scenario, model):
