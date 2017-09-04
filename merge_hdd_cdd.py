@@ -128,10 +128,7 @@ for spec in SCEN:
 
 
 @slurm_runner(filepath=__file__, job_spec=JOB_SPEC, onfinish=onfinish)
-def merge_future_years(metadata, 
-                        scenario, 
-                        model
-                       ):
+def merge_future_years(metadata, scenario, model):
 
 
   import xarray as xr
