@@ -185,7 +185,7 @@ def merge_future_years(job):
   logger.debug(
         'Attempting to write to {}'.format(write_path))
 
-  header_file = write_path.splitext()[0] + '.fgh'
+  header_file = os.path.splitext(write_path)[0] + '.fgh'
 
   attrs = merged.attrs.update(ADDITIONAL_METADATA)
   attrs['file_dependencies'] = str([BCSD_pattern_archive.format(scenario=job['scenario'], model=job['model'], year=y)  for y in years])
