@@ -94,7 +94,7 @@ def merge_patterns(rcp,combo):
   print(ds)
 
   print(ds.hotdd_agg)
-  print(ds.cold_agg)
+  print(ds.coldd_agg)
 
 
 
