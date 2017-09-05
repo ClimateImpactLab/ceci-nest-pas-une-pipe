@@ -94,13 +94,13 @@ def tasmax_cdd10(ds):
     # do transformation
     result[varname] = xr.ufuncs.fmax(10 - (ds.tasmax-273.15), 0).sum(dim='time')
 
-    # Replace datetime64[ns] 'time' with YYYYDDD int 'day'
+    # # Replace datetime64[ns] 'time' with YYYYDDD int 'day'
 
-    result.coords['day'] = ds['time.year']*1000 + np.arange(1, len(ds.time)+1)
-    result = result.swap_dims({'time': 'day'})
-    result = result.drop('time')
+    # result.coords['day'] = ds['time.year']*1000 + np.arange(1, len(ds.time)+1)
+    # result = result.swap_dims({'time': 'day'})
+    # result = result.drop('time')
 
-    result = result.rename({'day': 'time'})
+    # result = result.rename({'day': 'time'})
 
     # document variable
     result[varname].attrs['long_title'] = description.splitlines()[0]
@@ -218,8 +218,6 @@ def get_weights(weights_file=WEIGHTS_FILE):
     return pd.read_pickle(weights_file)
 
 
-
-
 @slurm_runner(filepath=__file__, job_spec=JOB_SPEC, onfinish=onfinish)
 def tasmax_hdd_cdd(
         metadata,
@@ -239,7 +237,7 @@ def tasmax_hdd_cdd(
     import metacsv
 
     from climate_toolbox import (
-        weighted_aggregate_grid_to_regions)
+        weighted_aggregate_grid_to_regions, load_bcsd)
 
     # Add to job metadata
     metadata.update(ADDITIONAL_METADATA)
@@ -258,6 +256,8 @@ def tasmax_hdd_cdd(
 
     with xr.open_dataset(read_file) as ds:
         ds.load()
+
+    ds = load_bcsd(ds, varname='tasmax')
 
     logger.debug(
         'running transformation "{}"'.format(transformation))
