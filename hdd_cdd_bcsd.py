@@ -320,3 +320,7 @@ def tasmax_hdd_cdd(
     os.rename(write_file+'~', write_file)
 
     logger.debug('job done')
+
+
+if __name__ == '__main__':
+    tasmax_hdd_cdd()
