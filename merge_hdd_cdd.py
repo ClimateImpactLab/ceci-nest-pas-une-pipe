@@ -54,7 +54,7 @@ ADDITIONAL_METADATA = dict(
     project='gcp',
     team='climate',
     probability_method='SMME',
-    dependencies='GCP-climate-nasa_bcsd-SMME_formatted.1.0')
+    dependencies= 'GCP-climate-nasa_bcsd-SMME_formatted.1.0')
 
 
 hotdd_agg_METADATA= dict(
