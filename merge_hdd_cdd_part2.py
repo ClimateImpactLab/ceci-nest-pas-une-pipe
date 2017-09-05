@@ -91,10 +91,10 @@ def merge_patterns(rcp,combo):
   
   ds = xr.merge([ds_bcsd.isel(time=slice(0,25)), ds_pattern])
   ds.attrs.update(ADDITIONAL_METADATA)
-  print(ds)
+  print(ds.attrs)
 
-  print(ds.hotdd_agg)
-  print(ds.coldd_agg)
+  print(ds.hotdd_agg.attrs)
+  print(ds.coldd_agg.attrs)
 
 
 
