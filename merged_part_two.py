@@ -2,7 +2,7 @@ import os
 import logging
 
 
-rcp_baseline = os.path('~/data/Degreedays_aggregated_{rcp}_r1i1p1_{baseline}.nc')
+rcp_baseline = os.path.expanduser('~/data/Degreedays_aggregated_{rcp}_r1i1p1_{baseline}.nc')
 
 rcp_pattern =  '/global/scratch/jsimcock/projection/gcp/climate/hierid/popwt/tasmax_degree_days/{rcp}/{pattern}/1.0.nc4'
 
