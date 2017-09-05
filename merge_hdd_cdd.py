@@ -32,7 +32,7 @@ READ_PATH_PATTERN_HOTDD = (
 
 BCSD_pattern_archive = (
     'GCP/climate/nasa_bcsd/SMME_formatted/{scenario}/{model}/' +
-    'tasmax/{year}.nc')
+    'tasmax/*.nc')
 
 WRITE_FILE = '/global/scratch/jsimcock/projection/gcp/climate/hierid/popwt/tasmax_degree_days/{scenario}/{model}/1.0.nc4'
 

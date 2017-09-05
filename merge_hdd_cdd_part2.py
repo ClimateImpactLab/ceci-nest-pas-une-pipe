@@ -86,6 +86,7 @@ def merge_patterns(rcp,combo):
 
   file_bcsd = rcp_baseline.format(rcp=rcp, baseline=combo['baseline_model'])
   file_pattern = rcp_pattern.format(rcp=rcp, pattern=combo['model'])
+  
 
   write_path = WRITE_FILE.format(rcp=rcp, pattern=combo['model'])
 
@@ -104,11 +105,14 @@ def merge_patterns(rcp,combo):
   ds.attrs.update({'model': combo['model']})
   ds.time.attrs.update(time_METADATA)
 
+  ds['hotdd_agg'].attrs.update({'source': file_pattern})
+  ds['coldd_agg'].attrs.update({'source': file_pattern})
+
+
   varattrs = {'hotdd_agg': dict(ds['hotdd_agg'].attrs), 
               'coldd_agg': dict(ds['coldd_agg'].attrs)
               }
 
-  print(varattrs)
 
   header_file = os.path.splitext(write_path)[0] + '.fgh'
 
