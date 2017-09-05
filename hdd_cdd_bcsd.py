@@ -279,8 +279,6 @@ def tasmax_hdd_cdd(
 
     # Update netCDF metadata
     logger.debug('{} udpate metadata'.format(model))
-    ds.attrs.update(**{
-        k: str(v) for k, v in metadata.items() if k in INCLUDED_METADATA})
 
     ds.attrs.update(ADDITIONAL_METADATA)
 
