@@ -186,7 +186,7 @@ transformation_hdd30 = {
 }
 
 
-JOBS = [transformation_cdd30, transformation_hdd10]
+JOBS = [transformation_hdd30, transformation_cdd10]
 
 
 PERIODS = (
