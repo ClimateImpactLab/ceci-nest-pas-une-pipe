@@ -1,9 +1,9 @@
 '''
-HDDs and CDDs for daily tasmax
+Hot Degree Days and Cold Degree Days for daily tasmax
 
-Values are daily HDD below 10 degrees C, and CDD above 30 degrees C.
+Values are daily Hot Degree Days above 30 degrees C and Cold Degree Days below 10 degrees C.
 
-version 1.0 - initial release (corresponds to hdd_cdd_pattern.py v1.0)
+version 1.0 - initial release (corresponds to hdd_cdd_pattern.py v10)
 '''
 
 import os
@@ -21,10 +21,10 @@ logger.setLevel('DEBUG')
 
 __author__ = 'J Simcock'
 __contact__ = 'jsimcock@rhg.com'
-__version__ = '1.0'
+__version__ = '1.1'
 
 BCSD_pattern_files = (
-    '/global/scratch/{read_acct}/nasa_bcsd/SMME_formatted/{scenario}/' +
+    '/global/scratch/mdelgado/nasa_bcsd/SMME_formatted/{scenario}/' +
     '{model}/{source_variable}/{year}/{source_version}.nc')
 
 BCSD_pattern_archive = (
@@ -55,7 +55,7 @@ ADDITIONAL_METADATA = dict(
     version=__version__,
     repo=(
         'https://gitlab.com/ClimateImpactLab/Climate/' +
-        'hdd_cdd_pattern'),
+        'hdd_cdd_pattern.py'),
     file=str(__file__),
     execute='python {} run'.format(__file__),
     project='gcp',
@@ -72,13 +72,13 @@ def format_docstr(docstr):
 
     return '\n\n'.join(pars)
 
-def tasmax_hdd10(ds):
+def tasmax_cdd10(ds):
 
     import xarray as xr
     import numpy as np
 
     description = format_docstr('''
-        Daily Heating Degree Days with daily max temperature below 10 (degrees C) 
+        Daily Cold Degree Days with daily max temperature below 10 (degrees C) 
 
         Leap years are removed before counting days (uses a 365 day
         calendar).
@@ -109,13 +109,13 @@ def tasmax_hdd10(ds):
 
     return result
 
-def tasmax_cdd30(ds):
+def tasmax_hdd30(ds):
 
     import xarray as xr
     import numpy as np
 
     description = format_docstr('''
-        Daily Cooling Degree Days with daily max temperature above 30 (degrees C) 
+        Daily Hot Degree Days with daily max temperature above 30 (degrees C) 
 
         Leap years are removed before counting days (uses a 365 day
         calendar).
@@ -170,20 +170,20 @@ def validate_hdd_cdd(ds):
     assert ds[ds.variable].min() >= 0
         
 
-transformation_hdd10 = {
-    'variable': 'tasmax_hdd10',
+transformation_cdd10 = {
+    'variable': 'coldd_agg',
     'source_variable': 'tasmax',
-    'transformation': tasmax_hdd10,
+    'transformation': tasmax_cdd10,
     'validation': validate_hdd_cdd,
-    'units': 'hdd-10C'
+    'units': 'Degrees C'
 }
 
-transformation_cdd30 = {
-    'variable': 'tasmax_cdd30',
+transformation_hdd30 = {
+    'variable': 'hotdd_agg',
     'source_variable': 'tasmax',
-    'transformation': tasmax_cdd30,
+    'transformation': tasmax_hdd30,
     'validation': validate_hdd_cdd,
-    'units': 'cdd-30C'
+    'units': 'Degrees C'
 }
 
 
