@@ -115,7 +115,7 @@ def merge_patterns(rcp,combo):
         attrs=dict(ds.attrs),
         ariables= varattrs)
 
-  if not os.path.isdir(os.path.dirnmame(write_path)):
+  if not os.path.isdir(os.path.dirname(write_path)):
       os.path.makedir(os.path.dirname(write_path))
 
   ds.to_netcdf(write_path)
