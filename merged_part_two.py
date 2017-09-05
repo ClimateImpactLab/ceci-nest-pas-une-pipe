@@ -59,7 +59,7 @@ def merge_patterns(rcp,combo):
   ds_bcsd = xr.open_dataset(file_bcsd)
 
   print(file_pattern)
-  ds_pattern = xr.open_Dataset(file_pattern)
+  ds_pattern = xr.open_dataset(file_pattern)
 
   ds_bcsd.rename({'SHAPENUM': 'hierid'}, inplace=True)
   ds_bcsd['hierid'] = ds_pattern.hierid
