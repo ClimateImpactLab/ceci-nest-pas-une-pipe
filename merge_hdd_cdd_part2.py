@@ -108,12 +108,14 @@ def merge_patterns(rcp,combo):
               'coldd_agg': dict(ds['coldd_agg'].attrs)
               }
 
+  print(varattrs)
+
   header_file = os.path.splitext(write_path)[0] + '.fgh'
 
   metacsv.to_header(
         header_file,
         attrs=dict(ds.attrs),
-        ariables= varattrs)
+        variables= varattrs)
 
   if not os.path.isdir(os.path.dirname(write_path)):
       os.path.makedir(os.path.dirname(write_path))
