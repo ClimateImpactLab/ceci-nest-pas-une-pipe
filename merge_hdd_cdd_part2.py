@@ -93,6 +93,8 @@ def merge_patterns(rcp,combo):
   ds.attrs.update(ADDITIONAL_METADATA)
   print(ds.attrs)
 
+  print(ds.time.attrs)
+  print(ds.hierid.attrs)
   print(ds.hotdd_agg.attrs)
   print(ds.coldd_agg.attrs)
 
