@@ -245,7 +245,7 @@ def tasmax_hdd_cdd(
     metadata.update(ADDITIONAL_METADATA)
 
 
-    read_file = BCSD_pattern_files.format(**metadata)
+    read_file = BCSD_orig_files.format(**metadata)
     write_file = WRITE_PATH.format(**metadata)
 
     # do not duplicate
