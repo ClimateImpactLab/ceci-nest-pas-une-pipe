@@ -16,6 +16,7 @@ rcp_pattern =  '/global/scratch/jsimcock/projection/gcp/climate/hierid/popwt/tas
 WRITE_FILE = '/global/scratch/jsimcock/projection/gcp/climate/hierid/popwt/tasmax_degree_days/Degreedays_aggregated_{rcp}_r1i1p1_{pattern}.nc'
 
 
+
 ADDITIONAL_METADATA = dict(
     # oneline=oneline,
     # description=description,
@@ -24,7 +25,7 @@ ADDITIONAL_METADATA = dict(
     version=__version__,
     repo=(
         'gitlab.com:ClimateImpactLab/Climate/climate-transforms-tas-poly' +
-        'merge_hdd_cdd_part2.py'),
+        'merge_hdd_cdd.py'),
     file=str(__file__),
     execute='python {} '.format(__file__),
     project='gcp',
@@ -34,6 +35,11 @@ ADDITIONAL_METADATA = dict(
     dependencies= str(['GCP-climate-nasa_bcsd-SMME_formatted.1.0', 'Agglomerated-Many.2016-02-17 NASA-GDDP']), 
     created= str(datetime.datetime.now())
     )
+
+time_METADATA = dict(
+                long_title='calendar years',
+                units='YYYY'
+                )
 
 
 rcp_models = {
@@ -81,6 +87,8 @@ def merge_patterns(rcp,combo):
   file_bcsd = rcp_baseline.format(rcp=rcp, baseline=combo['baseline_model'])
   file_pattern = rcp_pattern.format(rcp=rcp, pattern=combo['model'])
 
+  write_path = WRITE_FILE.format(rcp=rcp, pattern=combo['model'])
+
   ds_bcsd = xr.open_dataset(file_bcsd)
 
   ds_pattern = xr.open_dataset(file_pattern)
@@ -90,15 +98,27 @@ def merge_patterns(rcp,combo):
   ds_bcsd['time'] = range(1981, 2100)
   
   ds = xr.merge([ds_bcsd.isel(time=slice(0,25)), ds_pattern])
+
+
   ds.attrs.update(ADDITIONAL_METADATA)
-  print(ds.attrs)
+  ds.attrs.update({'model': combo['model']})
+  ds.time.attrs.update(time_METADATA)
 
-  print(ds.time.attrs)
-  print(ds.hierid.attrs)
-  print(ds.hotdd_agg.attrs)
-  print(ds.coldd_agg.attrs)
+  varattrs = {'hotdd_agg': dict(ds['hotdd_agg'].attrs), 
+              'coldd_agg': dict(ds['coldd_agg'].attrs)
+              }
 
+  header_file = os.path.splitext(write_path)[0] + '.fgh'
 
+  metacsv.to_header(
+        header_file,
+        attrs=dict(ds.attrs),
+        ariables= varattrs)
+
+  if not os.path.isdir(os.path.dirnma(write_path)):
+      os.path.makedir(os.path.dirname(write_path))
+
+  ds.to_netcdf(write_path)
 
 
 if __name__ == '__main__':
