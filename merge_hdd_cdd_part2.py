@@ -13,7 +13,7 @@ rcp_baseline = '/global/scratch/jsimcock/projection/gcp/climate/hierid/popwt/tas
 rcp_pattern =  '/global/scratch/jsimcock/projection/gcp/climate/hierid/popwt/tasmax_degree_days/{rcp}/{pattern}/1.0.nc4'
 
 
-WRITE_FILE = '/global/scratch/jsimcock/projection/gcp/climate/hierid/popwt/tasmax_degree_days/Degreedays_aggregated_{rcp}_r1i1p1_{pattern}.nc4'
+WRITE_FILE = '/global/scratch/jsimcock/projection/gcp/climate/hierid/popwt/tasmax_degree_days/Degreedays_aggregated_{rcp}_r1i1p1_{pattern}.nc'
 
 
 
