@@ -5,15 +5,15 @@ import datetime
 
 __author__='J Simcock'
 __contact__='jsimcock@rhg.com'
-__version__= '1.0'
+__version__= '1.1 '
 
 
-rcp_baseline = os.path.expanduser('~/data/Degreedays_aggregated_{rcp}_r1i1p1_{baseline}.nc')
+rcp_baseline = '/global/scratch/jsimcock/projection/gcp/climate/hierid/popwt/tasmax_degree_days/historical/{baseline}/1.0.nc4'
 
 rcp_pattern =  '/global/scratch/jsimcock/projection/gcp/climate/hierid/popwt/tasmax_degree_days/{rcp}/{pattern}/1.0.nc4'
 
 
-WRITE_FILE = '/global/scratch/jsimcock/projection/gcp/climate/hierid/popwt/tasmax_degree_days/Degreedays_aggregated_{rcp}_r1i1p1_{pattern}.nc'
+WRITE_FILE = '/global/scratch/jsimcock/projection/gcp/climate/hierid/popwt/tasmax_degree_days/Degreedays_aggregated_{rcp}_r1i1p1_{pattern}.nc4'
 
 
 
@@ -84,7 +84,7 @@ def merge_patterns(rcp,combo):
   import metacsv
 
 
-  file_bcsd = rcp_baseline.format(rcp=rcp, baseline=combo['baseline_model'])
+  file_bcsd = rcp_baseline.format(baseline=combo['baseline_model'])
   file_pattern = rcp_pattern.format(rcp=rcp, pattern=combo['model'])
   
 
@@ -94,15 +94,14 @@ def merge_patterns(rcp,combo):
 
   ds_pattern = xr.open_dataset(file_pattern)
 
-  ds_bcsd.rename({'SHAPENUM': 'hierid'}, inplace=True)
-  ds_bcsd['hierid'] = ds_pattern.hierid
   ds_bcsd['time'] = range(1981, 2100)
   
-  ds = xr.merge([ds_bcsd.isel(time=slice(0,25)), ds_pattern])
+  ds = xr.merge([ds_bcsd, ds_pattern])
 
 
   ds.attrs.update(ADDITIONAL_METADATA)
   ds.attrs.update({'model': combo['model']})
+  ds.attrs.update({'baseline_model': combo['baseline_model']})
   ds.time.attrs.update(time_METADATA)
 
   ds['hotdd_agg'].attrs.update({'source': file_pattern})
