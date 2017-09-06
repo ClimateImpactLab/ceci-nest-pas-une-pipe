@@ -143,6 +143,7 @@ def tasmax_hdd30(ds):
     result[varname].attrs['long_title'] = description.splitlines()[0]
     result[varname].attrs['description'] = description
     result[varname].attrs['variable'] = varname
+    print(ds)
 
     return result
 
