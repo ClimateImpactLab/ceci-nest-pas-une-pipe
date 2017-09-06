@@ -106,6 +106,11 @@ def merge_patterns(rcp,combo):
 
   ds['hotdd_agg'].attrs.update({'source': file_pattern})
   ds['coldd_agg'].attrs.update({'source': file_pattern})
+  ds['hotdd_agg'] = ds.hotdd_agg.astype('float32')
+  ds['coldd_agg'] = ds.coldd_agg.astype('float32')
+  ds['time'] = ds.time.astype('float32')
+
+
 
 
   varattrs = {'hotdd_agg': dict(ds['hotdd_agg'].attrs), 
