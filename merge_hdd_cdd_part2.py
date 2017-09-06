@@ -94,7 +94,7 @@ def merge_patterns(rcp,combo):
 
   ds_pattern = xr.open_dataset(file_pattern)
 
-  ds_bcsd['time'] = range(1981, 2100)
+  #ds_bcsd['time'] = range(1981, 2100)
   
   ds = xr.merge([ds_bcsd, ds_pattern])
 
