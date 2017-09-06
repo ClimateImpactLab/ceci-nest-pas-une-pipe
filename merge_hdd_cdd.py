@@ -107,7 +107,7 @@ def merge_future_years(job):
   write_path = WRITE_FILE.format(**job)
 
   logger.debug(
-        'attempting to read model {}, scenario combo'.format(job['model']))
+        'attempting to read model {}'.format(job['model']))
 
   #load paths
   paths_hdd = [READ_PATH_PATTERN_HOTDD.format(model=job['model'], year=y) for y in years]
@@ -119,13 +119,13 @@ def merge_future_years(job):
   ds_cdd = xr.open_mfdataset(paths_cdd, concat_dim=pd.Index(years, name='time', dtype='float32'))
 
   logger.debug(
-        'opening files for model {}, scenario {} combo'.format(job['model']))
+        'opening files for model {}'.format(job['model']))
 
   #merge datasets
   merged = xr.merge([ds_cdd[ds_cdd.variable], ds_hdd[ds_hdd.variable]])
 
   logger.debug(
-        'attempting to merge datasets for model {}, scenario {} combo'.format(job['model'], job['scenario']))
+        'attempting to merge datasets for model {}'.format(job['model']))
   
   #update internal metadata for each variable and dimension
   merged.hierid.attrs.update(hierid_METADATA)
@@ -134,7 +134,7 @@ def merge_future_years(job):
   merged[ds_cdd.variable].attrs.update(coldd_agg_METADATA)
 
   logger.debug(
-        'Updating metadata and variable names datasets for model {}, scenario {} combo'.format(job['model']))
+        'Updating metadata and variable names datasets for model {}'.format(job['model']))
 
   #rename variables
   # merged.rename({ds_cdd.variable: 'coldd_agg'}, inplace=True)
