@@ -107,7 +107,7 @@ def merge_future_years(job):
   write_path = WRITE_FILE.format(**job)
 
   logger.debug(
-        'attempting to read model {}, scenario {} combo'.format(job['model']))
+        'attempting to read model {}, scenario combo'.format(job['model']))
 
   #load paths
   paths_hdd = [READ_PATH_PATTERN_HOTDD.format(model=job['model'], year=y) for y in years]
