@@ -121,13 +121,11 @@ def merge_patterns(rcp,combo):
   ds = xr.merge([ds_bcsd, ds_pattern])
 
 
+  #update metadata for ds and vars
   ds.attrs.update(ADDITIONAL_METADATA)
   ds.attrs.update({'model': combo['model']})
   ds.attrs.update({'baseline_model': combo['baseline_model']})
   ds.time.attrs.update(time_METADATA)
-
-  print(ds['hotdd_agg'].attrs)
-  print(ds['coldd_agg'].attrs)
 
   ds['hotdd_agg'].attrs = hotdd_agg_METADATA
   ds['coldd_agg'].attrs = coldd_agg_METADATA
@@ -138,8 +136,6 @@ def merge_patterns(rcp,combo):
   ds['hotdd_agg'] = ds.hotdd_agg.astype('float32')
   ds['coldd_agg'] = ds.coldd_agg.astype('float32')
   ds['time'] = ds.time.astype('float32')
-
-
 
 
 
