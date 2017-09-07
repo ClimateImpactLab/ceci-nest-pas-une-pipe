@@ -128,10 +128,12 @@ def merge_patterns(rcp,combo):
   hotdd_agg_METADATA.update({'source': file_pattern})
   coldd_agg_METADATA.update({'source': file_pattern})
 
+  print(hotdd_agg_METADATA)
+  print(coldd_agg_METADATA)
 
 
-  ds['hotdd_agg'].attrs.update(hotdd_agg_METADATA)
-  ds['coldd_agg'].attrs.update(coldd_agg_METADATA)
+  ds['hotdd_agg'].attrs.update(dict(hotdd_agg_METADATA))
+  ds['coldd_agg'].attrs.update(dict(coldd_agg_METADATA))
   
   ds['hotdd_agg'] = ds.hotdd_agg.astype('float32')
   ds['coldd_agg'] = ds.coldd_agg.astype('float32')
