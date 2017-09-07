@@ -17,6 +17,7 @@ WRITE_FILE = '/global/scratch/jsimcock/projection/gcp/climate/hierid/popwt/tasma
 
 
 
+
 ADDITIONAL_METADATA = dict(
     # oneline=oneline,
     # description=description,
@@ -35,6 +36,25 @@ ADDITIONAL_METADATA = dict(
     dependencies= str(['GCP-climate-nasa_bcsd-SMME_formatted.1.0', 'Agglomerated-Many.2016-02-17 NASA-GDDP']), 
     created= str(datetime.datetime.now())
     )
+
+
+hotdd_agg_METADATA= dict(
+    long_title = "aggregation of Hot degree days where tasmax is greater than 30 degree celsuis in impact regions",
+    units = "degree days", 
+                        )
+
+
+
+coldd_agg_METADATA= dict(
+                long_title = "aggregation of Cold degree days where tasmax is less than 10 degree celsuis in impact regions", 
+                units = "degree days",
+                )
+
+hierid_METADATA = dict(
+              long_title = "Impact Region", 
+              units = "None", 
+              source = "aggregated-world-many.2016-02-17" 
+                )
 
 time_METADATA = dict(
                 long_title='calendar years',
@@ -106,10 +126,14 @@ def merge_patterns(rcp,combo):
 
   ds['hotdd_agg'].attrs.update({'source': file_pattern})
   ds['coldd_agg'].attrs.update({'source': file_pattern})
+  
+  ds['hotdd_agg'].attrs.update(hotdd_agg_METADATA)
+  ds['coldd_agg'].attrs.update(coldd_agg_METADATA)
+
+
   ds['hotdd_agg'] = ds.hotdd_agg.astype('float32')
   ds['coldd_agg'] = ds.coldd_agg.astype('float32')
   ds['time'] = ds.time.astype('float32')
-
 
 
 
