@@ -132,8 +132,8 @@ def merge_patterns(rcp,combo):
   print(coldd_agg_METADATA)
 
 
-  ds['hotdd_agg'].attrs.update({k:v for k,v in hotdd_agg_METADATA.items()})
-  ds['coldd_agg'].attrs.update({k:v for k,v in coldd_agg_METADATA.items()})
+  ds['hotdd_agg'].attrs = hotdd_agg_METADATA
+  ds['coldd_agg'].attrs = coldd_agg_METADATA
   
   ds['hotdd_agg'] = ds.hotdd_agg.astype('float32')
   ds['coldd_agg'] = ds.coldd_agg.astype('float32')
