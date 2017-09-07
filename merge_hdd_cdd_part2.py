@@ -114,7 +114,6 @@ def merge_patterns(rcp,combo):
 
   ds_pattern = xr.open_dataset(file_pattern)
 
-  #ds_bcsd['time'] = range(1981, 2100)
   
   ds = xr.merge([ds_bcsd, ds_pattern])
 
@@ -123,30 +122,28 @@ def merge_patterns(rcp,combo):
   ds.attrs.update(ADDITIONAL_METADATA)
   ds.attrs.update({'model': combo['model']})
   ds.attrs.update({'baseline_model': combo['baseline_model']})
-  ds.time.attrs.update(time_METADATA)
 
   hotdd_agg_METADATA.update({'source': file_pattern})
   coldd_agg_METADATA.update({'source': file_pattern})
 
   print(hotdd_agg_METADATA)
   print(coldd_agg_METADATA)
-
-
-  ds['hotdd_agg'].attrs = hotdd_agg_METADATA
-  ds['coldd_agg'].attrs = coldd_agg_METADATA
+ 
   
   ds['hotdd_agg'] = ds.hotdd_agg.astype('float32')
   ds['coldd_agg'] = ds.coldd_agg.astype('float32')
   ds['time'] = ds.time.astype('float32')
 
+  ds['hotdd_agg'].attrs.update(hotdd_agg_METADATA)
+  ds['coldd_agg'].attrs.update(coldd_agg_METADATA)
+  ds['time'].attrs.update(time_METADATA)
+  ds['hierid'].attrs.update(hierid_METADATA)
+
+
   print(ds['hotdd_agg'].attrs)
   print(ds['coldd_agg'].attrs)
 
-
-
-  varattrs = {'hotdd_agg': dict(ds['hotdd_agg'].attrs), 
-              'coldd_agg': dict(ds['coldd_agg'].attrs)
-              }
+  varattrs = {var: dict(ds[var].attrs) for var in ds.data_vars.keys()}
 
 
   header_file = os.path.splitext(write_path)[0] + '.fgh'
