@@ -39,15 +39,17 @@ ADDITIONAL_METADATA = dict(
 
 
 hotdd_agg_METADATA= dict(
-    long_title = "aggregation of Hot degree days where tasmax is greater than 30 degree celsuis in impact regions",
-    units = "degree days", 
+          long_title = "aggregation of Hot degree days where tasmax is greater than 30 degree celsuis in impact regions",
+          units = "degree days", 
+          source = ''
                         )
 
 
 
 coldd_agg_METADATA= dict(
                 long_title = "aggregation of Cold degree days where tasmax is less than 10 degree celsuis in impact regions", 
-                units = "degree days",
+                units = "degree days", 
+                source= ''
                 )
 
 hierid_METADATA = dict(
@@ -124,13 +126,20 @@ def merge_patterns(rcp,combo):
   ds.attrs.update({'baseline_model': combo['baseline_model']})
   ds.time.attrs.update(time_METADATA)
 
+  print(ds['hotdd_agg'].attrs)
+  print(ds['coldd_agg'].attrs)
+
+  ds['hotdd_agg'].attrs = hotdd_agg_METADATA
+  ds['coldd_agg'].attrs = coldd_agg_METADATA
+
   ds['hotdd_agg'].attrs.update({'source': file_pattern})
   ds['coldd_agg'].attrs.update({'source': file_pattern})
-
-
+  
   ds['hotdd_agg'] = ds.hotdd_agg.astype('float32')
   ds['coldd_agg'] = ds.coldd_agg.astype('float32')
   ds['time'] = ds.time.astype('float32')
+
+
 
 
 
