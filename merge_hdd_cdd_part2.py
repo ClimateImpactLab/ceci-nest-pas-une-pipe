@@ -16,8 +16,6 @@ rcp_pattern =  '/global/scratch/jsimcock/projection/gcp/climate/hierid/popwt/tas
 WRITE_FILE = '/global/scratch/jsimcock/projection/gcp/climate/hierid/popwt/tasmax_degree_days/Degreedays_aggregated_{rcp}_r1i1p1_{pattern}.nc'
 
 
-
-
 ADDITIONAL_METADATA = dict(
     # oneline=oneline,
     # description=description,
