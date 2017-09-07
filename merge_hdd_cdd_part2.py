@@ -14,7 +14,7 @@ rcp_pattern =  '/global/scratch/jsimcock/projection/gcp/climate/hierid/popwt/tas
 
 
 WRITE_FILE = '/global/scratch/jsimcock/projection/gcp/climate/hierid/popwt/tasmax_degree_days/Degreedays_aggregated_{rcp}_r1i1p1_{pattern}.nc'
-
+  
 
 ADDITIONAL_METADATA = dict(
     # oneline=oneline,
@@ -125,15 +125,20 @@ def merge_patterns(rcp,combo):
   ds.attrs.update({'baseline_model': combo['baseline_model']})
   ds.time.attrs.update(time_METADATA)
 
-  ds['hotdd_agg'].attrs = hotdd_agg_METADATA
-  ds['coldd_agg'].attrs = coldd_agg_METADATA
+  hotdd_agg_METADATA.update({'source': file_pattern})
+  coldd_agg_METADATA.update({'source': file_pattern})
 
-  ds['hotdd_agg'].attrs.update({'source': file_pattern})
-  ds['coldd_agg'].attrs.update({'source': file_pattern})
+
+
+  ds['hotdd_agg'].attrs.update(hotdd_agg_METADATA)
+  ds['coldd_agg'].attrs.update(coldd_agg_METADATA)
   
   ds['hotdd_agg'] = ds.hotdd_agg.astype('float32')
   ds['coldd_agg'] = ds.coldd_agg.astype('float32')
   ds['time'] = ds.time.astype('float32')
+
+  print(ds['hotdd_agg'].attrs)
+  print(ds['coldd_agg'].attrs)
 
 
 
