@@ -126,9 +126,6 @@ def merge_patterns(rcp,combo):
 
   ds['hotdd_agg'].attrs.update({'source': file_pattern})
   ds['coldd_agg'].attrs.update({'source': file_pattern})
-  
-  ds['hotdd_agg'].attrs.update(hotdd_agg_METADATA)
-  ds['coldd_agg'].attrs.update(coldd_agg_METADATA)
 
 
   ds['hotdd_agg'] = ds.hotdd_agg.astype('float32')
